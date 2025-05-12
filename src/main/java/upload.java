@@ -7,11 +7,11 @@ import java.util.*;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
+/*import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.Part;
-
+import javax.servlet.http.Part;*/
+import javax.servlet.http.*;
 /**
  * Servlet implementation class upload
  */
@@ -79,44 +79,50 @@ public class upload extends HttpServlet {
         }
         return null;
     }
-	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		// TODO Auto-generated method stub
-		try {
+	@Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        // [수정] JSP로 forward하지 않고 JSON으로 직접 응답
+        response.setContentType("application/json; charset=UTF-8");
+        PrintWriter out = response.getWriter();
+        try {
             Part filePart = request.getPart("textFile");
             String fileName = getSubmittedFileName(filePart);
-            System.out.println("fileName : " + fileName);
-            
             if(!fileName.toLowerCase().endsWith(".txt")) {
-                throw new ServletException(".txt 파일만 업로드 가능합니다");
+                out.print("{\"result\":\"fail\",\"message\":\".txt 파일만 업로드 가능합니다\"}");
+                return;
             }
 
             // 임시 파일 생성 및 복사
             File tempFile = File.createTempFile("upload_", ".tmp");
             try (InputStream in = filePart.getInputStream();
-                 OutputStream out = new FileOutputStream(tempFile)) {
-                in.transferTo(out);
+                 OutputStream outFile = new FileOutputStream(tempFile)) {
+                in.transferTo(outFile);
             }
 
-            // 변환 작업 (수정된 부분)
             List<String[]> csvData;
             try (InputStream fileContent = new FileInputStream(tempFile)) {
                 csvData = convertTxtToCsv(fileContent);
             }
 
-            // 임시 파일 삭제 (반드시 실행)
             if(!tempFile.delete()) {
                 System.err.println("임시 파일 삭제 실패: " + tempFile.getAbsolutePath());
             }
-            
+
             UploadDAO dao = new UploadDAO();
-            
-            request.setAttribute("fileName", fileName);
-            request.setAttribute("csvData", csvData);
-            request.setAttribute("pass", dao.insertCsvData(csvData));
-            request.getRequestDispatcher("/process.jsp").forward(request, response);
+            String dbResult = dao.insertCsvData(csvData);
+
+            // [수정] JSON으로 결과 반환
+            out.print("{");
+            out.print("\"result\":\"success\",");
+            out.print("\"fileName\":\"" + fileName + "\",");
+            out.print("\"rowCount\":" + csvData.size() + ",");
+            out.print("\"dbResult\":\"" + dbResult + "\"");
+            out.print("}");
         } catch (Exception e) {
-            request.setAttribute("error", "파일 처리 오류: " + e.getMessage());
-            request.getRequestDispatcher("/errorPage.jsp").forward(request, response);
+            out.print("{\"result\":\"fail\",\"message\":\"파일 처리 오류: " + e.getMessage().replace("\"","\\\"") + "\"}");
+        } finally {
+            out.flush();
+            out.close();
         }
-	}
+    }
 }

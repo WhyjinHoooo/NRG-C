@@ -1,0 +1,269 @@
+@charset "UTF-8";
+html {
+    height: 100%;
+}
+@media (max-width: 1920px) {
+	.StockArea {
+	display: flex;
+	flex-direction: row;
+	height: 95%;
+	}
+	.StockArea-Filter {
+	border: 1px solid;
+	width: 25%;
+	}
+	.StockArea-Result {
+    margin-left: 2%;
+    width: 73%;
+	}
+	.Title {
+	background: #260FB1;
+	color: white;
+	text-align: center;
+	font-size: x-large;
+	padding: 5px;
+	}
+	.StockArea-Filter > .InfoInput {
+	display: flex;
+	flex-direction: row;
+	margin-top: 20px;
+	width: 100%;
+    }
+    .StockArea-Filter > .InfoInput input {
+	margin-left: 10px;
+	width: 200px;
+	text-align: center;
+    }
+	.StockArea-Filter > .InfoInput label{
+	font-weight: bold;
+	font-size: large;
+	display: inline-block;
+	width: 10em;
+	text-align: right;
+	letter-spacing: 0.1em;
+	font-family: sans-serif;
+    }
+    .StockArea-Filter > button {
+	width: 40%;
+	height: 7%;
+	text-align: center;
+	background-color: #002060;
+	color: white;
+	border: 1px solid #1F4E79;
+	margin: 10% 0px 0px 35%;
+	border-radius: 5px;
+	font-size: large;
+	}
+	.StockArea-Filter > button:hover {
+	background: #0068ff;
+	color: #fff;
+	border: 1px solid #0068ff;
+	}
+	.StockArea-Filter > button:active {
+	background: #0068ff;
+	color: #fff;
+	border: 1px solid #0068ff;
+	}
+	.StockArea-Data-Area {
+    border: 1px solid;
+    height: 70%;
+	}
+	
+	.StockArea-Data-Area > table.InfoTable {
+	border-collapse: collapse;
+	width: 100%;
+	height: 94.5%;
+	table-layout: fixed;
+	/* overflow: scroll; */
+	}
+    .StockArea-Data-Area > table.InfoTable thead{
+    display: block;
+	width: 100%;
+	position: sticky;
+	top: 0;
+	z-index: 10;
+	overflow-x: hidden;
+    }
+   	.StockArea-Data-Area > table.InfoTable tbody{
+	table-layout: fixed;
+	display: block;
+	width: 100.3%;
+	height: 100%;
+	max-height: 95%;
+	overflow-y: auto;
+	overflow-x: auto;
+	}
+	.StockArea-Data-Area > table.InfoTable thead > tr {
+	display: table;
+	table-layout: fixed;
+	width: 100%;
+    }
+	.StockArea-Data-Area > table.InfoTable thead > tr > th {
+    background-color: rgb(111, 167, 235);
+    top: 0;
+    color: white;
+    text-align: center;
+    z-index: 10;
+    padding: 8px;
+    border: 1px solid white;
+    width: 150px;
+    font-size: xx-small;
+	}
+	.StockArea-Data-Area > table.InfoTable tbody > tr {
+	display: table;
+	width: 100%;
+	table-layout: fixed;
+    }
+    .StockArea-Data-Area > table.InfoTable tbody td:empty{
+	padding: 8px 5.5px;
+	border: 1px solid #ddd;
+	width: 155px;
+	height: 10px;
+	text-align: center;
+	font-size: 10px;
+	font-weight: bold;
+    }
+    .StockArea-Data-Area > table.InfoTable tbody::-webkit-scrollbar {
+	    width: 5px;
+	    margin-left: 100px;
+	}
+	.StockArea-Data-Area > table.InfoTable tbody::-webkit-scrollbar-thumb {
+	    background-color: #2f3542;
+	    border-radius: 10px;
+	}
+	.StockArea-Data-Area > table.InfoTable tbody::-webkit-scrollbar-track {
+	    background-color: white;
+	    border-radius: 1px;
+	    box-shadow: inset 0px 0px 5px white;
+	}
+	.StockArea-Data-Area > table.InfoTable tbody::-webkit-scrollbar:horizontal {
+	    height: 10px;
+	}
+	.StockArea-Data-Area > table.InfoTable tbody::-webkit-scrollbar-thumb:horizontal {
+	    background-color: black;
+	    border-radius: 10px;
+	}
+	.StockArea-Data-Area > table.InfoTable tbody::-webkit-scrollbar-track:horizontal {
+	    background-color: white;
+	    border-radius: 1px;
+	    box-shadow: inset 0px 0px 5px white;
+	}
+	.StockArea-Result > .Btn-Area {
+    height: 5%;
+	margin: 0.5% 0% 0.5% 0%;
+	display: flex;
+    justify-content: flex-end;
+	}
+	.StockArea-Result > .Btn-Area > button.DeterminBtn {
+    background: darkgreen;
+   	width: 10%;
+    height: 30px;
+    color: white;
+    font-weight: bold;
+    font-size: smaller;
+    border: 1px solid darkgreen;
+	padding: 5px;
+	border-radius: 5px;
+	}
+	.StockArea-Result > .Btn-Area > button.DeterminBtn:hover {
+	background: #32CD32;
+	color: #fff;
+	border: 1px solid #32CD32;
+	}
+	.StockArea-Result > .Btn-Area > button.DeterminBtn:active {
+	background: #32CD32;
+	color: black;
+	border: 1px solid #32CD32;
+	}
+	.StockArea-Result > .Btn-Area button.DelBtn {
+    background: darkred;
+    width: 10%;
+    height: 30px;
+    color: white;
+    font-weight: bold;
+    font-size: smaller;
+	margin-left: 1%;
+	border: 1px solid darkred;
+	padding: 5px;
+	border-radius: 5px;
+	}
+	.StockArea-Result > .Btn-Area button.DelBtn:hover {
+	background: #FA8072;
+	color: #fff;
+	border: 1px solid #FA8072;
+	}
+	.StockArea-Result > .Btn-Area button.DelBtn:active {
+	background: #FA8072;
+	color: black;
+	border: 1px solid #FA8072;
+	}
+	
+	.StockArea-Uploading {
+    border: 1px solid;
+    height: 25.2%;
+	}
+	.File-Uploading-Area > .InfoInput {
+	display: flex;
+	flex-direction: row;
+	margin-top: 5%;
+	width: 100%;
+	justify-content: center;
+    }
+    .File-Uploading-Area > .InfoInput input {
+	margin-left: 10px;
+	width: 200px;
+	text-align: center;
+    }
+	.File-Uploading-Area > .InfoInput label{
+	font-weight: bold;
+	font-size: large;
+	display: inline-block;
+	width: 10em;
+	text-align: right;
+	letter-spacing: 0.1em;
+	font-family: sans-serif;
+    }
+	.StockArea-Uploading > .File-Uploading-Area > .InfoInput > button#UploadBtn {
+    background: darkgreen;
+   	width: 10%;
+    height: 30px;
+    color: white;
+    font-weight: bold;
+    font-size: smaller;
+    border: 1px solid darkgreen;
+	padding: 5px;
+	border-radius: 5px;
+	}
+	.StockArea-Uploading > .File-Uploading-Area > .InfoInput > button#UploadBtn:hover {
+	background: #32CD32;
+	color: #fff;
+	border: 1px solid #32CD32;
+	}
+	.StockArea-Uploading > .File-Uploading-Area > .InfoInput > button#UploadBtn:active {
+	background: #32CD32;
+	color: black;
+	border: 1px solid #32CD32;
+	}
+	.StockArea-Uploading > .File-Uploading-Area > .InfoInput > button#CancelBtn {
+    background: darkred;
+    width: 10%;
+    height: 30px;
+    color: white;
+    font-weight: bold;
+    font-size: smaller;
+	margin-left: 1%;
+	border: 1px solid darkred;
+	padding: 5px;
+	border-radius: 5px;
+	}
+	.StockArea-Uploading > .File-Uploading-Area > .InfoInput > button#CancelBtn:hover {
+	background: #FA8072;
+	color: #fff;
+	border: 1px solid #FA8072;
+	}
+	.StockArea-Uploading > .File-Uploading-Area > .InfoInput > button#CancelBtn:active {
+	background: #FA8072;
+	color: black;
+	border: 1px solid #FA8072;
+	}
+}

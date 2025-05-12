@@ -2,15 +2,11 @@
     pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
-<%
-    request.setCharacterEncoding("UTF-8");
-    response.setCharacterEncoding("UTF-8");
-%>
 <!DOCTYPE html>
 <html>
 <head>
 <meta charset="UTF-8">
-<title>처리 결과 - ${fileName}</title>
+<title>처리 결과</title>
 <style>
     table { border-collapse: collapse; width: 80%; margin: 20px auto; }
     th, td { padding: 10px; border: 1px solid #ddd; text-align: left; }
@@ -24,9 +20,9 @@
 </style>
 </head>
 <body>
-
 <div class="file-info">
-    📁 업로드 파일명: <strong>${fileName}</strong>
+    📁 원본 파일명: <strong>${fileName}</strong><br>
+    DB 저장 결과: <strong>${pass}</strong>
 </div>
 <c:choose>
     <c:when test="${empty csvData}">
@@ -45,6 +41,5 @@
         </table>
     </c:otherwise>
 </c:choose>
-
 </body>
 </html>
