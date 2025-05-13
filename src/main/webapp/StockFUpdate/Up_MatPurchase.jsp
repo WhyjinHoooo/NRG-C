@@ -3,7 +3,7 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <c:set var="contextPath" value="${pageContext.request.contextPath}"/>
 <link rel="stylesheet" href="${contextPath}/CSS/Common.css?after">
-<script src="http://code.jquery.com/jquery-latest.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <!DOCTYPE html>
 <html>
 <head>
@@ -30,42 +30,145 @@ function InitialTable(){
         $('.InfoTable-Body').append(row);
     }
 }
+function PopupPosition(popupWidth, popupHeight) {
+    var dualScreenLeft = window.screenLeft !== undefined ? window.screenLeft : window.screenX;
+    var dualScreenTop = window.screenTop !== undefined ? window.screenTop : window.screenY;
+    
+    var width = window.innerWidth ? window.innerWidth : document.documentElement.clientWidth ? document.documentElement.clientWidth : screen.width;
+    var height = window.innerHeight ? window.innerHeight : document.documentElement.clientHeight ? document.documentElement.clientHeight : screen.height;
+    var xPos, yPos;
+    
+    if (width == 2560 && height == 1440) {
+        xPos = (2560 / 2) - (popupWidth / 2);
+        yPos = (1440 / 2) - (popupHeight / 2);
+    } else if (width == 1920 && height == 1080) {
+        xPos = (1920 / 2) - (popupWidth / 2);
+        yPos = (1080 / 2) - (popupHeight / 2);
+    } else {
+        var monitorWidth = 2560;
+        var monitorHeight = 1440;
+        xPos = (monitorWidth / 2) - (popupWidth / 2) + dualScreenLeft;
+        yPos = (monitorHeight / 2) - (popupHeight / 2) + dualScreenTop;
+    }
+    
+    return { x: xPos, y: yPos };
+}
+function InfoSearch(field){
+    event.preventDefault();
+    var popupWidth = 500;
+    var popupHeight = 600;
+    
+    var ComCode = $('.ComCode').val();
+    var position = PopupPosition(popupWidth, popupHeight);
+    
+    var MoveType = event.target.name;
+    
+    switch(field){
+    case "PlantSearch":
+        window.open("${contextPath}/Pop/PlantSerach.jsp", "PopUp01", "width=" + popupWidth + ",height=" + popupHeight + ",left=" + position.x + ",top=" + position.y);
+    break;
+    case "FileSearch":
+        window.open("${contextPath}/Pop/FileSearch.jsp", "PopUp02", "width=" + popupWidth + ",height=" + popupHeight + ",left=" + position.x + ",top=" + position.y);
+    break;
+    case "MonthSearch":
+        window.open("${contextPath}/Pop/MonthSearch.jsp", "PopUp03", "width=" + popupWidth + ",height=" + popupHeight + ",left=" + position.x + ",top=" + position.y);
+    break;
+    case "UserSearch":
+        window.open("${contextPath}/Pop/UserSearch.jsp", "PopUp04", "width=" + popupWidth + ",height=" + popupHeight + ",left=" + position.x + ",top=" + position.y);
+    break;
+    }
+}
+function DateSetting(){
+	var CurrentDate = new Date();
+	var today = CurrentDate.getFullYear() + '-' + ('0' + (CurrentDate.getMonth() + 1)).slice(-2) + '-' + ('0' + CurrentDate.getDate()).slice(-2);
+	$('.RegistedDate').attr('max', today);
+}
 $(document).ready(function(){
-	InitialTable()
+	InitialTable();
+	DateSetting();
+	var CalcMonth = document.getElementById('CalcMonth');
+	var RecentYear = new Date().getFullYear();
+	var RecentMonth = new Date().getMonth() + 1;
+	var EndYear = RecentYear - 30;
+	for (let year = RecentYear, month = RecentMonth; year >= EndYear; ) {
+	    var Option = document.createElement('option');
+	    // 월이 1자리면 0을 붙여서 2자리로 만듦
+	    var monthStr = month < 10 ? '0' + month : ''+ month;
+	    Option.value = year + monthStr;
+	    Option.textContent = year + monthStr;
+	    CalcMonth.appendChild(Option);
+	    month--;
+	    if (month === 0) {
+	        month = 12;
+	        year--;
+	    }
+	}
+	$('#UploadBtn').click(function() {
+	    var fileInput = $('#textFile')[0];
+	    if (!fileInput.files.length) {
+	        alert('파일을 선택하세요!');
+	        return;
+	    }
+	    var formData = new FormData();
+	    formData.append("textFile", fileInput.files[0]);
+	    $.ajax({
+	        url: '../upload.do',
+	        type: 'POST',
+	        data: formData,
+	        dataType: 'json',
+	        processData: false, // [필수]
+	        contentType: false, // [필수]
+	        success: function(res) {
+	        	console.log(res.result)
+/* 	            if(res.result === "success") {
+	                $('#result').html(
+	                    '<b>파일명:</b> ' + res.fileName + '<br>' +
+	                    '<b>행 개수:</b> ' + res.rowCount + '<br>' +
+	                    '<b>DB 저장 결과:</b> ' + res.dbResult + '<br>'
+	                );
+	            } else {
+	                $('#result').html('<span style="color:red;">오류: ' + res.message + '</span>');
+	            } */
+	        },
+	        error: function(xhr) {
+	            /* $('#result').html('<span style="color:red;">업로드 실패: ' + xhr.statusText + '</span>'); */
+	        }
+	    });
+	});
 })
 </script>
-<%-- <jsp:include page="../Header.jsp"></jsp:include> --%>
+<jsp:include page="../Header.jsp"></jsp:include>
 <div class="StockArea">
 	<div class="StockArea-Filter">
 		<div class="Title">매입 실적 검색</div>
 		<div class="InfoInput">
 			<label>Company : </label> 
-			<input type="text">
+			<input type="text" class="ComCode" value="" readonly>
 		</div>
 		
 		<div class="InfoInput">
 			<label>Plant :  </label>
-			<input type="text">
+			<input type="text" class="PlantCode" onclick="InfoSearch('PlantSearch')" placeholder="SELECT" readonly>
 		</div>
 		
 		<div class="InfoInput">
-			<label>Vendor :  </label>
-			<input type="text">
+			<label>UPLODA DATA :  </label>
+			<input type="text" class="UploadDataCode" onclick="InfoSearch('FileSearch')" placeholder="SELECT" readonly>
 		</div>
 		
 		<div class="InfoInput">
-			<label>구매그룹 :  </label>
-			<input type="text">
+			<label>결산월 :  </label>
+			<select class="CalcMonth" id="CalcMonth"></select>
 		</div>
 		
 		<div class="InfoInput">
-			<label>동일품목 합산 :  </label>
-			<input type="text">
+			<label>등록일자 :  </label>
+			<input type="date" class="RegistedDate">
 		</div>
 		
 		<div class="InfoInput">
-			<label>Material :  </label>
-			<input type="text">
+			<label>등록자 :  </label>
+			<input type="text" class="RegisterId" onclick="InfoSearch('UserSearch')" placeholder="SELECT" readonly>
 		</div>
 		<button class="SearBtn">검색</button>	
 	</div>

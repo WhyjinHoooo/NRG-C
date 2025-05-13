@@ -11,7 +11,7 @@
 
 	if(true)
 	{
-		String url = "jdbc:mysql://localhost:3306/project?useSSL=false"; //Database 이름은 campusdb 
+		String url = "jdbc:mysql://localhost:3306/nrgnc?useSSL=false"; //Database 이름은 campusdb 
 		String id = "root";                     //MySQL에 접속을 위한 계정의 ID
 		String pwd = "jinsang1027#";            //MySQL에 접속을 위한 계정의 암호
 		Class.forName("com.mysql.jdbc.Driver");

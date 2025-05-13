@@ -35,7 +35,7 @@ public class UploadDAO {
         String YN = "No";
         PreparedStatement pstmt = null;
         try {
-            String sql = "INSERT INTO testtable VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+            String sql = "INSERT INTO matstock VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
             pstmt = conn.prepareStatement(sql);
             System.out.println("길이 : " + csvData.size());
             for (int i = 0; i < csvData.size(); i++) {

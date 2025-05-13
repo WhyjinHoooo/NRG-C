@@ -31,7 +31,7 @@
     	auth="Container"
     	type="javax.sql.DataSource"
     	driverClassName="com.mysql.cj.jdbc.Driver"
-    	url="jdbc:mysql://localhost:3306/project?serverTimezone=UTC&amp;useSSL=false&amp;allowPublicKeyRetrieval=true"
+    	url="jdbc:mysql://localhost:3306/nrgnc?serverTimezone=UTC&amp;useSSL=false&amp;allowPublicKeyRetrieval=true"
     	username="root"
     	password="jinsang1027#"
     	maxTotal="200" 

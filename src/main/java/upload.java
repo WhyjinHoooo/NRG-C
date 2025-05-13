@@ -87,6 +87,7 @@ public class upload extends HttpServlet {
         try {
             Part filePart = request.getPart("textFile");
             String fileName = getSubmittedFileName(filePart);
+            System.out.println("fileName : " + fileName);
             if(!fileName.toLowerCase().endsWith(".txt")) {
                 out.print("{\"result\":\"fail\",\"message\":\".txt 파일만 업로드 가능합니다\"}");
                 return;
@@ -109,14 +110,14 @@ public class upload extends HttpServlet {
             }
 
             UploadDAO dao = new UploadDAO();
-            String dbResult = dao.insertCsvData(csvData);
+			String dbResult = dao.insertCsvData(csvData);
 
             // [수정] JSON으로 결과 반환
             out.print("{");
             out.print("\"result\":\"success\",");
             out.print("\"fileName\":\"" + fileName + "\",");
             out.print("\"rowCount\":" + csvData.size() + ",");
-            out.print("\"dbResult\":\"" + dbResult + "\"");
+            //out.print("\"dbResult\":\"" + dbResult + "\"");
             out.print("}");
         } catch (Exception e) {
             out.print("{\"result\":\"fail\",\"message\":\"파일 처리 오류: " + e.getMessage().replace("\"","\\\"") + "\"}");
