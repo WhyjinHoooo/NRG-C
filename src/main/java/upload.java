@@ -110,6 +110,7 @@ public class upload extends HttpServlet {
             }
 
             UploadDAO dao = new UploadDAO();
+            String FileResult = dao.FileSave(fileName);
 			String dbResult = dao.insertCsvData(csvData);
 
             // [수정] JSON으로 결과 반환
@@ -117,7 +118,8 @@ public class upload extends HttpServlet {
             out.print("\"result\":\"success\",");
             out.print("\"fileName\":\"" + fileName + "\",");
             out.print("\"rowCount\":" + csvData.size() + ",");
-            //out.print("\"dbResult\":\"" + dbResult + "\"");
+            out.print("\"dbResult\":\"" + dbResult + "\"");
+            out.print("\"FileResult\":\"" + FileResult + "\"");
             out.print("}");
         } catch (Exception e) {
             out.print("{\"result\":\"fail\",\"message\":\"파일 처리 오류: " + e.getMessage().replace("\"","\\\"") + "\"}");

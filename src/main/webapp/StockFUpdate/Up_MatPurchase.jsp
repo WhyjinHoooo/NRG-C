@@ -86,6 +86,7 @@ function DateSetting(){
 $(document).ready(function(){
 	InitialTable();
 	DateSetting();
+	var FilterList = {};
 	var CalcMonth = document.getElementById('CalcMonth');
 	var RecentYear = new Date().getFullYear();
 	var RecentMonth = new Date().getMonth() + 1;
@@ -112,7 +113,7 @@ $(document).ready(function(){
 	    var formData = new FormData();
 	    formData.append("textFile", fileInput.files[0]);
 	    $.ajax({
-	        url: '../upload.do',
+	        url: '${contextPath}/upload.do',
 	        type: 'POST',
 	        data: formData,
 	        dataType: 'json',
@@ -135,6 +136,38 @@ $(document).ready(function(){
 	        }
 	    });
 	});
+	$('.SearBtn').click(function(){
+		alert("123");
+		$('.FilterOP').each(function(){
+		    var name = $(this).attr('name');
+		    var value = $(this).val();
+		    FilterList[name] = value;
+		});
+		var pass = true;
+		$.each(FilterList,function(key, value){
+			if (value == null || value === '') {
+    	        pass = false;
+    	        return false;
+    	    }
+		})
+		if(!pass){
+			alert('모든 필수 항목을 모두 입력해주세요.');
+		}else{
+			$.ajax({
+				url : '${contextPath}/InfoLoading/StockInfoLoading.do',
+				type : 'POST',
+				data :  JSON.stringify(FilterList),
+				contentType: 'application/json; charset=utf-8',
+				dataType: 'json',
+				async: false,
+				success : function(data){
+				},
+				error: function(jqXHR, textStatus, errorThrown){
+					alert('오류 발생: ' + textStatus + ', ' + errorThrown);
+		    	}
+	    	});
+		}
+	});
 })
 </script>
 <jsp:include page="../Header.jsp"></jsp:include>
@@ -143,27 +176,27 @@ $(document).ready(function(){
 		<div class="Title">매입 실적 검색</div>
 		<div class="InfoInput">
 			<label>Company : </label> 
-			<input type="text" class="ComCode" value="" readonly>
+			<input type="text" class="ComCode FilterOP" name="ComCode" value="ComCodeTest" readonly>
 		</div>
 		
 		<div class="InfoInput">
 			<label>Plant :  </label>
-			<input type="text" class="PlantCode" onclick="InfoSearch('PlantSearch')" placeholder="SELECT" readonly>
+			<input type="text" class="PlantCode FilterOP" name="PlantCode" value="PlantCodeTest" onclick="InfoSearch('PlantSearch')" placeholder="SELECT" readonly>
 		</div>
 		
 		<div class="InfoInput">
 			<label>UPLODA DATA :  </label>
-			<input type="text" class="UploadDataCode" onclick="InfoSearch('FileSearch')" placeholder="SELECT" readonly>
+			<input type="text" class="UploadDataCode FilterOP" name="UploadDataCode" value="UploadDataCodeTest" onclick="InfoSearch('FileSearch')" placeholder="SELECT" readonly>
 		</div>
 		
 		<div class="InfoInput">
 			<label>결산월 :  </label>
-			<select class="CalcMonth" id="CalcMonth"></select>
+			<select class="CalcMonth FilterOP" id="CalcMonth" name="CalcMonth" value="CalcMonthTest"></select>
 		</div>
 		
 		<div class="InfoInput">
 			<label>등록일자 :  </label>
-			<input type="date" class="RegistedDate">
+			<input type="date" class="RegistedDate" >
 		</div>
 		
 		<div class="InfoInput">

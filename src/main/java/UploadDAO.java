@@ -29,21 +29,42 @@ public class UploadDAO {
             e.printStackTrace();
         }
     }
-	
+	public String FileSave(String filedata) {
+		connDB();
+		pstmt = null;
+		String YN = "No";
+		try {
+			System.out.println("filedata : " + filedata);
+			String sql = "INSERT INTO DocTable VALUES(?,?)";
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setString(1, filedata);
+			pstmt.setString(2, filedata.substring(3, 9));
+			pstmt.executeUpdate();
+			YN = "Yes";
+		}catch (SQLException e) {
+			e.printStackTrace();
+		}finally {
+            if (pstmt != null) try { pstmt.close(); } catch (Exception e) {}
+            if (conn != null) try { conn.close(); } catch (Exception e) {}
+        }
+		return YN;
+	}
 	public String insertCsvData(List<String[]> csvData) {
         connDB();
         String YN = "No";
         PreparedStatement pstmt = null;
         try {
-            String sql = "INSERT INTO matstock VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+            String sql = "INSERT INTO matstock VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
             pstmt = conn.prepareStatement(sql);
             System.out.println("길이 : " + csvData.size());
             for (int i = 0; i < csvData.size(); i++) {
                 String[] DataList = csvData.get(i);
-                pstmt.setString(1, "PUR" + DataList[0].trim() + String.format("%04d", i + 1));
                 for (int j = 0; j < DataList.length; j++) {
-                    pstmt.setString(j + 2, DataList[j].trim());
+                	//System.out.println("DataList[" + j + "] : " + DataList[j].trim());
+                    pstmt.setString(j + 1, DataList[j].trim());
                 }
+                pstmt.setString(18, "PUR" + DataList[1].trim() + ".txt");
+                pstmt.setString(19, "PUR" + DataList[0].trim() + String.format("%04d", i + 1));
                 pstmt.addBatch();
             }
             pstmt.executeBatch();  // 일괄 실행
