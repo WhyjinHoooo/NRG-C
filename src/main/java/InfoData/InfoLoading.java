@@ -70,9 +70,9 @@ public class InfoLoading extends HttpServlet {
                         System.out.println(key + " : " + value);
                     }
                     InfoLoadingDAO dao = new InfoLoadingDAO();
-                    dao.StockDataLoading(jsonObj);
+                    String LoadedData = dao.StockDataLoading(jsonObj);
 
-                    writer.print("{\"result\":\"success\"}");
+                    writer.print("{\"result\":\"success\", \"List\":" + LoadedData + "}");
                 } catch(Exception e) {
                     e.printStackTrace();
                     writer.print("{\"result\":\"fail\", \"message\":\"" + e.getMessage().replace("\"","\\\"") + "\"}");

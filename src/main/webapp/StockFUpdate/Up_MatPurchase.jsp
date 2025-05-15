@@ -93,7 +93,6 @@ $(document).ready(function(){
 	var EndYear = RecentYear - 30;
 	for (let year = RecentYear, month = RecentMonth; year >= EndYear; ) {
 	    var Option = document.createElement('option');
-	    // 월이 1자리면 0을 붙여서 2자리로 만듦
 	    var monthStr = month < 10 ? '0' + month : ''+ month;
 	    Option.value = year + monthStr;
 	    Option.textContent = year + monthStr;
@@ -121,23 +120,13 @@ $(document).ready(function(){
 	        contentType: false, // [필수]
 	        success: function(res) {
 	        	console.log(res.result)
-/* 	            if(res.result === "success") {
-	                $('#result').html(
-	                    '<b>파일명:</b> ' + res.fileName + '<br>' +
-	                    '<b>행 개수:</b> ' + res.rowCount + '<br>' +
-	                    '<b>DB 저장 결과:</b> ' + res.dbResult + '<br>'
-	                );
-	            } else {
-	                $('#result').html('<span style="color:red;">오류: ' + res.message + '</span>');
-	            } */
 	        },
 	        error: function(xhr) {
-	            /* $('#result').html('<span style="color:red;">업로드 실패: ' + xhr.statusText + '</span>'); */
 	        }
 	    });
 	});
 	$('.SearBtn').click(function(){
-		alert("123");
+		$('.InfoTable-Body').empty();
 		$('.FilterOP').each(function(){
 		    var name = $(this).attr('name');
 		    var value = $(this).val();
@@ -161,6 +150,38 @@ $(document).ready(function(){
 				dataType: 'json',
 				async: false,
 				success : function(data){
+					console.log(data.result);
+					if(data.result === "success") {
+			            if(data.List.length > 0) {
+			            	for(var i = 0; i < data.List.length; i++){
+			            	    var row = '<tr>' +
+			            	        '<td>' + (i + 1).toString().padStart(3, '0') + '</td>' +
+			            	        '<td>' + (data.List[i].typeData ?? '') + '</td>' +
+			            	        '<td>' + (data.List[i].period ?? '') + '</td>' +
+			            	        '<td>' + (data.List[i].delivery ?? '') + '</td>' +
+			            	        '<td>' + (data.List[i].itemno ?? '') + '</td>' +
+			            	        '<td>' + (data.List[i].item ?? '') + '</td>' +
+			            	        '<td>' + (data.List[i].spec ?? '') + '</td>' +
+			            	        '<td>' + (data.List[i].stocktype ?? '') + '</td>' +
+			            	        '<td>' + (data.List[i].weight ?? '') + '</td>' +
+			            	        '<td>' + (data.List[i].UnitPrice ?? '') + '</td>' +
+			            	        '<td>' + (data.List[i].amount ?? '') + '</td>' +
+			            	        '<td>' + (data.List[i].whcode ?? '') + '</td>' +
+			            	        '<td>' + (data.List[i].warehouse ?? '') + '</td>' +
+			            	        '<td>' + (data.List[i].pono ?? '') + '</td>' +
+			            	        '<td>' + (data.List[i].vendor ?? '') + '</td>' +
+			            	        '<td>' + (data.List[i].vendorname ?? '') + '</td>' +
+			            	        '<td>' + (data.List[i].lot ?? '') + '</td>' +
+			            	        '<td>' + (data.List[i].plant ?? '') + '</td>' +
+			            	        '<td>' + (data.List[i].company ?? '') + '</td>' +
+			            	        '</tr>';
+			            	    $('.InfoTable-Body').append(row);
+			            	}
+			            }
+			            // data.data는 배열이므로 반복문 등으로 사용 가능
+			        } else {
+			            alert("실패: " + data.message);
+			        }
 				},
 				error: function(jqXHR, textStatus, errorThrown){
 					alert('오류 발생: ' + textStatus + ', ' + errorThrown);
@@ -176,22 +197,22 @@ $(document).ready(function(){
 		<div class="Title">매입 실적 검색</div>
 		<div class="InfoInput">
 			<label>Company : </label> 
-			<input type="text" class="ComCode FilterOP" name="ComCode" value="ComCodeTest" readonly>
+			<input type="text" class="ComCode FilterOP" name="ComCode" value="A101" readonly>
 		</div>
 		
 		<div class="InfoInput">
 			<label>Plant :  </label>
-			<input type="text" class="PlantCode FilterOP" name="PlantCode" value="PlantCodeTest" onclick="InfoSearch('PlantSearch')" placeholder="SELECT" readonly>
+			<input type="text" class="PlantCode FilterOP" name="PlantCode" value="P101" onclick="InfoSearch('PlantSearch')" placeholder="SELECT" readonly>
 		</div>
 		
 		<div class="InfoInput">
 			<label>UPLODA DATA :  </label>
-			<input type="text" class="UploadDataCode FilterOP" name="UploadDataCode" value="UploadDataCodeTest" onclick="InfoSearch('FileSearch')" placeholder="SELECT" readonly>
+			<input type="text" class="UploadDataCode FilterOP" name="UploadDataCode" value="PUR" onclick="InfoSearch('FileSearch')" placeholder="SELECT" readonly>
 		</div>
 		
 		<div class="InfoInput">
 			<label>결산월 :  </label>
-			<select class="CalcMonth FilterOP" id="CalcMonth" name="CalcMonth" value="CalcMonthTest"></select>
+			<select class="CalcMonth FilterOP" id="CalcMonth" name="CalcMonth" value="202504"></select>
 		</div>
 		
 		<div class="InfoInput">
@@ -221,8 +242,8 @@ $(document).ready(function(){
 			</table>
 		</div>
 		<div class="Btn-Area">
-			<button class="DeterminBtn">발주전환</button>
-			<button class="DelBtn">저장</button>
+			<button class="OkBtn">확정</button>
+			<button class="DelBtn">삭제</button>
 		</div>
 		<div class="StockArea-Uploading">
 			<div class="Title">매입 실적 입력</div>

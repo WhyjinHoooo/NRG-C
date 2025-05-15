@@ -37,11 +37,12 @@ public class InfoLoadingDAO {
 
 	    for (int i = 0; i < keyOrder.length; i++) {
 	        DataList[i] = jsonObj.has(keyOrder[i]) ? jsonObj.get(keyOrder[i]).toString() : "";
+	        System.out.println("DataList[" + i + "] : " + DataList[i]);
 	    }
 	    ResultSet rs = null;
 	    JSONArray jsonArray = new JSONArray();
 	    try {
-		    String sql = "SELECT * FROM matstock WHERE company = ? AND plant = ? AND keydata = ? AND period = ?";
+		    String sql = "SELECT * FROM matstock WHERE company = ? AND plant = ? AND LEFT(keydata, 3) IN (?) AND period = ?";
 		    pstmt = conn.prepareStatement(sql);
 		    pstmt.setString(1, DataList[0]);
 		    pstmt.setString(2, DataList[1]);
@@ -50,23 +51,26 @@ public class InfoLoadingDAO {
 		    rs = pstmt.executeQuery();
 		    while(rs.next()) {
 		    	JSONObject jsonObject = new JSONObject();
-		    	jsonObject.put("MatCode", rs.getString("type"));
-		    	jsonObject.put("MatCode", rs.getString("period"));
-		    	jsonObject.put("MatCode", rs.getString("delivery"));
-		    	jsonObject.put("MatCode", rs.getString("itemno"));
-		    	jsonObject.put("MatCode", rs.getString("item"));
-		    	jsonObject.put("MatCode", rs.getString("spec"));
-		    	jsonObject.put("MatCode", rs.getString("lot"));
-		    	jsonObject.put("MatCode", rs.getString("stocktype"));
-		    	jsonObject.put("MatCode", rs.getString("weight"));
-		    	jsonObject.put("MatCode", rs.getString("amount"));
-		    	jsonObject.put("MatCode", rs.getString("whcode"));
-		    	jsonObject.put("MatCode", rs.getString("warehouse"));
-		    	jsonObject.put("MatCode", rs.getString("pono"));
-		    	jsonObject.put("MatCode", rs.getString("vendor"));
-		    	jsonObject.put("MatCode", rs.getString("vendorname"));
-		    	jsonObject.put("MatCode", rs.getString("plant"));
-		    	jsonObject.put("MatCode", rs.getString("company"));
+		    	jsonObject.put("typeData", rs.getString("type"));
+		    	jsonObject.put("period", rs.getString("period"));
+		    	jsonObject.put("delivery", rs.getString("delivery"));
+		    	jsonObject.put("itemno", rs.getString("itemno"));
+		    	jsonObject.put("item", rs.getString("item"));
+		    	jsonObject.put("spec", rs.getString("spec"));
+		    	jsonObject.put("lot", rs.getString("lot"));
+		    	jsonObject.put("stocktype", rs.getString("stocktype"));
+		    	jsonObject.put("weight", String.format("%.3f", rs.getDouble("weight")));
+		    	jsonObject.put("amount", String.format("%.3f", rs.getDouble("amount")));
+		    	jsonObject.put("UnitPrice", String.format("%.3f",
+		    	    rs.getDouble("weight") == 0 ? 0.0 : rs.getDouble("amount") / rs.getDouble("weight")
+		    	));
+		    	jsonObject.put("whcode", rs.getString("whcode"));
+		    	jsonObject.put("warehouse", rs.getString("warehouse"));
+		    	jsonObject.put("pono", rs.getString("pono"));
+		    	jsonObject.put("vendor", rs.getString("vendor"));
+		    	jsonObject.put("vendorname", rs.getString("vendorname"));
+		    	jsonObject.put("plant", rs.getString("plant"));
+		    	jsonObject.put("company", rs.getString("company"));
 		    	jsonArray.put(jsonObject);
 		    }
 	    }catch (Exception e) {

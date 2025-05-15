@@ -115,6 +115,17 @@ html {
     width: 150px;
     font-size: xx-small;
 	}
+	.StockArea-Data-Area > table.InfoTable thead > tr > th:nth-child(1) {
+    background-color: rgb(111, 167, 235);
+    top: 0;
+    color: white;
+    text-align: center;
+    z-index: 10;
+    padding: 8px;
+    border: 1px solid white;
+    width: 60px;
+    font-size: xx-small;
+	}
 	.StockArea-Data-Area > table.InfoTable tbody > tr {
 	display: table;
 	width: 100%;
@@ -123,12 +134,41 @@ html {
     .StockArea-Data-Area > table.InfoTable tbody td:empty{
 	padding: 8px 5.5px;
 	border: 1px solid #ddd;
-	width: 155px;
 	height: 10px;
 	text-align: center;
 	font-size: 10px;
 	font-weight: bold;
     }
+    .StockArea-Data-Area > table.InfoTable tbody td:empty:nth-child(1){width: 65px;} 
+	.StockArea-Data-Area > table.InfoTable tbody td:empty{width: 155px;} 
+	
+    .StockArea-Data-Area > table.InfoTable tbody td:not(:empty){
+	padding: 8px 5.5px;
+	border: 1px solid #ddd;
+	height: 10px;
+	text-align: center;
+	font-size: 10px;
+	font-weight: bold;
+    }
+    .StockArea-Data-Area > table.InfoTable tbody td:not(:empty):nth-child(1){width: 65px;} 
+	.StockArea-Data-Area > table.InfoTable tbody td:not(:empty):nth-child(2){width: 155px;}
+	.StockArea-Data-Area > table.InfoTable tbody td:not(:empty):nth-child(3){width: 155px;}
+	.StockArea-Data-Area > table.InfoTable tbody td:not(:empty):nth-child(4){width: 155px;}
+	.StockArea-Data-Area > table.InfoTable tbody td:not(:empty):nth-child(5){width: 155px;}
+	.StockArea-Data-Area > table.InfoTable tbody td:not(:empty):nth-child(6){width: 155px;}
+	.StockArea-Data-Area > table.InfoTable tbody td:not(:empty):nth-child(7){width: 155px;}
+	.StockArea-Data-Area > table.InfoTable tbody td:not(:empty):nth-child(8){width: 155px;}
+	.StockArea-Data-Area > table.InfoTable tbody td:not(:empty):nth-child(9){width: 155px;}
+	.StockArea-Data-Area > table.InfoTable tbody td:not(:empty):nth-child(10){width: 155px;}
+	.StockArea-Data-Area > table.InfoTable tbody td:not(:empty):nth-child(11){width: 155px;}
+	.StockArea-Data-Area > table.InfoTable tbody td:not(:empty):nth-child(12){width: 155px;}
+	.StockArea-Data-Area > table.InfoTable tbody td:not(:empty):nth-child(13){width: 155px;}
+	.StockArea-Data-Area > table.InfoTable tbody td:not(:empty):nth-child(14){width: 155px;}
+	.StockArea-Data-Area > table.InfoTable tbody td:not(:empty):nth-child(15){width: 155px;}
+	.StockArea-Data-Area > table.InfoTable tbody td:not(:empty):nth-child(16){width: 155px;}
+	.StockArea-Data-Area > table.InfoTable tbody td:not(:empty):nth-child(17){width: 155px;}
+	.StockArea-Data-Area > table.InfoTable tbody td:not(:empty):nth-child(18){width: 155px;}
+	.StockArea-Data-Area > table.InfoTable tbody td:not(:empty):nth-child(19){width: 155px;}
     .StockArea-Data-Area > table.InfoTable tbody::-webkit-scrollbar {
 	    width: 5px;
 	    margin-left: 100px;
