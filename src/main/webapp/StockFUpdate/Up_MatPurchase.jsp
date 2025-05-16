@@ -37,7 +37,6 @@ function PopupPosition(popupWidth, popupHeight) {
     var width = window.innerWidth ? window.innerWidth : document.documentElement.clientWidth ? document.documentElement.clientWidth : screen.width;
     var height = window.innerHeight ? window.innerHeight : document.documentElement.clientHeight ? document.documentElement.clientHeight : screen.height;
     var xPos, yPos;
-    
     if (width == 2560 && height == 1440) {
         xPos = (2560 / 2) - (popupWidth / 2);
         yPos = (1440 / 2) - (popupHeight / 2);
@@ -50,7 +49,6 @@ function PopupPosition(popupWidth, popupHeight) {
         xPos = (monitorWidth / 2) - (popupWidth / 2) + dualScreenLeft;
         yPos = (monitorHeight / 2) - (popupHeight / 2) + dualScreenTop;
     }
-    
     return { x: xPos, y: yPos };
 }
 function InfoSearch(field){
@@ -64,17 +62,14 @@ function InfoSearch(field){
     var MoveType = event.target.name;
     
     switch(field){
+    case "ComSearch":
+        window.open("${contextPath}/Pop/ComSerach.jsp", "PopUp01", "width=" + popupWidth + ",height=" + popupHeight + ",left=" + position.x + ",top=" + position.y);
+    break;
     case "PlantSearch":
-        window.open("${contextPath}/Pop/PlantSerach.jsp", "PopUp01", "width=" + popupWidth + ",height=" + popupHeight + ",left=" + position.x + ",top=" + position.y);
+        window.open("${contextPath}/Pop/PlantSearch.jsp?Comcode=" + ComCode, "PopUp02", "width=" + popupWidth + ",height=" + popupHeight + ",left=" + position.x + ",top=" + position.y);
     break;
     case "FileSearch":
-        window.open("${contextPath}/Pop/FileSearch.jsp", "PopUp02", "width=" + popupWidth + ",height=" + popupHeight + ",left=" + position.x + ",top=" + position.y);
-    break;
-    case "MonthSearch":
-        window.open("${contextPath}/Pop/MonthSearch.jsp", "PopUp03", "width=" + popupWidth + ",height=" + popupHeight + ",left=" + position.x + ",top=" + position.y);
-    break;
-    case "UserSearch":
-        window.open("${contextPath}/Pop/UserSearch.jsp", "PopUp04", "width=" + popupWidth + ",height=" + popupHeight + ",left=" + position.x + ",top=" + position.y);
+        window.open("${contextPath}/Pop/fileSearch.jsp?Comcode=" + ComCode, "PopUp03", "width=" + popupWidth + ",height=" + popupHeight + ",left=" + position.x + ",top=" + position.y);
     break;
     }
 }
@@ -103,7 +98,8 @@ $(document).ready(function(){
 	        year--;
 	    }
 	}
-	$('#UploadBtn').click(function() {
+	$('#UploadBtn').click(function(e) {
+		e.preventDefault();
 	    var fileInput = $('#textFile')[0];
 	    if (!fileInput.files.length) {
 	        alert('파일을 선택하세요!');
@@ -125,6 +121,30 @@ $(document).ready(function(){
 	        }
 	    });
 	});
+	$('#CancelBtn').click(function(e){
+		e.preventDefault();
+		$('#textFile').val('');
+	})
+	$('.DelBtn').click(function(){
+		var Textfile = $('.UploadDataCode').val() + $('.CalcMonth').val() + ".txt";
+		console.log('Textfile : ' + Textfile);
+		$.ajax({
+			url : '${contextPath}/StockFUpdate/AjaxSet/FileDelete.jsp',
+			type : 'POST',
+			data :  {file : Textfile},
+			success : function(data){
+				console.log(data.trim());
+				if(data.trim() === "Done"){
+					alert("해당 파일을 모두 삭제했습니다.");
+				}else{
+					alert("해당 파일은 존재하지 않습니다");
+				}
+			},
+			error: function(jqXHR, textStatus, errorThrown){
+				alert('오류 발생: ' + textStatus + ', ' + errorThrown);
+	    	}
+    	});
+	})
 	$('.SearBtn').click(function(){
 		$('.InfoTable-Body').empty();
 		$('.FilterOP').each(function(){
@@ -178,9 +198,8 @@ $(document).ready(function(){
 			            	    $('.InfoTable-Body').append(row);
 			            	}
 			            }
-			            // data.data는 배열이므로 반복문 등으로 사용 가능
 			        } else {
-			            alert("실패: " + data.message);
+			            alert("실패: 검색 항목을 다시 선택해주세요.");
 			        }
 				},
 				error: function(jqXHR, textStatus, errorThrown){
@@ -197,17 +216,17 @@ $(document).ready(function(){
 		<div class="Title">매입 실적 검색</div>
 		<div class="InfoInput">
 			<label>Company : </label> 
-			<input type="text" class="ComCode FilterOP" name="ComCode" value="A101" readonly>
+			<input type="text" class="ComCode FilterOP" name="ComCode" onclick="InfoSearch('ComSearch')" readonly>
 		</div>
 		
 		<div class="InfoInput">
 			<label>Plant :  </label>
-			<input type="text" class="PlantCode FilterOP" name="PlantCode" value="P101" onclick="InfoSearch('PlantSearch')" placeholder="SELECT" readonly>
+			<input type="text" class="PlantCode FilterOP" name="PlantCode" onclick="InfoSearch('PlantSearch')" placeholder="SELECT" readonly>
 		</div>
 		
 		<div class="InfoInput">
 			<label>UPLODA DATA :  </label>
-			<input type="text" class="UploadDataCode FilterOP" name="UploadDataCode" value="PUR" onclick="InfoSearch('FileSearch')" placeholder="SELECT" readonly>
+			<input type="text" class="UploadDataCode FilterOP" name="UploadDataCode" onclick="InfoSearch('FileSearch')" placeholder="SELECT" readonly>
 		</div>
 		
 		<div class="InfoInput">

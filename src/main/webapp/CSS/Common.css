@@ -199,7 +199,7 @@ html {
 	display: flex;
     justify-content: flex-end;
 	}
-	.StockArea-Result > .Btn-Area > button.DeterminBtn {
+	.StockArea-Result > .Btn-Area > button.OkBtn {
     background: darkgreen;
    	width: 10%;
     height: 30px;
@@ -210,12 +210,12 @@ html {
 	padding: 5px;
 	border-radius: 5px;
 	}
-	.StockArea-Result > .Btn-Area > button.DeterminBtn:hover {
+	.StockArea-Result > .Btn-Area > button.OkBtn:hover {
 	background: #32CD32;
 	color: #fff;
 	border: 1px solid #32CD32;
 	}
-	.StockArea-Result > .Btn-Area > button.DeterminBtn:active {
+	.StockArea-Result > .Btn-Area > button.OkBtn:active {
 	background: #32CD32;
 	color: black;
 	border: 1px solid #32CD32;

@@ -34,7 +34,7 @@ public class InfoLoadingDAO {
 		connDB();
 	    String[] keyOrder = {"ComCode", "PlantCode", "UploadDataCode", "CalcMonth"};
 	    String[] DataList = new String[keyOrder.length];
-
+	    String result = null;
 	    for (int i = 0; i < keyOrder.length; i++) {
 	        DataList[i] = jsonObj.has(keyOrder[i]) ? jsonObj.get(keyOrder[i]).toString() : "";
 	        System.out.println("DataList[" + i + "] : " + DataList[i]);
@@ -56,26 +56,32 @@ public class InfoLoadingDAO {
 		    	jsonObject.put("delivery", rs.getString("delivery"));
 		    	jsonObject.put("itemno", rs.getString("itemno"));
 		    	jsonObject.put("item", rs.getString("item"));
-		    	jsonObject.put("spec", rs.getString("spec"));
-		    	jsonObject.put("lot", rs.getString("lot"));
-		    	jsonObject.put("stocktype", rs.getString("stocktype"));
-		    	jsonObject.put("weight", String.format("%.3f", rs.getDouble("weight")));
-		    	jsonObject.put("amount", String.format("%.3f", rs.getDouble("amount")));
-		    	jsonObject.put("UnitPrice", String.format("%.3f",
-		    	    rs.getDouble("weight") == 0 ? 0.0 : rs.getDouble("amount") / rs.getDouble("weight")
-		    	));
-		    	jsonObject.put("whcode", rs.getString("whcode"));
-		    	jsonObject.put("warehouse", rs.getString("warehouse"));
-		    	jsonObject.put("pono", rs.getString("pono"));
-		    	jsonObject.put("vendor", rs.getString("vendor"));
-		    	jsonObject.put("vendorname", rs.getString("vendorname"));
-		    	jsonObject.put("plant", rs.getString("plant"));
-		    	jsonObject.put("company", rs.getString("company"));
-		    	jsonArray.put(jsonObject);
+			    jsonObject.put("spec", rs.getString("spec"));
+			    jsonObject.put("lot", rs.getString("lot"));
+			    jsonObject.put("stocktype", rs.getString("stocktype"));
+			    jsonObject.put("weight", String.format("%.3f", rs.getDouble("weight")));
+			    jsonObject.put("amount", String.format("%.3f", rs.getDouble("amount")));
+			    jsonObject.put("UnitPrice", String.format("%.3f",
+			        rs.getDouble("weight") == 0 ? 0.0 : rs.getDouble("amount") / rs.getDouble("weight")
+			    ));
+			    jsonObject.put("whcode", rs.getString("whcode"));
+			    jsonObject.put("warehouse", rs.getString("warehouse"));
+			    jsonObject.put("pono", rs.getString("pono"));
+			    jsonObject.put("vendor", rs.getString("vendor"));
+			    jsonObject.put("vendorname", rs.getString("vendorname"));
+			    jsonObject.put("plant", rs.getString("plant"));
+			    jsonObject.put("company", rs.getString("company"));
+			    jsonArray.put(jsonObject);
 		    }
-	    }catch (Exception e) {
+		    if (jsonArray.length() == 0) {
+		        // 결과 없음 메시지 반환
+		        result = null;
+		    } else {
+		        result = jsonArray.toString();
+		    }
+	    }catch (SQLException e) {
 			// TODO: handle exception
 		}
-	    return jsonArray.toString();
+	    return result;
 	}
 }

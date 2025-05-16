@@ -58,7 +58,7 @@ public class InfoLoading extends HttpServlet {
             }
         }
         String jsonString = sb.toString();
-
+        String LoadedData = null;
         switch(action) {
             case "/StockInfoLoading.do":
                 try {
@@ -70,9 +70,13 @@ public class InfoLoading extends HttpServlet {
                         System.out.println(key + " : " + value);
                     }
                     InfoLoadingDAO dao = new InfoLoadingDAO();
-                    String LoadedData = dao.StockDataLoading(jsonObj);
-
-                    writer.print("{\"result\":\"success\", \"List\":" + LoadedData + "}");
+                    LoadedData = dao.StockDataLoading(jsonObj);
+                    System.out.println("LoadedData : " + LoadedData);
+                    if(LoadedData == null) {
+                    	writer.print("{\"result\":\"fail\"}");
+                    }else {
+                    	writer.print("{\"result\":\"success\", \"List\":" + LoadedData + "}");
+                    }
                 } catch(Exception e) {
                     e.printStackTrace();
                     writer.print("{\"result\":\"fail\", \"message\":\"" + e.getMessage().replace("\"","\\\"") + "\"}");
