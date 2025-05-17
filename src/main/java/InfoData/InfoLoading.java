@@ -70,8 +70,32 @@ public class InfoLoading extends HttpServlet {
                         System.out.println(key + " : " + value);
                     }
                     InfoLoadingDAO dao = new InfoLoadingDAO();
-                    LoadedData = dao.StockDataLoading(jsonObj);
-                    System.out.println("LoadedData : " + LoadedData);
+                    if(jsonObj.get("UploadDataCode").equals("PUR")) {
+                    	LoadedData = dao.StockDataLoading(jsonObj);
+                    }
+                    if(LoadedData == null) {
+                    	writer.print("{\"result\":\"fail\"}");
+                    }else {
+                    	writer.print("{\"result\":\"success\", \"List\":" + LoadedData + "}");
+                    }
+                } catch(Exception e) {
+                    e.printStackTrace();
+                    writer.print("{\"result\":\"fail\", \"message\":\"" + e.getMessage().replace("\"","\\\"") + "\"}");
+                }
+                break;
+            case "/InputMatLoading.do":
+                try {
+                	JSONObject jsonObj = new JSONObject(jsonString);
+                    Iterator<String> keys = jsonObj.keys();
+                    while(keys.hasNext()) {
+                        String key = keys.next();
+                        Object value = jsonObj.get(key);
+                        System.out.println(key + " : " + value);
+                    }
+                    InfoLoadingDAO dao = new InfoLoadingDAO();
+                    if(jsonObj.get("UploadDataCode").equals("BFG")) {
+                        LoadedData = dao.InputmatLoading(jsonObj);                    	
+                    }
                     if(LoadedData == null) {
                     	writer.print("{\"result\":\"fail\"}");
                     }else {

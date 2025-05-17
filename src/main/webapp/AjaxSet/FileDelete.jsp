@@ -3,10 +3,11 @@
 <%@page import="java.sql.SQLException"%>
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
-<%@ include file="../../mydbcon.jsp" %>
+<%@ include file="../mydbcon.jsp" %>
 
 <%
 	String TextFile = request.getParameter("file");
+	String FileDelSql = null;
 	PreparedStatement txt_pstmt = null;
 	ResultSet txt_rs = null;
 	PreparedStatement Del_pstmt01 = null;    
@@ -18,11 +19,22 @@
 	    txt_pstmt.setString(1, TextFile);
 	    txt_rs = txt_pstmt.executeQuery();
 	    if(txt_rs.next()){
-	        String FileDelSql ="DELETE FROM matstock WHERE document = ?";
-	        Del_pstmt01 = conn.prepareStatement(FileDelSql);
-	        Del_pstmt01.setString(1, TextFile);
-	        Del_pstmt01.executeUpdate();
-	        pass = "Done";
+		    switch(TextFile.substring(0, 3)){
+		    case "PUR":
+		    	FileDelSql ="DELETE FROM matstock WHERE document = ?";
+		        Del_pstmt01 = conn.prepareStatement(FileDelSql);
+		        Del_pstmt01.setString(1, TextFile);
+		        Del_pstmt01.executeUpdate();
+		        pass = "Done";
+		    	break;
+		    case "BFG":
+		    	FileDelSql ="DELETE FROM matinput WHERE document = ?";
+		        Del_pstmt01 = conn.prepareStatement(FileDelSql);
+		        Del_pstmt01.setString(1, TextFile);
+		        Del_pstmt01.executeUpdate();
+		        pass = "Done";
+		    	break;
+		    }
 	    } else {
 	        pass = "Nope";
 	    }

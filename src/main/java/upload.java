@@ -110,8 +110,18 @@ public class upload extends HttpServlet {
             }
 
             UploadDAO dao = new UploadDAO();
+            String dbResult = null;
             String FileResult = dao.FileSave(fileName);
-			String dbResult = dao.insertCsvData(csvData);
+            System.out.println("fileName.substring(0, 3) : " + fileName.substring(0, 3));
+            switch(fileName.substring(0, 3)) {
+            case "PUR":
+            	dbResult = dao.insertMSData(csvData); // 자재 매입실적
+            	break;
+            case "BFG":
+            	dbResult = dao.insertMIData(csvData); // 생산 투입자제
+            	break;
+            }
+			
 
             // [수정] JSON으로 결과 반환
             out.print("{");

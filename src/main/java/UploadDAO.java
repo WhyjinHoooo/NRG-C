@@ -49,7 +49,7 @@ public class UploadDAO {
         }
 		return YN;
 	}
-	public String insertCsvData(List<String[]> csvData) {
+	public String insertMSData(List<String[]> csvData) {
         connDB();
         String YN = "No";
         PreparedStatement pstmt = null;
@@ -77,4 +77,32 @@ public class UploadDAO {
         }
         return YN;
     }
+	public String insertMIData(List<String[]> csvData) {
+        connDB();
+        String YN = "No";
+        PreparedStatement pstmt = null;
+        try {
+            String sql = "INSERT INTO matinput VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+            pstmt = conn.prepareStatement(sql);
+            System.out.println("길이 : " + csvData.size());
+            for (int i = 0; i < csvData.size(); i++) {
+                String[] DataList = csvData.get(i);
+                for (int j = 0; j < DataList.length; j++) {
+                	//System.out.println("DataList[" + j + "] : " + DataList[j].trim());
+                    pstmt.setString(j + 1, DataList[j].trim());
+                }
+                pstmt.setString(17, "BFG" + DataList[1].trim() + ".txt");
+                pstmt.setString(18, "BFG" + DataList[0].trim() + String.format("%04d", i + 1));
+                pstmt.addBatch();
+            }
+            pstmt.executeBatch();  // 일괄 실행
+            YN = "Yes";
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            if (pstmt != null) try { pstmt.close(); } catch (Exception e) {}
+            if (conn != null) try { conn.close(); } catch (Exception e) {}
+        }
+        return YN;
+	}
 }
