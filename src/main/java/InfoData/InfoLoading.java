@@ -106,6 +106,29 @@ public class InfoLoading extends HttpServlet {
                     writer.print("{\"result\":\"fail\", \"message\":\"" + e.getMessage().replace("\"","\\\"") + "\"}");
                 }
                 break;
+            case "/SplitMatLoading.do":
+                try {
+                	JSONObject jsonObj = new JSONObject(jsonString);
+                    Iterator<String> keys = jsonObj.keys();
+                    while(keys.hasNext()) {
+                        String key = keys.next();
+                        Object value = jsonObj.get(key);
+                        System.out.println(key + " : " + value);
+                    }
+                    InfoLoadingDAO dao = new InfoLoadingDAO();
+                    if(jsonObj.get("UploadDataCode").equals("MGR")) {
+                        LoadedData = dao.SplitmatLoading(jsonObj);                    	
+                    }
+                    if(LoadedData == null) {
+                    	writer.print("{\"result\":\"fail\"}");
+                    }else {
+                    	writer.print("{\"result\":\"success\", \"List\":" + LoadedData + "}");
+                    }
+                } catch(Exception e) {
+                    e.printStackTrace();
+                    writer.print("{\"result\":\"fail\", \"message\":\"" + e.getMessage().replace("\"","\\\"") + "\"}");
+                }
+                break;
             // case "/AnotherAction.do": ... 등 추가 가능
             default:
                 writer.print("{\"result\":\"fail\", \"message\":\"Unknown action: " + action + "\"}");

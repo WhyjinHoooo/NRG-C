@@ -8,7 +8,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Insert title here</title>
+<title>자재구매 현황</title>
 </head>
 <body>
 <script>
@@ -136,6 +136,7 @@ $(document).ready(function(){
 				console.log(data.trim());
 				if(data.trim() === "Done"){
 					alert("해당 파일을 모두 삭제했습니다.");
+					InitialTable();
 				}else{
 					alert("해당 파일은 존재하지 않습니다");
 				}
@@ -252,7 +253,7 @@ $(document).ready(function(){
 					<thead class="InfoTable-Header">
 					<tr>
 						<th>순번</th><th>입출고유형</th><th>결산월</th><th>납품일</th><th>자재코드</th><th>자재명</th><th>규격</th>
-						<th>자재유형</th><th>입고출량</th><th>발주단가</th><th>입고금액</th><th>창고코드</th><th>창고</th>
+						<th>자재유형</th><th>입고출량</th><th>발주단가</th><th>입고금액</th><th>창고코드</th><th>창고명</th>
 						<th>발주번호</th><th>거래처코드</th><th>거래처명</th><th>거래처Lot번호</th><th>공장</th><th>기업</th>
 					</tr>
 				</thead>

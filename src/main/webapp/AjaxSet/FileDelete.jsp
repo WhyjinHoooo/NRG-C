@@ -34,6 +34,20 @@
 		        Del_pstmt01.executeUpdate();
 		        pass = "Done";
 		    	break;
+		    case "MGR":
+		    	FileDelSql ="DELETE FROM matsplit WHERE document = ?";
+		        Del_pstmt01 = conn.prepareStatement(FileDelSql);
+		        Del_pstmt01.setString(1, TextFile);
+		        Del_pstmt01.executeUpdate();
+		        pass = "Done";
+		    	break;
+		    case "SDG":
+		    	FileDelSql ="DELETE FROM matdeli WHERE document = ?";
+		        Del_pstmt01 = conn.prepareStatement(FileDelSql);
+		        Del_pstmt01.setString(1, TextFile);
+		        Del_pstmt01.executeUpdate();
+		        pass = "Done";
+		    	break;
 		    }
 	    } else {
 	        pass = "Nope";

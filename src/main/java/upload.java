@@ -120,9 +120,16 @@ public class upload extends HttpServlet {
             case "BFG":
             	dbResult = dao.insertMIData(csvData); // 생산 투입자제
             	break;
+            case "MGR":
+            	dbResult = dao.batchintake(csvData); // 소분 생상입고
+            	break;
+            case "SDG":
+            	dbResult = dao.SalesDelivery(csvData); // 제상품 매출납품
+            	break;
+            case "POL":
+            	dbResult = dao.Joborder(csvData); // 제상품 매출납품
+            	break;
             }
-			
-
             // [수정] JSON으로 결과 반환
             out.print("{");
             out.print("\"result\":\"success\",");

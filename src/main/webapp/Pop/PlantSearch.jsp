@@ -35,7 +35,7 @@
 		        if(!rs.next()){
 		    %>
 		    	<tr>
-		    		<td colspan="2"><a href="javascript:void(0)" onClick="window.close();">기업과 연동된 공창은 없습니다.</a></td>
+		    		<td colspan="2"><a href="javascript:void(0)" onClick="window.close();">기업과 연동된 공장은 없습니다.</a></td>
 				</tr>
 		    		
 		    <%

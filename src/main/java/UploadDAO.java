@@ -105,4 +105,89 @@ public class UploadDAO {
         }
         return YN;
 	}
+	public String batchintake(List<String[]> csvData) {
+		connDB();
+        String YN = "No";
+        PreparedStatement pstmt = null;
+        try {
+            String sql = "INSERT INTO matsplit VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+            pstmt = conn.prepareStatement(sql);
+            System.out.println("길이 : " + csvData.size());
+            for (int i = 0; i < csvData.size(); i++) {
+                String[] DataList = csvData.get(i);
+                for (int j = 0; j < DataList.length; j++) {
+                	//System.out.println("DataList[" + j + "] : " + DataList[j].trim());
+                    pstmt.setString(j + 1, DataList[j].trim());
+                }
+                pstmt.setString(15, "MGR" + DataList[1].trim() + ".txt");
+                pstmt.setString(16, "MGR" + DataList[0].trim() + String.format("%04d", i + 1));
+                pstmt.addBatch();
+            }
+            pstmt.executeBatch();  // 일괄 실행
+            YN = "Yes";
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            if (pstmt != null) try { pstmt.close(); } catch (Exception e) {}
+            if (conn != null) try { conn.close(); } catch (Exception e) {}
+        }
+        return YN;
+	}
+	
+	public String SalesDelivery(List<String[]> csvData) {
+		connDB();
+        String YN = "No";
+        PreparedStatement pstmt = null;
+        try {
+            String sql = "INSERT INTO matdeli VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+            pstmt = conn.prepareStatement(sql);
+            System.out.println("길이 : " + csvData.size());
+            for (int i = 0; i < csvData.size(); i++) {
+                String[] DataList = csvData.get(i);
+                for (int j = 0; j < DataList.length; j++) {
+//                	System.out.println("i : " + i);
+//                	System.out.println("DataList[" + j + "] : " + DataList[j].trim());
+                    pstmt.setString(j + 1, DataList[j].trim());
+                }
+                pstmt.setString(17, "SDG" + DataList[1].trim() + ".txt");
+                pstmt.setString(18, "SDG" + DataList[0].trim() + String.format("%04d", i + 1));
+                pstmt.addBatch();
+            }
+            pstmt.executeBatch();  // 일괄 실행
+            YN = "Yes";
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            if (pstmt != null) try { pstmt.close(); } catch (Exception e) {}
+            if (conn != null) try { conn.close(); } catch (Exception e) {}
+        }
+        return YN;
+	}
+	public String Joborder(List<String[]> csvData) {
+		connDB();
+        String YN = "No";
+        PreparedStatement pstmt = null;
+        try {
+            String sql = "INSERT INTO matdeli VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+            pstmt = conn.prepareStatement(sql);
+            System.out.println("길이 : " + csvData.size());
+            for (int i = 0; i < csvData.size(); i++) {
+                String[] DataList = csvData.get(i);
+                for (int j = 0; j < DataList.length; j++) {
+                    pstmt.setString(j + 1, DataList[j].trim());
+                }
+                pstmt.setString(17, "SDG" + DataList[1].trim() + ".txt");
+                pstmt.setString(18, "SDG" + DataList[0].trim() + String.format("%04d", i + 1));
+                pstmt.addBatch();
+            }
+            pstmt.executeBatch();  // 일괄 실행
+            YN = "Yes";
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            if (pstmt != null) try { pstmt.close(); } catch (Exception e) {}
+            if (conn != null) try { conn.close(); } catch (Exception e) {}
+        }
+        return YN;
+	}
 }

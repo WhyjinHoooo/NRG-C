@@ -8,7 +8,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>생산 투입자재 현황</title>
+<title>작업지시서 현황</title>
 </head>
 <body>
 <script>
@@ -24,7 +24,7 @@ function InitialTable(){
 	$('.InfoTable-Body').empty();
 	for (let i = 0; i < 1000; i++) {
         const row = $('<tr></tr>');
-        for (let j = 0; j < 16; j++) {
+        for (let j = 0; j < 17; j++) {
             row.append('<td></td>');
         }
         $('.InfoTable-Body').append(row);
@@ -164,7 +164,7 @@ $(document).ready(function(){
 			alert('모든 필수 항목을 모두 입력해주세요.');
 		}else{
 			$.ajax({
-				url : '${contextPath}/InfoLoading/InputMatLoading.do',
+				url : '${contextPath}/InfoLoading/Joborder .do',
 				type : 'POST',
 				data :  JSON.stringify(FilterList),
 				contentType: 'application/json; charset=utf-8',
@@ -184,10 +184,7 @@ $(document).ready(function(){
 			            	        '<td>' + (data.List[i].item ?? '') + '</td>' +
 			            	        '<td>' + (data.List[i].spec ?? '') + '</td>' +
 			            	        '<td>' + (data.List[i].stocktype ?? '') + '</td>' +
-			            	        '<td>' + (data.List[i].amount ?? '') + '</td>' +
-			            	        '<td>' + (data.List[i].whcode ?? '') + '</td>' +
-			            	        '<td>' + (data.List[i].warehouse ?? '') + '</td>' +
-			            	        '<td>' + (data.List[i].process ?? '') + '</td>' +
+			            	        '<td>' + (data.List[i].weight ?? '') + '</td>' +
 			            	        '<td>' + (data.List[i].pono ?? '') + '</td>' +
 			            	        '<td>' + (data.List[i].lot ?? '') + '</td>' +
 			            	        '<td>' + (data.List[i].plant ?? '') + '</td>' +
@@ -245,13 +242,13 @@ $(document).ready(function(){
 	</div>
 	<div class="StockArea-Result">
 		<div class="StockArea-Data-Area">
-			<div class="Title">생산 투입 자재 현환</div>
+			<div class="Title">제상품 매출납품실적 현황</div>
 			<table class="InfoTable">
 					<thead class="InfoTable-Header">
 					<tr>
-						<th>순번</th><th>입출고유형</th><th>결산월</th><th>투입일자</th><th>자재코드</th><th>자재명</th><th>규격</th>
-						<th>자재유형</th><th>투입량</th><th>창고코드</th><th>창고명</th><th>CostObj</th><th>작지IDX</th>
-						<th>거래처Lot번호</th><th>공장</th><th>기업</th>
+						<th>순번</th><th>입출고유형</th><th>결산월</th><th>납품일자</th><th>자재코드</th><th>자재명</th><th>규격</th>
+						<th>자재유형</th><th>납품중량</th><th>창고</th><th>창고명</th><th>납품번호</th><th>거래처코드</th><th>거래처명</th>
+						<th>Lot번호</th><th>공장</th><th>기업</th>
 					</tr>
 				</thead>
 				<tbody class="InfoTable-Body">
@@ -263,7 +260,7 @@ $(document).ready(function(){
 			<button class="DelBtn">삭제</button>
 		</div>
 		<div class="StockArea-Uploading">
-			<div class="Title">생산 투입 자재 입력</div>
+			<div class="Title">제상품 매출납품실적 입력</div>
 			<div class="File-Uploading-Area">
 				<div class="InfoInput">
 					<label>검색 파일 :  </label>
