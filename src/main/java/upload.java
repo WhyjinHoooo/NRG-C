@@ -127,7 +127,7 @@ public class upload extends HttpServlet {
             	dbResult = dao.SalesDelivery(csvData); // 제상품 매출납품
             	break;
             case "POL":
-            	dbResult = dao.Joborder(csvData); // 제상품 매출납품
+            	dbResult = dao.Joborder(csvData, fileName); // 작업지시서
             	break;
             }
             // [수정] JSON으로 결과 반환

@@ -164,7 +164,7 @@ $(document).ready(function(){
 			alert('모든 필수 항목을 모두 입력해주세요.');
 		}else{
 			$.ajax({
-				url : '${contextPath}/InfoLoading/SplitMatLoading.do',
+				url : '${contextPath}/InfoLoading/SalesDeliLoading.do',
 				type : 'POST',
 				data :  JSON.stringify(FilterList),
 				contentType: 'application/json; charset=utf-8',
@@ -185,7 +185,11 @@ $(document).ready(function(){
 			            	        '<td>' + (data.List[i].spec ?? '') + '</td>' +
 			            	        '<td>' + (data.List[i].stocktype ?? '') + '</td>' +
 			            	        '<td>' + (data.List[i].weight ?? '') + '</td>' +
+			            	        '<td>' + (data.List[i].whcode ?? '') + '</td>' +
+			            	        '<td>' + (data.List[i].warehouse ?? '') + '</td>' +
 			            	        '<td>' + (data.List[i].pono ?? '') + '</td>' +
+			            	        '<td>' + (data.List[i].vencode ?? '') + '</td>' +
+			            	        '<td>' + (data.List[i].vender ?? '') + '</td>' +
 			            	        '<td>' + (data.List[i].lot ?? '') + '</td>' +
 			            	        '<td>' + (data.List[i].plant ?? '') + '</td>' +
 			            	        '<td>' + (data.List[i].company ?? '') + '</td>' +

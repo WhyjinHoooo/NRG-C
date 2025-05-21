@@ -48,6 +48,13 @@
 		        Del_pstmt01.executeUpdate();
 		        pass = "Done";
 		    	break;
+		    case "POL":
+		    	FileDelSql ="DELETE FROM matorderlist WHERE document = ?";
+		        Del_pstmt01 = conn.prepareStatement(FileDelSql);
+		        Del_pstmt01.setString(1, TextFile);
+		        Del_pstmt01.executeUpdate();
+		        pass = "Done";
+		    	break;
 		    }
 	    } else {
 	        pass = "Nope";

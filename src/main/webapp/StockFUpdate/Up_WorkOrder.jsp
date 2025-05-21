@@ -24,7 +24,7 @@ function InitialTable(){
 	$('.InfoTable-Body').empty();
 	for (let i = 0; i < 1000; i++) {
         const row = $('<tr></tr>');
-        for (let j = 0; j < 17; j++) {
+        for (let j = 0; j < 19; j++) {
             row.append('<td></td>');
         }
         $('.InfoTable-Body').append(row);
@@ -164,7 +164,7 @@ $(document).ready(function(){
 			alert('모든 필수 항목을 모두 입력해주세요.');
 		}else{
 			$.ajax({
-				url : '${contextPath}/InfoLoading/Joborder .do',
+				url : '${contextPath}/InfoLoading/Joborder.do',
 				type : 'POST',
 				data :  JSON.stringify(FilterList),
 				contentType: 'application/json; charset=utf-8',
@@ -177,24 +177,30 @@ $(document).ready(function(){
 			            	for(var i = 0; i < data.List.length; i++){
 			            	    var row = '<tr>' +
 			            	        '<td>' + (i + 1).toString().padStart(3, '0') + '</td>' +
-			            	        '<td>' + (data.List[i].typeData ?? '') + '</td>' +
-			            	        '<td>' + (data.List[i].period ?? '') + '</td>' +
-			            	        '<td>' + (data.List[i].delivery ?? '') + '</td>' +
-			            	        '<td>' + (data.List[i].itemno ?? '') + '</td>' +
-			            	        '<td>' + (data.List[i].item ?? '') + '</td>' +
-			            	        '<td>' + (data.List[i].spec ?? '') + '</td>' +
-			            	        '<td>' + (data.List[i].stocktype ?? '') + '</td>' +
-			            	        '<td>' + (data.List[i].weight ?? '') + '</td>' +
-			            	        '<td>' + (data.List[i].pono ?? '') + '</td>' +
-			            	        '<td>' + (data.List[i].lot ?? '') + '</td>' +
-			            	        '<td>' + (data.List[i].plant ?? '') + '</td>' +
-			            	        '<td>' + (data.List[i].company ?? '') + '</td>' +
+			            	        '<td>' + (data.List[i].pono ?? 'N/A') + '</td>' +
+			            	        '<td>' + (data.List[i].MOType ?? 'N/A') + '</td>' +
+			            	        '<td>' + (data.List[i].lotNum ?? 'N/A') + '</td>' +
+			            	        '<td>' + (data.List[i].delidiv ?? 'N/A') + '</td>' +
+			            	        '<td>' + (data.List[i].facLind ?? 'N/A') + '</td>' +
+			            	        '<td>' + (data.List[i].facility ?? 'N/A') + '</td>' +
+			            	        '<td>' + (data.List[i].itemno ?? 'N/A') + '</td>' +
+			            	        '<td>' + (data.List[i].item ?? 'N/A') + '</td>' +
+			            	        '<td>' + (data.List[i].makedate ?? 'N/A') + '</td>' +
+			            	        '<td>' + (data.List[i].prokg ?? 'N/A') + '</td>' +
+			            	        '<td>' + (data.List[i].prolt ?? 'N/A') + '</td>' +
+			            	        '<td>' + (data.List[i].Runtime ?? '00:00') + '</td>' +
+			            	        '<td>' + (data.List[i].InputTime ?? '00:00') + '</td>' +
+			            	        '<td>' + (data.List[i].MixTime ?? '00:00') + '</td>' +
+			            	        '<td>' + (data.List[i].TestTime ?? '00:00') + '</td>' +
+			            	        '<td>' + (data.List[i].plant ?? 'N/A') + '</td>' +
+			            	        '<td>' + (data.List[i].company ?? 'N/A') + '</td>' +
 			            	        '</tr>';
 			            	    $('.InfoTable-Body').append(row);
 			            	}
 			            }
 			        } else {
 			            alert("실패: 검색 항목을 다시 선택해주세요.");
+			            InitialTable();
 			        }
 				},
 				error: function(jqXHR, textStatus, errorThrown){
@@ -242,13 +248,13 @@ $(document).ready(function(){
 	</div>
 	<div class="StockArea-Result">
 		<div class="StockArea-Data-Area">
-			<div class="Title">제상품 매출납품실적 현황</div>
+			<div class="Title">작업지시서 발행 현황</div>
 			<table class="InfoTable">
 					<thead class="InfoTable-Header">
 					<tr>
-						<th>순번</th><th>입출고유형</th><th>결산월</th><th>납품일자</th><th>자재코드</th><th>자재명</th><th>규격</th>
-						<th>자재유형</th><th>납품중량</th><th>창고</th><th>창고명</th><th>납품번호</th><th>거래처코드</th><th>거래처명</th>
-						<th>Lot번호</th><th>공장</th><th>기업</th>
+						<th>순번</th><th>작지ID</th><th>작지종류</th><th>Lot번호</th><th>조달구분</th><th>Line</th><th>관련설비</th>
+						<th>자재</th><th>자재명</th><th>지시/제조날짜</th><th>Kg생상수량</th><th>Lt생상수량</th><th>제조시간</th><th>투입시작시간</th>
+						<th>교반시작시간</th><th>샘플체취시간</th><th>공장</th><th>기업</th>
 					</tr>
 				</thead>
 				<tbody class="InfoTable-Body">
@@ -260,7 +266,7 @@ $(document).ready(function(){
 			<button class="DelBtn">삭제</button>
 		</div>
 		<div class="StockArea-Uploading">
-			<div class="Title">제상품 매출납품실적 입력</div>
+			<div class="Title">작업지시서 발행실적 입력</div>
 			<div class="File-Uploading-Area">
 				<div class="InfoInput">
 					<label>검색 파일 :  </label>
