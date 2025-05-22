@@ -213,4 +213,31 @@ public class UploadDAO {
         }
         return YN;
 	}
+	public String ProResult(List<String[]> csvData, String fileName) {
+		connDB();
+        String YN = "No";
+        PreparedStatement pstmt = null;
+        try {
+            String sql = "INSERT INTO matseqlist VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+            pstmt = conn.prepareStatement(sql);
+            System.out.println("길이 : " + csvData.size());
+            for (int i = 0; i < csvData.size(); i++) {
+                String[] DataList = csvData.get(i);
+                for (int j = 0; j < DataList.length; j++) {
+                    pstmt.setString(j + 1, DataList[j].trim());
+                }
+                pstmt.setString(13, fileName);
+                pstmt.setString(14, fileName.substring(0, 9) + String.format("%04d", i + 1));
+                pstmt.addBatch();
+            }
+            pstmt.executeBatch();  // 일괄 실행
+            YN = "Yes";
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            if (pstmt != null) try { pstmt.close(); } catch (Exception e) {}
+            if (conn != null) try { conn.close(); } catch (Exception e) {}
+        }
+        return YN;
+	}
 }

@@ -282,5 +282,51 @@ public class InfoLoadingDAO {
 	    return result;
 	}
 
+	public String StepResultLoading(JSONObject jsonObj) {
+		connDB();
+	    String[] keyOrder = {"ComCode", "PlantCode", "UploadDataCode", "CalcMonth"};
+	    String[] DataList = new String[keyOrder.length];
+	    String result = null;
+	    for (int i = 0; i < keyOrder.length; i++) {
+	        DataList[i] = jsonObj.has(keyOrder[i]) ? jsonObj.get(keyOrder[i]).toString() : "";
+	        System.out.println("DataList[" + i + "] : " + DataList[i]);
+	    }
+	    ResultSet rs = null;
+	    JSONArray jsonArray = new JSONArray();
+	    try {
+	    	String sql = "SELECT * FROM matseqlist WHERE company = ? AND plant = ? AND LEFT(keydata, 3) = ? AND LEFT(document, 9) = ?";
+		    pstmt = conn.prepareStatement(sql);
+		    pstmt.setString(1, DataList[0].trim());
+		    pstmt.setString(2, DataList[1].trim());
+		    pstmt.setString(3, DataList[2].trim());
+		    pstmt.setString(4, DataList[2].trim() + DataList[3].trim());
+		    rs = pstmt.executeQuery();
+		    while(rs.next()) {
+		    	JSONObject jsonObject = new JSONObject();
+		    	jsonObject.put("endMth", rs.getString("endMth"));
+		    	jsonObject.put("stepcd", rs.getString("stepcd"));
+		    	jsonObject.put("step", rs.getString("step"));
+		    	jsonObject.put("iotype", rs.getString("iotype"));
+		    	jsonObject.put("pono", rs.getString("pono"));
+			    jsonObject.put("ponotype", rs.getString("ponotype"));
+			    jsonObject.put("itemno", rs.getString("itemno"));
+			    jsonObject.put("item", rs.getString("item"));
+			    jsonObject.put("Lotnum", rs.getString("Lotnum"));
+			    jsonObject.put("weight", String.format("%.3f", rs.getDouble("weight")));
+			    jsonObject.put("plant", rs.getString("plant"));
+			    jsonObject.put("company", rs.getString("company"));
+			    jsonArray.put(jsonObject);
+		    }
+		    if (jsonArray.length() == 0) {
+		        result = null;
+		    } else {
+		        result = jsonArray.toString();
+		    }
+	    }catch (SQLException e) {
+			// TODO: handle exception
+		}
+	    return result;
+	}
+
 
 }

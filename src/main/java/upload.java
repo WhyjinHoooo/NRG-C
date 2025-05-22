@@ -129,8 +129,10 @@ public class upload extends HttpServlet {
             case "POL":
             	dbResult = dao.Joborder(csvData, fileName); // 작업지시서
             	break;
+            case "PWC":
+            	dbResult = dao.ProResult(csvData, fileName); // 공정별 작업실적
+            	break;
             }
-            // [수정] JSON으로 결과 반환
             out.print("{");
             out.print("\"result\":\"success\",");
             out.print("\"fileName\":\"" + fileName + "\",");
