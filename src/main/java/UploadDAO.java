@@ -54,17 +54,16 @@ public class UploadDAO {
         String YN = "No";
         PreparedStatement pstmt = null;
         try {
-            String sql = "INSERT INTO matstock VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+            String sql = "INSERT INTO matstock VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
             pstmt = conn.prepareStatement(sql);
             System.out.println("길이 : " + csvData.size());
             for (int i = 0; i < csvData.size(); i++) {
                 String[] DataList = csvData.get(i);
                 for (int j = 0; j < DataList.length; j++) {
-                	//System.out.println("DataList[" + j + "] : " + DataList[j].trim());
                     pstmt.setString(j + 1, DataList[j].trim());
                 }
-                pstmt.setString(18, "PUR" + DataList[1].trim() + ".txt");
-                pstmt.setString(19, "PUR" + DataList[1].trim() + String.format("%04d", i + 1));
+                pstmt.setString(20, "PUR" + DataList[1].trim() + ".txt");
+                pstmt.setString(21, "PUR" + DataList[1].trim() + String.format("%04d", i + 1));
                 pstmt.addBatch();
             }
             pstmt.executeBatch();  // 일괄 실행
@@ -173,14 +172,6 @@ public class UploadDAO {
             System.out.println("길이 : " + csvData.size());
             for (int i = 0; i < csvData.size(); i++) {
                 String[] DataList = csvData.get(i);
-//                System.out.println("DataList : " + DataList.length);
-//                for(int j = 0 ; j < DataList.length ; j++) {
-//                	System.out.println("Data : " + DataList[j].trim());
-//                }
-//                System.out.println("Data 0: " + DataList[0].trim());
-//                System.out.println("Data 1: " + DataList[1].trim());
-//                System.out.println("Data 2: " + DataList[2].trim());
-//                System.out.println("Data 3: " + DataList[3].trim());
                 pstmt.setString(1,  DataList[0].trim());  
                 pstmt.setString(2,  DataList[2].substring(0, 1).trim());
                 pstmt.setString(3,  DataList[9].trim());

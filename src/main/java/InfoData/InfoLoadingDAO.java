@@ -37,7 +37,6 @@ public class InfoLoadingDAO {
 	    String result = null;
 	    for (int i = 0; i < keyOrder.length; i++) {
 	        DataList[i] = jsonObj.has(keyOrder[i]) ? jsonObj.get(keyOrder[i]).toString() : "";
-	        System.out.println("DataList[" + i + "] : " + DataList[i]);
 	    }
 	    ResultSet rs = null;
 	    JSONArray jsonArray = new JSONArray();
@@ -64,6 +63,8 @@ public class InfoLoadingDAO {
 			    jsonObject.put("UnitPrice", String.format("%.3f",
 			        rs.getDouble("weight") == 0 ? 0.0 : rs.getDouble("amount") / rs.getDouble("weight")
 			    ));
+			    jsonObject.put("TxnCurrency", rs.getString("TxnCurrency"));
+			    jsonObject.put("TxnAmount", String.format("%.3f", rs.getDouble("TxnAmount")));
 			    jsonObject.put("whcode", rs.getString("whcode"));
 			    jsonObject.put("warehouse", rs.getString("warehouse"));
 			    jsonObject.put("pono", rs.getString("pono"));
@@ -92,7 +93,6 @@ public class InfoLoadingDAO {
 	    String result = null;
 	    for (int i = 0; i < keyOrder.length; i++) {
 	        DataList[i] = jsonObj.has(keyOrder[i]) ? jsonObj.get(keyOrder[i]).toString() : "";
-	        System.out.println("DataList[" + i + "] : " + DataList[i]);
 	    }
 	    ResultSet rs = null;
 	    JSONArray jsonArray = new JSONArray();
@@ -142,7 +142,6 @@ public class InfoLoadingDAO {
 	    String result = null;
 	    for (int i = 0; i < keyOrder.length; i++) {
 	        DataList[i] = jsonObj.has(keyOrder[i]) ? jsonObj.get(keyOrder[i]).toString() : "";
-	        System.out.println("DataList[" + i + "] : " + DataList[i]);
 	    }
 	    ResultSet rs = null;
 	    JSONArray jsonArray = new JSONArray();
@@ -188,7 +187,6 @@ public class InfoLoadingDAO {
 	    String result = null;
 	    for (int i = 0; i < keyOrder.length; i++) {
 	        DataList[i] = jsonObj.has(keyOrder[i]) ? jsonObj.get(keyOrder[i]).toString() : "";
-	        System.out.println("DataList[" + i + "] : " + DataList[i]);
 	    }
 	    ResultSet rs = null;
 	    JSONArray jsonArray = new JSONArray();
@@ -238,7 +236,6 @@ public class InfoLoadingDAO {
 	    String result = null;
 	    for (int i = 0; i < keyOrder.length; i++) {
 	        DataList[i] = jsonObj.has(keyOrder[i]) ? jsonObj.get(keyOrder[i]).toString() : "";
-	        System.out.println("DataList[" + i + "] : " + DataList[i]);
 	    }
 	    ResultSet rs = null;
 	    JSONArray jsonArray = new JSONArray();

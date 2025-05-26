@@ -162,6 +162,7 @@ $(document).ready(function(){
 		})
 		if(!pass){
 			alert('모든 필수 항목을 모두 입력해주세요.');
+			InitialTable();
 		}else{
 			$.ajax({
 				url : '${contextPath}/InfoLoading/StockInfoLoading.do',
@@ -177,31 +178,69 @@ $(document).ready(function(){
 			            	for(var i = 0; i < data.List.length; i++){
 			            	    var row = '<tr>' +
 			            	        '<td>' + (i + 1).toString().padStart(3, '0') + '</td>' +
-			            	        '<td>' + (data.List[i].typeData ?? '') + '</td>' +
-			            	        '<td>' + (data.List[i].period ?? '') + '</td>' +
-			            	        '<td>' + (data.List[i].delivery ?? '') + '</td>' +
-			            	        '<td>' + (data.List[i].itemno ?? '') + '</td>' +
-			            	        '<td>' + (data.List[i].item ?? '') + '</td>' +
-			            	        '<td>' + (data.List[i].spec ?? '') + '</td>' +
-			            	        '<td>' + (data.List[i].stocktype ?? '') + '</td>' +
-			            	        '<td>' + (data.List[i].weight ?? '') + '</td>' +
-			            	        '<td>' + (data.List[i].UnitPrice ?? '') + '</td>' +
-			            	        '<td>' + (data.List[i].amount ?? '') + '</td>' +
-			            	        '<td>' + (data.List[i].whcode ?? '') + '</td>' +
-			            	        '<td>' + (data.List[i].warehouse ?? '') + '</td>' +
-			            	        '<td>' + (data.List[i].pono ?? '') + '</td>' +
-			            	        '<td>' + (data.List[i].vendor ?? '') + '</td>' +
-			            	        '<td>' + (data.List[i].vendorname ?? '') + '</td>' +
-			            	        '<td>' + (data.List[i].lot ?? '') + '</td>' +
-			            	        '<td>' + (data.List[i].plant ?? '') + '</td>' +
-			            	        '<td>' + (data.List[i].company ?? '') + '</td>' +
+			            	        '<td>' + (data.List[i].typeData ?? 'N/A') + '</td>' +
+			            	        '<td>' + (data.List[i].period ?? 'N/A') + '</td>' +
+			            	        '<td>' + (data.List[i].delivery ?? 'N/A') + '</td>' +
+			            	        '<td>' + (data.List[i].itemno ?? 'N/A') + '</td>' +
+			            	        '<td>' + (data.List[i].item ?? 'N/A') + '</td>' +
+			            	        '<td>' + (data.List[i].spec ?? 'N/A') + '</td>' +
+			            	        '<td>' + (data.List[i].stocktype ?? 'N/A') + '</td>' +
+			            	        '<td>' + (data.List[i].weight ?? 'N/A') + '</td>' +
+			            	        '<td>' + (data.List[i].UnitPrice ?? 'N/A') + '</td>' +
+			            	        '<td>' + (data.List[i].amount ?? 'N/A') + '</td>' +
+			            	        '<td>' + (data.List[i].TxnCurrency ?? 'N/A') + '</td>' +
+			            	        '<td>' + (data.List[i].TxnAmount ?? 'N/A') + '</td>' +
+			            	        '<td>' + (data.List[i].whcode ?? 'N/A') + '</td>' +
+			            	        '<td>' + (data.List[i].warehouse ?? 'N/A') + '</td>' +
+			            	        '<td>' + (data.List[i].pono ?? 'N/A') + '</td>' +
+			            	        '<td>' + (data.List[i].vendor ?? 'N/A') + '</td>' +
+			            	        '<td>' + (data.List[i].vendorname ?? 'N/A') + '</td>' +
+			            	        '<td>' + (data.List[i].lot ?? 'N/A') + '</td>' +
+			            	        '<td>' + (data.List[i].plant ?? 'N/A') + '</td>' +
+			            	        '<td>' + (data.List[i].company ?? 'N/A') + '</td>' +
 			            	        '</tr>';
 			            	    $('.InfoTable-Body').append(row);
 			            	}
 			            }
 			        } else {
 			            alert("실패: 검색 항목을 다시 선택해주세요.");
+			            InitialTable();
 			        }
+				},
+				error: function(jqXHR, textStatus, errorThrown){
+					alert('오류 발생: ' + textStatus + ', ' + errorThrown);
+		    	}
+	    	});
+		}
+	});
+	$('.OkBtn').click(function(){
+		$('.FilterOP').each(function(){
+		    var name = $(this).attr('name');
+		    var value = $(this).val();
+		    FilterList[name] = value;
+		});
+		var pass = true;
+		$.each(FilterList,function(key, value){
+			if (value == null || value === '') {
+    	        pass = false;
+    	        return false;
+    	    }
+		})
+		var RowNum = $('.InfoTable_Body tr').length;
+		if(!pass && RowNum === 0){
+			alert('필터 값이 비어 있고, 테이블도 비어 있습니다!');
+			InitialTable();
+			return false;
+		}else{
+			$.ajax({
+				url : '${contextPath}/Approval/PUR.do',
+				type : 'POST',
+				data :  JSON.stringify(FilterList),
+				contentType: 'application/json; charset=utf-8',
+				dataType: 'json',
+				async: false,
+				success : function(data){
+					console.log(data.result);
 				},
 				error: function(jqXHR, textStatus, errorThrown){
 					alert('오류 발생: ' + textStatus + ', ' + errorThrown);
@@ -253,8 +292,8 @@ $(document).ready(function(){
 					<thead class="InfoTable-Header">
 					<tr>
 						<th>순번</th><th>입출고유형</th><th>결산월</th><th>납품일</th><th>자재코드</th><th>자재명</th><th>규격</th>
-						<th>자재유형</th><th>입고출량</th><th>발주단가</th><th>입고금액</th><th>창고코드</th><th>창고명</th>
-						<th>발주번호</th><th>거래처코드</th><th>거래처명</th><th>거래처Lot번호</th><th>공장</th><th>기업</th>
+						<th>자재유형</th><th>입고출량</th><th>발주단가</th><th>입고금액</th><th>거래통화</th><th>거래금액</th><th>창고코드</th><th>창고명</th>
+						<th>발주번호</th><th>거래처코드</th><th>거래처명</th><th>거래처Lot번호</th><th>공장</th><th>기업</th>	
 					</tr>
 				</thead>
 				<tbody class="InfoTable-Body">
