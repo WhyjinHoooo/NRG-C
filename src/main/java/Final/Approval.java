@@ -68,6 +68,12 @@ public class Approval extends HttpServlet {
             LoadedData = dao.forPURdata(jsonObj);
         break;
         }
+        System.out.println("LoadedData : " + LoadedData);
+        if(LoadedData == null || LoadedData.equals("No")) {
+        	writer.print("{\"result\":\"fail\"}");
+        }else {
+        	writer.print("{\"result\":\"success\", \"List\":" + LoadedData + "}");
+        }
 	}
 
 }

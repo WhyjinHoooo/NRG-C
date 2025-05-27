@@ -241,6 +241,11 @@ $(document).ready(function(){
 				async: false,
 				success : function(data){
 					console.log(data.result);
+					if(data.result.trim() === 'success'){
+						alert('good');
+					}else{
+						alert('bad');
+					}
 				},
 				error: function(jqXHR, textStatus, errorThrown){
 					alert('오류 발생: ' + textStatus + ', ' + errorThrown);

@@ -75,12 +75,12 @@ $(document).ready(function(){
             <li class="dropdown-submenu">
             	<a class="dropdown-item dropdown-toggle" href="#">EXCEL 로딩</a>
             	<ul class="dropdown-menu">
-                	<li><a class="dropdown-item" href="#">자재매입 실적</a></li>
-                	<li><a class="dropdown-item" href="#">생산투입 실적</a></li>
-                	<li><a class="dropdown-item" href="#">생산입고 실적</a></li>
-                	<li><a class="dropdown-item" href="#">재상품 판매실적</a></li>
-                	<li><a class="dropdown-item" href="#">공정별 작업실적</a></li>
-                	<li><a class="dropdown-item" href="#">작지 ID생성실적</a></li>
+                	<li><a class="dropdown-item" href="${contextPath}/StockFUpdate/Up_MatPurchase.jsp">자재매입 실적</a></li>
+                	<li><a class="dropdown-item" href="${contextPath}/StockFUpdate/Up_Feedstock.jsp">생산투입 실적</a></li>
+                	<li><a class="dropdown-item" href="${contextPath}/StockFUpdate/Up_Subpackreceipt.jsp">생산입고 실적</a></li>
+                	<li><a class="dropdown-item" href="${contextPath}/StockFUpdate/Up_ProductShipment.jsp">재상품 판매실적</a></li>
+                	<li><a class="dropdown-item" href="${contextPath}/StockFUpdate/Up_ProResult.jsp">공정별 작업실적</a></li>
+                	<li><a class="dropdown-item" href="${contextPath}/StockFUpdate/Up_WorkOrder.jsp">작지 ID생성실적</a></li>
               	</ul>
               	<a class="dropdown-item dropdown-toggle" href="#">수불 생성</a>
             	<ul class="dropdown-menu">

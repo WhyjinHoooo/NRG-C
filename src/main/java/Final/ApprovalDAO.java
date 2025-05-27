@@ -40,7 +40,7 @@ public class ApprovalDAO {
 	    String YN = "No";
 	    for (int i = 0; i < keyOrder.length; i++) {
 	        DataList[i] = jsonObj.has(keyOrder[i]) ? jsonObj.get(keyOrder[i]).toString() : "";
-	        System.out.println("DataList[" + i + "] : " + DataList[i]);
+	        System.out.println("창고 수불 관리 테이블 DataList[" + i + "] : " + DataList[i]);
 	    }
 	    ResultSet rs = null;
 	    try {
@@ -71,37 +71,33 @@ public class ApprovalDAO {
 	    		InsertPstmtH.setString(8, DataList[1]);
 	    		InsertPstmtH.setString(9, DataList[0]);
 	    		InsertPstmtH.executeUpdate();
-	    		
+
 	    		CountSql = "SELECT COUNT(*) as length FROM matstock WHERE LEFT (document, 9) = ?";
 	    		CountPstmt = conn.prepareStatement(CountSql);
-	    		CountRs = CountPstmt.executeQuery();
 	    		CountPstmt.setString(1, DataList[2] + DataList[3]);
+	    		CountRs = CountPstmt.executeQuery();
 	    		if(CountRs.next()) {
 	    			length = CountRs.getInt("length");
 	    		}
+	    		System.out.println("length : " + length);
 	    		String InsertsqlL =
 	    			    "INSERT INTO InvenLogl (docnum, seq, movetype, closingmon, transactiondate, matcode, matdesc, spec, lotnum, mattype, quantity, amount, " +
 	    			    "storcode, stordesc, procuordnum, vendcode, vendDesc, DeleteYN, plant, comcode, keyvalue) " +
-	    			    "SELECT ?, ?, matstock.type, ?, matstock.delivery, matstock.itemno, matstock.item, matstock.spec, matstock.lot, matstock.stocktype, " +
+	    			    "SELECT ?, ROW_NUMBER() OVER (ORDER BY (SELECT 1)), matstock.type, ?, matstock.delivery, matstock.itemno, matstock.item, matstock.spec, matstock.lot, matstock.stocktype, " +
 	    			    "matstock.weight, matstock.amount, matstock.whcode, matstock.warehouse, matstock.pono, matstock.vendor, matstock.vendorname, ?, " +
-	    			    "matstock.plant, matstock.company, ? " +
+	    			    "matstock.plant, matstock.company, CONCAT(?, LPAD(ROW_NUMBER() OVER (ORDER BY (SELECT 1)),4,'0')) " +
 	    			    "FROM matstock " +
 	    			    "WHERE document = ?";
 	    		PreparedStatement InsertPstmtL = conn.prepareStatement(InsertsqlL);
-	    		for(int i = 1 ; i <= count ; i++) {
-	    			InsertPstmtL.setString(1, DataList[2] + DataList[3] + String.format("%04d", count));
-	    			InsertPstmtL.setInt(2, i);
-	    			InsertPstmtL.setString(3, DataList[3]);
-	    			InsertPstmtL.setString(4, "N");
-	    			InsertPstmtL.setString(5, DataList[2] + DataList[3] + String.format("%04d", count) + String.format("%04d", i));
-	    			InsertPstmtL.setString(6, DataList[2] + DataList[3] + ".txt");
-	    			InsertPstmtL.addBatch();
-	    		}
-	    		InsertPstmtL.executeBatch();
+	    		InsertPstmtL.setString(1, DataList[2] + DataList[3] + String.format("%04d", count));
+	    		InsertPstmtL.setString(2, DataList[3]);
+	    		InsertPstmtL.setString(3, "N");
+	    		InsertPstmtL.setString(4, DataList[2] + DataList[3] + String.format("%04d", count));
+	    		InsertPstmtL.setString(5, DataList[2] + DataList[3] + ".txt");
+	    		InsertPstmtL.executeUpdate();
 	    		YN = "Yes";
 	    	}
 		} catch (SQLException e) {
-			// TODO: handle exception
 			e.printStackTrace();
 		}
 		return YN;
