@@ -242,7 +242,7 @@ $(document).ready(function(){
 				success : function(data){
 					console.log(data.result);
 					if(data.result.trim() === 'success'){
-						alert('good');
+						location.reload();
 					}else{
 						alert('bad');
 					}
@@ -315,6 +315,7 @@ $(document).ready(function(){
 				<div class="InfoInput">
 					<label>검색 파일 :  </label>
 					<input type="file" id="textFile" accept=".txt" required>
+					<div id="ErrorMess">(File명 : "PURyyyymm.txt")</div>
 					<button id="UploadBtn">실행</button>
 					<button id="CancelBtn">취소</button>
 				</div>

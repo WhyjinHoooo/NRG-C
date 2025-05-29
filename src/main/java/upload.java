@@ -141,7 +141,16 @@ public class upload extends HttpServlet {
             out.print("\"FileResult\":\"" + FileResult + "\"");
             out.print("}");
         } catch (Exception e) {
-            out.print("{\"result\":\"fail\",\"message\":\"파일 처리 오류: " + e.getMessage().replace("\"","\\\"") + "\"}");
+        	Part filePart = request.getPart("textFile");
+            String fileName = getSubmittedFileName(filePart);
+        	UploadDAO Faildao = new UploadDAO();
+        	String Reaction = Faildao.DeletProcess(fileName);
+        	if(Reaction.equals("No Delete")) {
+        		out.print("{\"result\":\"fail\",\"message\":\"파일 처리 오류: " + e.getMessage().replace("\"","\\\"") + "\"}");
+        	}else {
+        		out.print("{\"result\":\"fail\",\"message\":\"데이터 처리 오류: " + e.getMessage().replace("\"","\\\"") + "\"}");
+        	}
+            
         } finally {
             out.flush();
             out.close();

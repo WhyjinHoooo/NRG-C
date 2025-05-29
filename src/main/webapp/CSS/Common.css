@@ -233,10 +233,7 @@ html {
     height: 25.2%;
 	}
 	.File-Uploading-Area > .InfoInput {
-	display: flex;
-	flex-direction: row;
-	margin-top: 5%;
-	width: 100%;
+	margin: 3% 0% 0% 34%;
 	justify-content: center;
     }
     .File-Uploading-Area > .InfoInput input {
@@ -253,16 +250,23 @@ html {
 	letter-spacing: 0.1em;
 	font-family: sans-serif;
     }
+    .StockArea-Uploading > .File-Uploading-Area > .InfoInput > div#ErrorMess{
+		color: #ff3f3f;
+        font-size: 15px;
+        font-weight: bold;
+        padding: 1% 15%;
+ 	}
 	.StockArea-Uploading > .File-Uploading-Area > .InfoInput > button#UploadBtn {
-    background: darkgreen;
-   	width: 10%;
-    height: 30px;
-    color: white;
-    font-weight: bold;
-    font-size: smaller;
-    border: 1px solid darkgreen;
-	padding: 5px;
-	border-radius: 5px;
+        background: darkgreen;
+        width: 20%;
+        height: 30px;
+        color: white;
+        font-weight: bold;
+        font-size: smaller;
+        border: 1px solid darkgreen;
+        padding: 5px;
+        border-radius: 5px;
+        margin-left: 5%;
 	}
 	.StockArea-Uploading > .File-Uploading-Area > .InfoInput > button#UploadBtn:hover {
 	background: #32CD32;
@@ -276,7 +280,7 @@ html {
 	}
 	.StockArea-Uploading > .File-Uploading-Area > .InfoInput > button#CancelBtn {
     background: darkred;
-    width: 10%;
+    width: 20%;
     height: 30px;
     color: white;
     font-weight: bold;

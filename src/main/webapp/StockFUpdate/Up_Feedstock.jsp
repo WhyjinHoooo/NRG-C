@@ -206,6 +206,46 @@ $(document).ready(function(){
 	    	});
 		}
 	});
+	$('.OkBtn').click(function(){
+		$('.FilterOP').each(function(){
+		    var name = $(this).attr('name');
+		    var value = $(this).val();
+		    FilterList[name] = value;
+		});
+		var pass = true;
+		$.each(FilterList,function(key, value){
+			if (value == null || value === '') {
+    	        pass = false;
+    	        return false;
+    	    }
+		})
+		var RowNum = $('.InfoTable_Body tr').length;
+		if(!pass && RowNum === 0){
+			alert('필터 값이 비어 있고, 테이블도 비어 있습니다!');
+			InitialTable();
+			return false;
+		}else{
+			$.ajax({
+				url : '${contextPath}/Approval/BFG.do',
+				type : 'POST',
+				data :  JSON.stringify(FilterList),
+				contentType: 'application/json; charset=utf-8',
+				dataType: 'json',
+				async: false,
+				success : function(data){
+					console.log(data.result);
+					if(data.result.trim() === 'success'){
+						location.reload();
+					}else{
+						alert('bad');
+					}
+				},
+				error: function(jqXHR, textStatus, errorThrown){
+					alert('오류 발생: ' + textStatus + ', ' + errorThrown);
+		    	}
+	    	});
+		}
+	});
 })
 </script>
 <jsp:include page="../Header.jsp"></jsp:include>
@@ -268,6 +308,7 @@ $(document).ready(function(){
 				<div class="InfoInput">
 					<label>검색 파일 :  </label>
 					<input type="file" id="textFile" accept=".txt" required>
+					<div id="ErrorMess">(File명 : "BFGyyyymm.txt")</div>
 					<button id="UploadBtn">실행</button>
 					<button id="CancelBtn">취소</button>
 				</div>

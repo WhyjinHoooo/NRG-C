@@ -56,24 +56,34 @@ public class Approval extends HttpServlet {
         String jsonString = sb.toString();
         String LoadedData = null;
         ApprovalDAO dao = new ApprovalDAO();
-        switch(action) {
-        case "/PUR.do":
-        	JSONObject jsonObj = new JSONObject(jsonString);
-            Iterator<String> keys = jsonObj.keys();
-            while(keys.hasNext()) {
-                String key = keys.next();
-                Object value = jsonObj.get(key);
-                System.out.println(key + " : " + value);
+        JSONObject jsonObj = null;
+        try {
+        	jsonObj = new JSONObject(jsonString);
+            switch(action) {
+            case "/PUR.do":
+            	LoadedData = dao.forPURdata(jsonObj);
+                break;
+            case "/BFG.do":
+                LoadedData = dao.forBFGdata(jsonObj);
+            	break;
+            case "/MGR.do":
+            	LoadedData = dao.forMGRdata(jsonObj);
+            	break;
+            case "/SDG.do":
+            	LoadedData = dao.forSDGdata(jsonObj);
+            	break;
             }
-            LoadedData = dao.forPURdata(jsonObj);
-        break;
-        }
+            dao.sumProcess();
+        }catch (Exception e) {
+        	e.printStackTrace();
+            writer.print("{\"result\":\"fail\", \"message\":\"" + e.getMessage().replace("\"", "\\\"") + "\"}");
+            return;
+		}
         System.out.println("LoadedData : " + LoadedData);
         if(LoadedData == null || LoadedData.equals("No")) {
         	writer.print("{\"result\":\"fail\"}");
         }else {
-        	writer.print("{\"result\":\"success\", \"List\":" + LoadedData + "}");
+        	writer.print("{\"result\":\"success\"}");
         }
 	}
-
 }

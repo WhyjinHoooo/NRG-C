@@ -231,4 +231,24 @@ public class UploadDAO {
         }
         return YN;
 	}
+	
+	public String DeletProcess(String fileName) {
+		connDB();
+		pstmt = null;
+		String notice = "No Delete";
+		try {
+			System.out.println("filedata : " + fileName);
+			String sql = "DELETE FROM DocTable WHERE InfoFile = ?";
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setString(1, fileName);
+			pstmt.executeUpdate();
+			notice = "Yes Delete";
+		}catch (SQLException e) {
+			e.printStackTrace();
+		}finally {
+            if (pstmt != null) try { pstmt.close(); } catch (Exception e) {}
+            if (conn != null) try { conn.close(); } catch (Exception e) {}
+        }
+		return notice;
+	}
 }
