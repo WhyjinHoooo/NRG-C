@@ -321,17 +321,121 @@ public class ApprovalDAO {
 		try {
 			pstmt = conn.prepareStatement(EmptySql);
 			ResultSet EmpRs = pstmt.executeQuery();
-			int TableDataCount = EmpRs.getInt("length");
+			int TableDataCount = 0;
+			if(EmpRs.next()) {
+				TableDataCount = EmpRs.getInt("length");
+			}
+			String DataSearchSql = null;
+			PreparedStatement DataSearchPstmt = null;
+			ResultSet DataSearchRs = null;
+			System.out.println("TableDataCount : " + TableDataCount);
 			if(TableDataCount == 0) {
-				String DataSearchSql = "SELECT * FROM InvenLogl";
-				PreparedStatement DataSearchPstmt = conn.prepareStatement(DataSearchSql);
-				ResultSet DataSearchRs = DataSearchPstmt.executeQuery();
-				
-			}else {
-				
+				DataSearchSql = "SELECT * FROM InvenLogl";
+				DataSearchPstmt = conn.prepareStatement(DataSearchSql);
+				DataSearchRs = DataSearchPstmt.executeQuery();
+				boolean Isfirst = true;				
+				while (DataSearchRs.next()) {				
+					if (Isfirst) {
+					    String insertSql = "INSERT INTO sumtable VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+					    PreparedStatement insertPstmt = conn.prepareStatement(insertSql);
+					    insertPstmt.setString(1, DataSearchRs.getString("closingmon"));
+					    insertPstmt.setString(2, DataSearchRs.getString("comcode"));
+					    insertPstmt.setString(3, DataSearchRs.getString("plant"));
+					    insertPstmt.setString(4, DataSearchRs.getString("storcode"));
+					    insertPstmt.setString(5, DataSearchRs.getString("lotnum"));
+					    insertPstmt.setString(6, DataSearchRs.getString("matcode"));
+					    insertPstmt.setString(7, DataSearchRs.getString("matdesc"));
+					    insertPstmt.setString(8, DataSearchRs.getString("mattype"));
+					    insertPstmt.setString(9, DataSearchRs.getString("spec"));
+					    insertPstmt.setString(10, "0");
+
+					    String MVType = DataSearchRs.getString("movetype").substring(0, 2);
+					    if (MVType.equals("GR")) {
+					        insertPstmt.setDouble(11, DataSearchRs.getDouble("quantity"));
+						    insertPstmt.setString(12, "0");
+						    insertPstmt.setString(13, "0");
+					        insertPstmt.setDouble(14, 0);
+						    insertPstmt.setDouble(15, DataSearchRs.getDouble("quantity"));
+					    } else {
+					    	insertPstmt.setDouble(11, 0);
+						    insertPstmt.setString(12, "0");
+						    insertPstmt.setString(13, "0");
+					        insertPstmt.setDouble(14, DataSearchRs.getDouble("quantity"));
+					        insertPstmt.setDouble(15, -DataSearchRs.getDouble("quantity"));
+					    }
+					    insertPstmt.executeUpdate();
+					    Isfirst = false;
+					}else {
+						String scanSql = "SELECT GrTransacQty, GiTransacQty FROM sumtable WHERE comcode = ? AND plant = ? AND warehouse = ? AND lotnum = ?";
+					    PreparedStatement scanPstmt = conn.prepareStatement(scanSql);
+					    scanPstmt.setString(1, DataSearchRs.getString("comcode"));
+					    scanPstmt.setString(2, DataSearchRs.getString("plant"));
+					    scanPstmt.setString(3, DataSearchRs.getString("storcode")); // warehouse
+					    scanPstmt.setString(4, DataSearchRs.getString("lotnum"));
+					    ResultSet scanRs = scanPstmt.executeQuery();
+
+					    String MVType = DataSearchRs.getString("movetype").substring(0, 2);
+					    double quantity = DataSearchRs.getDouble("quantity");
+
+					    if (scanRs.next()) {
+					        // 2-2. 기존 데이터가 있으면 UPDATE
+					        double GRQty = scanRs.getDouble("GrTransacQty");
+					        double GIQty = scanRs.getDouble("GiTransacQty");
+
+					        if (MVType.equals("GR")) {
+					        	GRQty += quantity;
+					        } else if (MVType.equals("GI")) {
+					        	GIQty += quantity;
+					        }
+					        double TotalQty = GRQty - GIQty; // 15열 계산
+
+					        String updateSql = "UPDATE sumtable SET GrTransacQty = ?, GiTransacQty = ?, EndStocQty = ? WHERE comcode = ? AND plant = ? AND warehouse = ? AND lotnum = ?";
+					        PreparedStatement updatePstmt = conn.prepareStatement(updateSql);
+					        updatePstmt.setDouble(1, GRQty);
+					        updatePstmt.setDouble(2, GIQty);
+					        updatePstmt.setDouble(3, TotalQty);
+					        updatePstmt.setString(4, DataSearchRs.getString("comcode"));
+					        updatePstmt.setString(5, DataSearchRs.getString("plant"));
+					        updatePstmt.setString(6, DataSearchRs.getString("storcode"));
+					        updatePstmt.setString(7, DataSearchRs.getString("lotnum"));
+					        updatePstmt.executeUpdate();
+					    } else {
+					        // 2-3. 기존 데이터가 없으면 INSERT
+					        String insertSql = "INSERT INTO sumtable VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+					        PreparedStatement insertPstmt = conn.prepareStatement(insertSql);
+					        insertPstmt.setString(1, DataSearchRs.getString("closingmon"));
+						    insertPstmt.setString(2, DataSearchRs.getString("comcode"));
+						    insertPstmt.setString(3, DataSearchRs.getString("plant"));
+						    insertPstmt.setString(4, DataSearchRs.getString("storcode"));
+						    insertPstmt.setString(5, DataSearchRs.getString("lotnum"));
+						    insertPstmt.setString(6, DataSearchRs.getString("matcode"));
+						    insertPstmt.setString(7, DataSearchRs.getString("matdesc"));
+						    insertPstmt.setString(8, DataSearchRs.getString("mattype"));
+						    insertPstmt.setString(9, DataSearchRs.getString("spec"));
+						    insertPstmt.setString(10, "0");
+						    
+					        if (MVType.equals("GR")) {
+					            insertPstmt.setDouble(11, quantity);
+						        insertPstmt.setString(12, "0");
+							    insertPstmt.setString(13, "0");
+					            insertPstmt.setDouble(14, 0);
+					            insertPstmt.setDouble(15, quantity);
+					        } else {
+					            insertPstmt.setDouble(11, 0);
+						        insertPstmt.setString(12, "0");
+							    insertPstmt.setString(13, "0");
+					            insertPstmt.setDouble(14, quantity);
+					            insertPstmt.setDouble(15, -quantity);
+					        }
+					        insertPstmt.executeUpdate();
+					    }
+					    scanRs.close();
+					}
+				}
 			}
 		} catch (Exception e) {
 			// TODO: handle exception
+			e.printStackTrace();
 		}
 	}
 	
