@@ -253,6 +253,21 @@ $(document).ready(function(){
 	    	});
 		}
 	});
+	setInterval(function() {
+		$.ajax({
+			url : '${contextPath}/Approval/Renew.do',
+			type : 'POST',
+			contentType: 'application/json; charset=utf-8',
+			dataType: 'json',
+			async: false,
+			success : function(data){
+				console.log(data.result);
+			},
+			error: function(jqXHR, textStatus, errorThrown){
+				alert('오류 발생: ' + textStatus + ', ' + errorThrown);
+	    	}
+    	});
+    }, 300000);
 })
 </script>
 <jsp:include page="../Header.jsp"></jsp:include>

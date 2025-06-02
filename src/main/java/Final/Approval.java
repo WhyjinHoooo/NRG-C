@@ -59,21 +59,25 @@ public class Approval extends HttpServlet {
         JSONObject jsonObj = null;
         try {
         	jsonObj = new JSONObject(jsonString);
-            switch(action) {
-            case "/PUR.do":
-            	LoadedData = dao.forPURdata(jsonObj);
-                break;
-            case "/BFG.do":
-                LoadedData = dao.forBFGdata(jsonObj);
-            	break;
-            case "/MGR.do":
-            	LoadedData = dao.forMGRdata(jsonObj);
-            	break;
-            case "/SDG.do":
-            	LoadedData = dao.forSDGdata(jsonObj);
-            	break;
-            }
-            dao.sumProcess();
+        	if(jsonString == null || jsonString.trim().isEmpty()) {
+                dao.sumProcess();
+        	}else {
+        		switch(action) {
+                case "/PUR.do":
+                	LoadedData = dao.forPURdata(jsonObj);
+                    break;
+                case "/BFG.do":
+                    LoadedData = dao.forBFGdata(jsonObj);
+                	break;
+                case "/MGR.do":
+                	LoadedData = dao.forMGRdata(jsonObj);
+                	break;
+                case "/SDG.do":
+                	LoadedData = dao.forSDGdata(jsonObj);
+                	break;
+                }
+        		dao.sumProcess();
+        	}
         }catch (Exception e) {
         	e.printStackTrace();
             writer.print("{\"result\":\"fail\", \"message\":\"" + e.getMessage().replace("\"", "\\\"") + "\"}");
