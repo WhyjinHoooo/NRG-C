@@ -324,6 +324,4 @@ public class InfoLoadingDAO {
 		}
 	    return result;
 	}
-
-
 }

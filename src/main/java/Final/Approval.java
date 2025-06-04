@@ -44,50 +44,51 @@ public class Approval extends HttpServlet {
         String action = request.getPathInfo(); // 예: "/StockInfoLoading.do"
         System.out.println("action : " + action);
         if (action == null) action = "";
-
-        // JSON 읽기
         StringBuilder sb = new StringBuilder();
         String line;
         try (BufferedReader reader = request.getReader()) {
-            while ((line = reader.readLine()) != null) {
+        	while ((line = reader.readLine()) != null) {
                 sb.append(line);
             }
-        }
         String jsonString = sb.toString();
         String LoadedData = null;
+        String SaveData = null;
         ApprovalDAO dao = new ApprovalDAO();
         JSONObject jsonObj = null;
-        try {
-        	jsonObj = new JSONObject(jsonString);
-        	if(jsonString == null || jsonString.trim().isEmpty()) {
-                dao.sumProcess();
-        	}else {
-        		switch(action) {
-                case "/PUR.do":
-                	LoadedData = dao.forPURdata(jsonObj);
-                    break;
-                case "/BFG.do":
-                    LoadedData = dao.forBFGdata(jsonObj);
-                	break;
-                case "/MGR.do":
-                	LoadedData = dao.forMGRdata(jsonObj);
-                	break;
-                case "/SDG.do":
-                	LoadedData = dao.forSDGdata(jsonObj);
-                	break;
-                }
-        		dao.sumProcess();
+        	try {
+	        	jsonObj = new JSONObject(jsonString);
+	        	if(jsonString == null || jsonString.trim().isEmpty()) {
+	        		SaveData = dao.sumProcess();
+	        	}else {
+	        		switch(action) {
+	                case "/PUR.do":
+	                	LoadedData = dao.forPURdata(jsonObj);
+	                    break;
+	                case "/BFG.do":
+	                    LoadedData = dao.forBFGdata(jsonObj);
+	                	break;
+	                case "/MGR.do":
+	                	LoadedData = dao.forMGRdata(jsonObj);
+	                	break;
+	                case "/SDG.do":
+	                	LoadedData = dao.forSDGdata(jsonObj);
+	                	break;
+	                }
+	        		SaveData = dao.sumProcess();
+	        	}
+	        }catch (Exception e) {
+	        	e.printStackTrace();
+	            writer.print("{\"result\":\"fail\", \"message\":\"" + e.getMessage().replace("\"", "\\\"") + "\"}");
+	            return;
+			}
+        	System.out.println("LoadedData : " + LoadedData);
+        	if (LoadedData == null || LoadedData.equals("No")) {
+        	    writer.print("{\"result\":\"fail\", \"message\":\"LoadedData가 null이거나 'No'입니다.\"}");
+        	} else if (SaveData == null || SaveData.equals("Bad")) {
+        	    writer.print("{\"result\":\"fail\", \"message\":\"SaveData가 null이거나 'Bad'입니다.\"}");
+        	} else {
+        	    writer.print("{\"result\":\"success\", \"message\":\"정상적으로 처리되었습니다.\"}");
         	}
-        }catch (Exception e) {
-        	e.printStackTrace();
-            writer.print("{\"result\":\"fail\", \"message\":\"" + e.getMessage().replace("\"", "\\\"") + "\"}");
-            return;
-		}
-        System.out.println("LoadedData : " + LoadedData);
-        if(LoadedData == null || LoadedData.equals("No")) {
-        	writer.print("{\"result\":\"fail\"}");
-        }else {
-        	writer.print("{\"result\":\"success\"}");
-        }
+        }	
 	}
 }

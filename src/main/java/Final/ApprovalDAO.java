@@ -49,8 +49,9 @@ public class ApprovalDAO {
 	    	pstmt.setString(1, DataList[2] + DataList[3] + ".txt");
 	    	rs = pstmt.executeQuery();
 	    	if(rs.next()) {
-	    		String CountSql = "SELECT COUNT(*) as length FROM invenlogh";
+	    		String CountSql = "SELECT COUNT(*) as length FROM invenlogh WHERE ClosingMon = ?";
 	    		PreparedStatement CountPstmt = conn.prepareStatement(CountSql);
+	    		CountPstmt.setString(1, DataList[3]);
 	    		ResultSet CountRs = CountPstmt.executeQuery();
 	    		if(CountRs.next()) {
 	    			if(CountRs.getInt("length") == 0) {
@@ -121,8 +122,9 @@ public class ApprovalDAO {
 	    	pstmt.setString(1, DataList[2] + DataList[3] + ".txt");
 	    	rs = pstmt.executeQuery();
 	    	if(rs.next()) {
-	    		String CountSql = "SELECT COUNT(*) as length FROM invenlogh";
+	    		String CountSql = "SELECT COUNT(*) as length FROM invenlogh WHERE ClosingMon = ?";
 	    		PreparedStatement CountPstmt = conn.prepareStatement(CountSql);
+	    		CountPstmt.setString(1, DataList[3]);
 	    		ResultSet CountRs = CountPstmt.executeQuery();
 	    		if(CountRs.next()) {
 	    			if(CountRs.getInt("length") == 0) {
@@ -193,8 +195,9 @@ public class ApprovalDAO {
 	    	pstmt.setString(1, DataList[2] + DataList[3] + ".txt");
 	    	rs = pstmt.executeQuery();
 	    	if(rs.next()) {
-	    		String CountSql = "SELECT COUNT(*) as length FROM invenlogh";
+	    		String CountSql = "SELECT COUNT(*) as length FROM invenlogh WHERE ClosingMon = ?";
 	    		PreparedStatement CountPstmt = conn.prepareStatement(CountSql);
+	    		CountPstmt.setString(1, DataList[3]);
 	    		ResultSet CountRs = CountPstmt.executeQuery();
 	    		if(CountRs.next()) {
 	    			if(CountRs.getInt("length") == 0) {
@@ -265,8 +268,9 @@ public class ApprovalDAO {
 	    	pstmt.setString(1, DataList[2] + DataList[3] + ".txt");
 	    	rs = pstmt.executeQuery();
 	    	if(rs.next()) {
-	    		String CountSql = "SELECT COUNT(*) as length FROM invenlogh";
+	    		String CountSql = "SELECT COUNT(*) as length FROM invenlogh WHERE ClosingMon = ?";
 	    		PreparedStatement CountPstmt = conn.prepareStatement(CountSql);
+	    		CountPstmt.setString(1, DataList[3]);
 	    		ResultSet CountRs = CountPstmt.executeQuery();
 	    		if(CountRs.next()) {
 	    			if(CountRs.getInt("length") == 0) {
@@ -319,7 +323,8 @@ public class ApprovalDAO {
 		return YN;
 	}
 
-	public void sumProcess() {
+	public String sumProcess() {
+		String YN = "Good";
 		connDB();
 		String EmptySql = "SELECT COUNT(*) as length FROM sumtable";
 		try {
@@ -345,7 +350,7 @@ public class ApprovalDAO {
 			if(TableDataCount == 0) {
 				boolean Isfirst = true;
 				while (FileSearchRs.next()) {
-					DataSearchSql = "SELECT * FROM InvenLogl WHERE docnum = ? AND RegistOX = ?";
+					DataSearchSql = "SELECT * FROM InvenLogl WHERE docnum = ? AND RegistOX = ? ORDER BY quantity DESC";
 					DataSearchPstmt = conn.prepareStatement(DataSearchSql);
 					DataSearchPstmt.setString(1, FileSearchRs.getString("DocNum"));
 					DataSearchPstmt.setString(2, "X");
@@ -376,12 +381,13 @@ public class ApprovalDAO {
 						    insertPstmt.executeUpdate();
 						    Isfirst = false;
 						}else {
-							String scanSql = "SELECT GrTransacQty, GiTransacQty FROM sumtable WHERE comcode = ? AND plant = ? AND warehouse = ? AND lotnum = ?";
+							String scanSql = "SELECT GrTransacQty, GiTransacQty FROM sumtable WHERE comcode = ? AND plant = ? AND warehouse = ? AND lotnum = ? AND matcode = ?";
 						    PreparedStatement scanPstmt = conn.prepareStatement(scanSql);
 						    scanPstmt.setString(1, DataSearchRs.getString("comcode"));
 						    scanPstmt.setString(2, DataSearchRs.getString("plant"));
 						    scanPstmt.setString(3, DataSearchRs.getString("storcode"));
 						    scanPstmt.setString(4, DataSearchRs.getString("lotnum"));
+						    scanPstmt.setString(5, DataSearchRs.getString("matcode"));
 						    ResultSet scanRs = scanPstmt.executeQuery();
 
 						    String MVType = DataSearchRs.getString("movetype").substring(0, 2);
@@ -398,7 +404,7 @@ public class ApprovalDAO {
 						        }
 						        double TotalQty = GRQty - GIQty; // 15열 계산
 						        if(TotalQty >= 0) {
-							        String updateSql = "UPDATE sumtable SET GrTransacQty = ?, GiTransacQty = ?, EndStocQty = ? WHERE comcode = ? AND plant = ? AND warehouse = ? AND lotnum = ?";
+							        String updateSql = "UPDATE sumtable SET GrTransacQty = ?, GiTransacQty = ?, EndStocQty = ? WHERE comcode = ? AND plant = ? AND warehouse = ? AND lotnum = ? AND matcode = ?";
 							        PreparedStatement updatePstmt = conn.prepareStatement(updateSql);
 							        updatePstmt.setDouble(1, GRQty);
 							        updatePstmt.setDouble(2, GIQty);
@@ -407,6 +413,7 @@ public class ApprovalDAO {
 							        updatePstmt.setString(5, DataSearchRs.getString("plant"));
 							        updatePstmt.setString(6, DataSearchRs.getString("storcode"));
 							        updatePstmt.setString(7, DataSearchRs.getString("lotnum"));
+							        updatePstmt.setString(8, DataSearchRs.getString("matcode"));
 							        updatePstmt.executeUpdate();
 						        }
 						    } else {
@@ -444,19 +451,20 @@ public class ApprovalDAO {
 				}
 			}else {
 				while (FileSearchRs.next()) {
-					DataSearchSql = "SELECT * FROM InvenLogl WHERE docnum = ? AND RegistOX = ?";
+					DataSearchSql = "SELECT * FROM InvenLogl WHERE docnum = ? AND RegistOX = ? ORDER BY quantity DESC";
 					DataSearchPstmt = conn.prepareStatement(DataSearchSql);
 					DataSearchPstmt.setString(1, FileSearchRs.getString("DocNum"));
 					DataSearchPstmt.setString(2, "X");
 					DataSearchRs = DataSearchPstmt.executeQuery();
 					while(DataSearchRs.next()) {
-						String QuerySql = "SELECT * FROM sumtable WHERE closingMon = ? AND comcode = ? AND plant = ? AND warehouse = ? AND lotnum = ?";
+						String QuerySql = "SELECT * FROM sumtable WHERE closingMon = ? AND comcode = ? AND plant = ? AND warehouse = ? AND lotnum = ? AND matcode = ?";
 						PreparedStatement QueryPstmt = conn.prepareStatement(QuerySql);
 						QueryPstmt.setString(1, DataSearchRs.getString("closingmon"));
 						QueryPstmt.setString(2, DataSearchRs.getString("comcode"));
 						QueryPstmt.setString(3, DataSearchRs.getString("plant"));
 						QueryPstmt.setString(4, DataSearchRs.getString("storcode"));
 						QueryPstmt.setString(5, DataSearchRs.getString("lotnum"));
+						QueryPstmt.setString(6, DataSearchRs.getString("matcode"));
 						ResultSet QueryRs = QueryPstmt.executeQuery();
 						
 						String MvType = DataSearchRs.getString("movetype").substring(0, 2); 
@@ -477,7 +485,7 @@ public class ApprovalDAO {
 							}
 							TotalQty = GrQty - GiQty;
 							if(TotalQty >= 0) {
-								String updateSql = "UPDATE sumtable SET GrTransacQty = ?, GiTransacQty = ?, EndStocQty = ? WHERE comcode = ? AND plant = ? AND warehouse = ? AND lotnum = ?";
+								String updateSql = "UPDATE sumtable SET GrTransacQty = ?, GiTransacQty = ?, EndStocQty = ? WHERE comcode = ? AND plant = ? AND warehouse = ? AND lotnum = ? AND matcode = ?";
 								PreparedStatement updatePstmt = conn.prepareStatement(updateSql);
 								updatePstmt.setDouble(1, GrQty);
 								updatePstmt.setDouble(2, GiQty);
@@ -486,6 +494,7 @@ public class ApprovalDAO {
 								updatePstmt.setString(5, DataSearchRs.getString("plant"));
 								updatePstmt.setString(6, DataSearchRs.getString("storcode"));
 								updatePstmt.setString(7, DataSearchRs.getString("lotnum"));
+								updatePstmt.setString(8, DataSearchRs.getString("matcode"));
 								updatePstmt.executeUpdate();
 								
 								String FileUpSql = "UPDATE InvenLogl SET RegistOX = ? WHERE keyvalue = ?";
@@ -526,10 +535,12 @@ public class ApprovalDAO {
 					} // while(DataSearchRs.next()) 끝
 				} // while (FileSearchRs.next()) 끝
 			}
-		} catch (Exception e) {
+		} catch (SQLException e) {
 			// TODO: handle exception
+			YN = "Bad";
 			e.printStackTrace();
 		}
+		return YN;
 	}
 	
 	

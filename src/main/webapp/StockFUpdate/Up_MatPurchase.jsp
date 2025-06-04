@@ -244,7 +244,7 @@ $(document).ready(function(){
 					if(data.result.trim() === 'success'){
 						location.reload();
 					}else{
-						alert('bad');
+						alert(data.message.trim());
 					}
 				},
 				error: function(jqXHR, textStatus, errorThrown){
@@ -253,7 +253,7 @@ $(document).ready(function(){
 	    	});
 		}
 	});
-	setInterval(function() {
+/* 	setInterval(function() {
 		$.ajax({
 			url : '${contextPath}/Approval/Renew.do',
 			type : 'POST',
@@ -262,12 +262,15 @@ $(document).ready(function(){
 			async: false,
 			success : function(data){
 				console.log(data.result);
+				if(data.result.equals('fail')){
+					alert(data.message.trim());
+				}
 			},
 			error: function(jqXHR, textStatus, errorThrown){
 				alert('오류 발생: ' + textStatus + ', ' + errorThrown);
 	    	}
     	});
-    }, 300000);
+    }, 300000); */
 })
 </script>
 <jsp:include page="../Header.jsp"></jsp:include>
