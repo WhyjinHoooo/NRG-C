@@ -381,13 +381,14 @@ public class ApprovalDAO {
 						    insertPstmt.executeUpdate();
 						    Isfirst = false;
 						}else {
-							String scanSql = "SELECT GrTransacQty, GiTransacQty FROM sumtable WHERE comcode = ? AND plant = ? AND warehouse = ? AND lotnum = ? AND matcode = ?";
+							String scanSql = "SELECT GrTransacQty, GiTransacQty FROM sumtable WHERE comcode = ? AND plant = ? AND warehouse = ? AND lotnum = ? AND matcode = ? AND mattype = ?";
 						    PreparedStatement scanPstmt = conn.prepareStatement(scanSql);
 						    scanPstmt.setString(1, DataSearchRs.getString("comcode"));
 						    scanPstmt.setString(2, DataSearchRs.getString("plant"));
 						    scanPstmt.setString(3, DataSearchRs.getString("storcode"));
 						    scanPstmt.setString(4, DataSearchRs.getString("lotnum"));
 						    scanPstmt.setString(5, DataSearchRs.getString("matcode"));
+						    scanPstmt.setString(6, DataSearchRs.getString("mattype"));
 						    ResultSet scanRs = scanPstmt.executeQuery();
 
 						    String MVType = DataSearchRs.getString("movetype").substring(0, 2);
@@ -404,7 +405,7 @@ public class ApprovalDAO {
 						        }
 						        double TotalQty = GRQty - GIQty; // 15열 계산
 						        if(TotalQty >= 0) {
-							        String updateSql = "UPDATE sumtable SET GrTransacQty = ?, GiTransacQty = ?, EndStocQty = ? WHERE comcode = ? AND plant = ? AND warehouse = ? AND lotnum = ? AND matcode = ?";
+							        String updateSql = "UPDATE sumtable SET GrTransacQty = ?, GiTransacQty = ?, EndStocQty = ? WHERE comcode = ? AND plant = ? AND warehouse = ? AND lotnum = ? AND matcode = ? AND mattype = ?";
 							        PreparedStatement updatePstmt = conn.prepareStatement(updateSql);
 							        updatePstmt.setDouble(1, GRQty);
 							        updatePstmt.setDouble(2, GIQty);
@@ -414,6 +415,7 @@ public class ApprovalDAO {
 							        updatePstmt.setString(6, DataSearchRs.getString("storcode"));
 							        updatePstmt.setString(7, DataSearchRs.getString("lotnum"));
 							        updatePstmt.setString(8, DataSearchRs.getString("matcode"));
+							        updatePstmt.setString(9, DataSearchRs.getString("mattype"));
 							        updatePstmt.executeUpdate();
 						        }
 						    } else {
@@ -457,7 +459,7 @@ public class ApprovalDAO {
 					DataSearchPstmt.setString(2, "X");
 					DataSearchRs = DataSearchPstmt.executeQuery();
 					while(DataSearchRs.next()) {
-						String QuerySql = "SELECT * FROM sumtable WHERE closingMon = ? AND comcode = ? AND plant = ? AND warehouse = ? AND lotnum = ? AND matcode = ?";
+						String QuerySql = "SELECT * FROM sumtable WHERE closingMon = ? AND comcode = ? AND plant = ? AND warehouse = ? AND lotnum = ? AND matcode = ? AND mattype = ?";
 						PreparedStatement QueryPstmt = conn.prepareStatement(QuerySql);
 						QueryPstmt.setString(1, DataSearchRs.getString("closingmon"));
 						QueryPstmt.setString(2, DataSearchRs.getString("comcode"));
@@ -465,6 +467,7 @@ public class ApprovalDAO {
 						QueryPstmt.setString(4, DataSearchRs.getString("storcode"));
 						QueryPstmt.setString(5, DataSearchRs.getString("lotnum"));
 						QueryPstmt.setString(6, DataSearchRs.getString("matcode"));
+						QueryPstmt.setString(7, DataSearchRs.getString("mattype"));
 						ResultSet QueryRs = QueryPstmt.executeQuery();
 						
 						String MvType = DataSearchRs.getString("movetype").substring(0, 2); 
@@ -485,7 +488,7 @@ public class ApprovalDAO {
 							}
 							TotalQty = GrQty - GiQty;
 							if(TotalQty >= 0) {
-								String updateSql = "UPDATE sumtable SET GrTransacQty = ?, GiTransacQty = ?, EndStocQty = ? WHERE comcode = ? AND plant = ? AND warehouse = ? AND lotnum = ? AND matcode = ?";
+								String updateSql = "UPDATE sumtable SET GrTransacQty = ?, GiTransacQty = ?, EndStocQty = ? WHERE comcode = ? AND plant = ? AND warehouse = ? AND lotnum = ? AND matcode = ? AND mattype = ?";
 								PreparedStatement updatePstmt = conn.prepareStatement(updateSql);
 								updatePstmt.setDouble(1, GrQty);
 								updatePstmt.setDouble(2, GiQty);
@@ -495,6 +498,7 @@ public class ApprovalDAO {
 								updatePstmt.setString(6, DataSearchRs.getString("storcode"));
 								updatePstmt.setString(7, DataSearchRs.getString("lotnum"));
 								updatePstmt.setString(8, DataSearchRs.getString("matcode"));
+								updatePstmt.setString(9, DataSearchRs.getString("mattype"));
 								updatePstmt.executeUpdate();
 								
 								String FileUpSql = "UPDATE InvenLogl SET RegistOX = ? WHERE keyvalue = ?";
