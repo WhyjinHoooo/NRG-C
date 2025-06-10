@@ -68,9 +68,9 @@ function InfoSearch(field){
     case "PlantSearch":
         window.open("${contextPath}/Pop/PlantSearch.jsp?Comcode=" + ComCode, "PopUp02", "width=" + popupWidth + ",height=" + popupHeight + ",left=" + position.x + ",top=" + position.y);
     break;
-    case "FileSearch":
+/*     case "FileSearch":
         window.open("${contextPath}/Pop/fileSearch.jsp?Comcode=" + ComCode, "PopUp03", "width=" + popupWidth + ",height=" + popupHeight + ",left=" + position.x + ",top=" + position.y);
-    break;
+    break; */
     }
 }
 function DateSetting(){
@@ -253,6 +253,27 @@ $(document).ready(function(){
 	    	});
 		}
 	});
+	$('.DownBtn').click(function(){
+		if(confirm('창고수불데이터를 다운로드 하시겠습니까?')){
+			alert('다운로드를 시작합니다.');
+			$.ajax({
+		        url: "${contextPath}/MatDataDown",
+		        type: "GET",
+		        success: function(data, status, xhr) {
+		            var blob = new Blob([data], {type: "text/csv"});
+		            var link = document.createElement("a");
+		            link.href = window.URL.createObjectURL(blob);
+		            link.download = "창고수불데이터.csv";
+		            link.click();
+		        },
+		        error: function(xhr, status, error) {
+		            alert("다운로드 실패: " + error);
+		        }
+		    });
+		}else{
+			alert('다운로드를 취소합니다.');
+		}
+	})
 /* 	setInterval(function() {
 		$.ajax({
 			url : '${contextPath}/Approval/Renew.do',
@@ -289,7 +310,7 @@ $(document).ready(function(){
 		
 		<div class="InfoInput">
 			<label>UPLODA DATA :  </label>
-			<input type="text" class="UploadDataCode FilterOP" name="UploadDataCode" onclick="InfoSearch('FileSearch')" placeholder="SELECT" readonly>
+			<input type="text" class="UploadDataCode FilterOP" name="UploadDataCode" value="PUR" readonly>
 		</div>
 		
 		<div class="InfoInput">
@@ -324,6 +345,7 @@ $(document).ready(function(){
 			</table>
 		</div>
 		<div class="Btn-Area">
+			<button class="DownBtn">다운로드</button>
 			<button class="OkBtn">확정</button>
 			<button class="DelBtn">삭제</button>
 		</div>

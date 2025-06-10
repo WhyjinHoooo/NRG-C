@@ -184,6 +184,27 @@ html {
 	display: flex;
     justify-content: flex-end;
 	}
+	.StockArea-Result > .Btn-Area > button.DownBtn {
+    background-color: #002060;
+   	width: 10%;
+    height: 30px;
+    color: white;
+    font-weight: bold;
+    font-size: smaller;
+    border: 1px solid #1F4E79;
+	padding: 5px;
+	border-radius: 5px;
+	}
+	.StockArea-Result > .Btn-Area > button.DownBtn:hover {
+	background: #0068ff;
+	color: #fff;
+	border: 1px solid #0068ff;
+	}
+	.StockArea-Result > .Btn-Area > button.DownBtn:active {
+	background: #0068ff;
+	color: #fff;
+	border: 1px solid #0068ff;
+	}
 	.StockArea-Result > .Btn-Area > button.OkBtn {
     background: darkgreen;
    	width: 10%;
@@ -191,6 +212,7 @@ html {
     color: white;
     font-weight: bold;
     font-size: smaller;
+    margin-left: 1%;
     border: 1px solid darkgreen;
 	padding: 5px;
 	border-radius: 5px;

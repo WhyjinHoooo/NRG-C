@@ -68,9 +68,9 @@ function InfoSearch(field){
     case "PlantSearch":
         window.open("${contextPath}/Pop/PlantSearch.jsp?Comcode=" + ComCode, "PopUp02", "width=" + popupWidth + ",height=" + popupHeight + ",left=" + position.x + ",top=" + position.y);
     break;
-    case "FileSearch":
+/*     case "FileSearch":
         window.open("${contextPath}/Pop/fileSearch.jsp?Comcode=" + ComCode, "PopUp03", "width=" + popupWidth + ",height=" + popupHeight + ",left=" + position.x + ",top=" + position.y);
-    break;
+    break; */
     }
 }
 function DateSetting(){
@@ -261,7 +261,7 @@ $(document).ready(function(){
 		
 		<div class="InfoInput">
 			<label>UPLODA DATA :  </label>
-			<input type="text" class="UploadDataCode FilterOP" name="UploadDataCode" onclick="InfoSearch('FileSearch')" placeholder="SELECT" readonly>
+			<input type="text" class="UploadDataCode FilterOP" name="UploadDataCode" value="MGR" readonly>
 		</div>
 		
 		<div class="InfoInput">

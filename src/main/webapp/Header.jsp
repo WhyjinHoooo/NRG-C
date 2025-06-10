@@ -78,7 +78,7 @@ $(document).ready(function(){
                 	<li><a class="dropdown-item" href="${contextPath}/StockFUpdate/Up_MatPurchase.jsp">자재매입 실적</a></li>
                 	<li><a class="dropdown-item" href="${contextPath}/StockFUpdate/Up_Feedstock.jsp">생산투입 실적</a></li>
                 	<li><a class="dropdown-item" href="${contextPath}/StockFUpdate/Up_Subpackreceipt.jsp">생산입고 실적</a></li>
-                	<li><a class="dropdown-item" href="${contextPath}/StockFUpdate/Up_ProductShipment.jsp">재상품 판매실적</a></li>
+                	<li><a class="dropdown-item" href="${contextPath}/StockFUpdate/Up_ProductShipment.jsp">제상품 판매실적</a></li>
                 	<li><a class="dropdown-item" href="${contextPath}/StockFUpdate/Up_ProResult.jsp">공정별 작업실적</a></li>
                 	<li><a class="dropdown-item" href="${contextPath}/StockFUpdate/Up_WorkOrder.jsp">작지 ID생성실적</a></li>
               	</ul>
