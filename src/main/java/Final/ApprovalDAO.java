@@ -346,199 +346,100 @@ public class ApprovalDAO {
 			FileSearchSql = "SELECT * FROM invenlogh";
 			FileSearchPstmt = conn.prepareStatement(FileSearchSql);
 			FileSearchRs = FileSearchPstmt.executeQuery();
-			
-			if(TableDataCount == 0) {
-				boolean Isfirst = true;
-				while (FileSearchRs.next()) {
-					DataSearchSql = "SELECT * FROM InvenLogl WHERE docnum = ? AND RegistOX = ? ORDER BY quantity DESC";
-					DataSearchPstmt = conn.prepareStatement(DataSearchSql);
-					DataSearchPstmt.setString(1, FileSearchRs.getString("DocNum"));
-					DataSearchPstmt.setString(2, "X");
-					DataSearchRs = DataSearchPstmt.executeQuery();
-					while(DataSearchRs.next()) {
-						if (Isfirst && DataSearchRs.getString("movetype").equals("GR")) {
-						    String insertSql = "INSERT INTO sumtable VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
-						    PreparedStatement insertPstmt = conn.prepareStatement(insertSql);
-						    insertPstmt.setString(1, DataSearchRs.getString("closingmon"));
-						    insertPstmt.setString(2, DataSearchRs.getString("comcode"));
-						    insertPstmt.setString(3, DataSearchRs.getString("plant"));
-						    insertPstmt.setString(4, DataSearchRs.getString("storcode"));
-						    insertPstmt.setString(5, DataSearchRs.getString("lotnum"));
-						    insertPstmt.setString(6, DataSearchRs.getString("matcode"));
-						    insertPstmt.setString(7, DataSearchRs.getString("matdesc"));
-						    insertPstmt.setString(8, DataSearchRs.getString("mattype"));
-						    insertPstmt.setString(9, DataSearchRs.getString("spec"));
-						    insertPstmt.setString(10, "0");
-
-						    String MVType = DataSearchRs.getString("movetype").substring(0, 2);
-						    if (MVType.equals("GR")) {
-						        insertPstmt.setDouble(11, DataSearchRs.getDouble("quantity"));
-							    insertPstmt.setString(12, "0");
-							    insertPstmt.setString(13, "0");
-						        insertPstmt.setDouble(14, 0);
-							    insertPstmt.setDouble(15, DataSearchRs.getDouble("quantity"));
-						    }
-						    insertPstmt.executeUpdate();
-						    Isfirst = false;
-						}else {
-							String scanSql = "SELECT GrTransacQty, GiTransacQty FROM sumtable WHERE comcode = ? AND plant = ? AND warehouse = ? AND lotnum = ? AND matcode = ? AND mattype = ?";
-						    PreparedStatement scanPstmt = conn.prepareStatement(scanSql);
-						    scanPstmt.setString(1, DataSearchRs.getString("comcode"));
-						    scanPstmt.setString(2, DataSearchRs.getString("plant"));
-						    scanPstmt.setString(3, DataSearchRs.getString("storcode"));
-						    scanPstmt.setString(4, DataSearchRs.getString("lotnum"));
-						    scanPstmt.setString(5, DataSearchRs.getString("matcode"));
-						    scanPstmt.setString(6, DataSearchRs.getString("mattype"));
-						    ResultSet scanRs = scanPstmt.executeQuery();
-
-						    String MVType = DataSearchRs.getString("movetype").substring(0, 2);
-						    double quantity = DataSearchRs.getDouble("quantity");
-
-						    if (scanRs.next()) {
-						        double GRQty = scanRs.getDouble("GrTransacQty");
-						        double GIQty = scanRs.getDouble("GiTransacQty");
-
-						        if (MVType.equals("GR")) {
-						        	GRQty += quantity;
-						        } else if (MVType.equals("GI")) {
-						        	GIQty += quantity;
-						        }
-						        double TotalQty = GRQty - GIQty; // 15열 계산
-						        if(TotalQty >= 0) {
-							        String updateSql = "UPDATE sumtable SET GrTransacQty = ?, GiTransacQty = ?, EndStocQty = ? WHERE comcode = ? AND plant = ? AND warehouse = ? AND lotnum = ? AND matcode = ? AND mattype = ?";
-							        PreparedStatement updatePstmt = conn.prepareStatement(updateSql);
-							        updatePstmt.setDouble(1, GRQty);
-							        updatePstmt.setDouble(2, GIQty);
-							        updatePstmt.setDouble(3, TotalQty);
-							        updatePstmt.setString(4, DataSearchRs.getString("comcode"));
-							        updatePstmt.setString(5, DataSearchRs.getString("plant"));
-							        updatePstmt.setString(6, DataSearchRs.getString("storcode"));
-							        updatePstmt.setString(7, DataSearchRs.getString("lotnum"));
-							        updatePstmt.setString(8, DataSearchRs.getString("matcode"));
-							        updatePstmt.setString(9, DataSearchRs.getString("mattype"));
-							        updatePstmt.executeUpdate();
-						        }
-						    } else {
-						        String insertSql = "INSERT INTO sumtable VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
-						        PreparedStatement insertPstmt = conn.prepareStatement(insertSql);
-						        insertPstmt.setString(1, DataSearchRs.getString("closingmon"));
-							    insertPstmt.setString(2, DataSearchRs.getString("comcode"));
-							    insertPstmt.setString(3, DataSearchRs.getString("plant"));
-							    insertPstmt.setString(4, DataSearchRs.getString("storcode"));
-							    insertPstmt.setString(5, DataSearchRs.getString("lotnum"));
-							    insertPstmt.setString(6, DataSearchRs.getString("matcode"));
-							    insertPstmt.setString(7, DataSearchRs.getString("matdesc"));
-							    insertPstmt.setString(8, DataSearchRs.getString("mattype"));
-							    insertPstmt.setString(9, DataSearchRs.getString("spec"));
-							    insertPstmt.setString(10, "0");
-							    
-						        if (MVType.equals("GR")) {
-						            insertPstmt.setDouble(11, quantity);
-							        insertPstmt.setString(12, "0");
-								    insertPstmt.setString(13, "0");
-						            insertPstmt.setDouble(14, 0);
-						            insertPstmt.setDouble(15, quantity);
-						            insertPstmt.executeUpdate();
-						        }
-						        
-						    }
-						    scanRs.close();
-						} // if (Isfirst && DataSearchRs.getString("movetype").equals("GR")){...} else{...}의 끝
-						String FileUpSql = "UPDATE InvenLogl SET RegistOX = ? WHERE keyvalue = ?";
-						PreparedStatement FileUpPstmt = conn.prepareStatement(FileUpSql);
-						FileUpPstmt.setString(1, "O");
-						FileUpPstmt.setString(2, DataSearchRs.getString("keyvalue"));
-						FileUpPstmt.executeUpdate();
-					} // while(DataSearchRs.next()){...}의 끝
-				}
-			}else {
-				while (FileSearchRs.next()) {
-					DataSearchSql = "SELECT * FROM InvenLogl WHERE docnum = ? AND RegistOX = ? ORDER BY quantity DESC";
-					DataSearchPstmt = conn.prepareStatement(DataSearchSql);
-					DataSearchPstmt.setString(1, FileSearchRs.getString("DocNum"));
-					DataSearchPstmt.setString(2, "X");
-					DataSearchRs = DataSearchPstmt.executeQuery();
-					while(DataSearchRs.next()) {
-						String QuerySql = "SELECT * FROM sumtable WHERE closingMon = ? AND comcode = ? AND plant = ? AND warehouse = ? AND lotnum = ? AND matcode = ? AND mattype = ?";
-						PreparedStatement QueryPstmt = conn.prepareStatement(QuerySql);
-						QueryPstmt.setString(1, DataSearchRs.getString("closingmon"));
-						QueryPstmt.setString(2, DataSearchRs.getString("comcode"));
-						QueryPstmt.setString(3, DataSearchRs.getString("plant"));
-						QueryPstmt.setString(4, DataSearchRs.getString("storcode"));
-						QueryPstmt.setString(5, DataSearchRs.getString("lotnum"));
-						QueryPstmt.setString(6, DataSearchRs.getString("matcode"));
-						QueryPstmt.setString(7, DataSearchRs.getString("mattype"));
-						ResultSet QueryRs = QueryPstmt.executeQuery();
-						
-						String MvType = DataSearchRs.getString("movetype").substring(0, 2); 
-						double Qty = DataSearchRs.getDouble("quantity");
-						
-						if(QueryRs.next()) {
-							double GrQty = QueryRs.getDouble("GrTransacQty");
-							double GiQty = QueryRs.getDouble("GiTransacQty");
-							double TotalQty = QueryRs.getDouble("EndStocQty");
-														
-							switch(MvType) {
-							case "GR":
-								GrQty += Qty;
-								break;
-							case "GI":
-								GiQty += Qty;
-								break;
-							}
-							TotalQty = GrQty - GiQty;
-							if(TotalQty >= 0) {
-								String updateSql = "UPDATE sumtable SET GrTransacQty = ?, GiTransacQty = ?, EndStocQty = ? WHERE comcode = ? AND plant = ? AND warehouse = ? AND lotnum = ? AND matcode = ? AND mattype = ?";
-								PreparedStatement updatePstmt = conn.prepareStatement(updateSql);
-								updatePstmt.setDouble(1, GrQty);
-								updatePstmt.setDouble(2, GiQty);
-								updatePstmt.setDouble(3, TotalQty);
-								updatePstmt.setString(4, DataSearchRs.getString("comcode"));
-								updatePstmt.setString(5, DataSearchRs.getString("plant"));
-								updatePstmt.setString(6, DataSearchRs.getString("storcode"));
-								updatePstmt.setString(7, DataSearchRs.getString("lotnum"));
-								updatePstmt.setString(8, DataSearchRs.getString("matcode"));
-								updatePstmt.setString(9, DataSearchRs.getString("mattype"));
-								updatePstmt.executeUpdate();
+			boolean Isfirst = true;
+			while (FileSearchRs.next()) {
+				DataSearchSql = "SELECT * FROM InvenLogl WHERE docnum = ? AND RegistOX = ? ORDER BY quantity DESC";
+				DataSearchPstmt = conn.prepareStatement(DataSearchSql);
+				DataSearchPstmt.setString(1, FileSearchRs.getString("DocNum"));
+				DataSearchPstmt.setString(2, "X");
+				DataSearchRs = DataSearchPstmt.executeQuery();
+				while(DataSearchRs.next()) {
+					String QuerySql = "SELECT * FROM sumtable WHERE closingMon = ? AND comcode = ? AND plant = ? AND warehouse = ? AND lotnum = ? AND matcode = ? AND mattype = ?";
+					PreparedStatement QueryPstmt = conn.prepareStatement(QuerySql);
+					QueryPstmt.setString(1, DataSearchRs.getString("closingmon"));
+					QueryPstmt.setString(2, DataSearchRs.getString("comcode"));
+					QueryPstmt.setString(3, DataSearchRs.getString("plant"));
+					QueryPstmt.setString(4, DataSearchRs.getString("storcode"));
+					QueryPstmt.setString(5, DataSearchRs.getString("lotnum"));
+					QueryPstmt.setString(6, DataSearchRs.getString("matcode"));
+					QueryPstmt.setString(7, DataSearchRs.getString("mattype"));
+					ResultSet QueryRs = QueryPstmt.executeQuery();
+					
+					String MvType = DataSearchRs.getString("movetype").substring(0, 2); 
+					double Qty = DataSearchRs.getDouble("quantity");
+					
+					if(QueryRs.next()) {
+						double GrQty = QueryRs.getDouble("GrTransacQty");
+						double GiQty = QueryRs.getDouble("GiTransacQty");
+						double InitQty = QueryRs.getDouble("beginStocqty");
+						double TotalQty = QueryRs.getDouble("EndStocQty");
+													
+						switch(MvType) {
+						case "GR":
+							GrQty += Qty;
+							break;
+						case "GI":
+							GiQty += Qty;
+							break;
+						}
+						TotalQty = InitQty + GrQty - GiQty;
+						if(TotalQty >= 0) {
+							String updateSql = "UPDATE sumtable SET GrTransacQty = ?, GiTransacQty = ?, EndStocQty = ? WHERE comcode = ? AND plant = ? AND warehouse = ? AND lotnum = ? AND matcode = ? AND mattype = ?";
+							PreparedStatement updatePstmt = conn.prepareStatement(updateSql);
+							updatePstmt.setDouble(1, GrQty);
+							updatePstmt.setDouble(2, GiQty);
+							updatePstmt.setDouble(3, TotalQty);
+							updatePstmt.setString(4, DataSearchRs.getString("comcode"));
+							updatePstmt.setString(5, DataSearchRs.getString("plant"));
+							updatePstmt.setString(6, DataSearchRs.getString("storcode"));
+							updatePstmt.setString(7, DataSearchRs.getString("lotnum"));
+							updatePstmt.setString(8, DataSearchRs.getString("matcode"));
+							updatePstmt.setString(9, DataSearchRs.getString("mattype"));
+							updatePstmt.executeUpdate();
 								
-								String FileUpSql = "UPDATE InvenLogl SET RegistOX = ? WHERE keyvalue = ?";
-								PreparedStatement FileUpPstmt = conn.prepareStatement(FileUpSql);
-								FileUpPstmt.setString(1, "O");
-								FileUpPstmt.setString(2, DataSearchRs.getString("keyvalue"));
-								FileUpPstmt.executeUpdate();
-							}
-						}else {
-							String insertSql = "INSERT INTO sumtable VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
-							PreparedStatement insertPstmt = conn.prepareStatement(insertSql);
-							insertPstmt.setString(1, DataSearchRs.getString("closingmon"));
-						    insertPstmt.setString(2, DataSearchRs.getString("comcode"));
-						    insertPstmt.setString(3, DataSearchRs.getString("plant"));
-						    insertPstmt.setString(4, DataSearchRs.getString("storcode"));
-						    insertPstmt.setString(5, DataSearchRs.getString("lotnum"));
-						    insertPstmt.setString(6, DataSearchRs.getString("matcode"));
-						    insertPstmt.setString(7, DataSearchRs.getString("matdesc"));
-						    insertPstmt.setString(8, DataSearchRs.getString("mattype"));
-						    insertPstmt.setString(9, DataSearchRs.getString("spec"));
-						    insertPstmt.setString(10, "0");
-						    
-						    if (MvType.equals("GR")) {
-						    	insertPstmt.setDouble(11, Qty);
-						    	insertPstmt.setString(12, "0");
-						    	insertPstmt.setString(13, "0");
-						    	insertPstmt.setDouble(14, 0);
-						    	insertPstmt.setDouble(15, Qty);
-						    	insertPstmt.executeUpdate();
-						    }
-						    
 							String FileUpSql = "UPDATE InvenLogl SET RegistOX = ? WHERE keyvalue = ?";
 							PreparedStatement FileUpPstmt = conn.prepareStatement(FileUpSql);
 							FileUpPstmt.setString(1, "O");
 							FileUpPstmt.setString(2, DataSearchRs.getString("keyvalue"));
 							FileUpPstmt.executeUpdate();
-						} // if(QueryRs.next()){...} else {...} 끝
-					} // while(DataSearchRs.next()) 끝
-				} // while (FileSearchRs.next()) 끝
-			}
+						}
+					}else {
+						String insertSql = "INSERT INTO sumtable VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+						PreparedStatement insertPstmt = conn.prepareStatement(insertSql);
+						insertPstmt.setString(1, DataSearchRs.getString("closingmon"));
+					    insertPstmt.setString(2, DataSearchRs.getString("comcode"));
+					    insertPstmt.setString(3, DataSearchRs.getString("plant"));
+					    insertPstmt.setString(4, DataSearchRs.getString("storcode"));
+					    insertPstmt.setString(5, DataSearchRs.getString("lotnum"));
+					    insertPstmt.setString(6, DataSearchRs.getString("matcode"));
+					    insertPstmt.setString(7, DataSearchRs.getString("matdesc"));
+					    insertPstmt.setString(8, DataSearchRs.getString("mattype"));
+					    insertPstmt.setString(9, DataSearchRs.getString("spec"));
+					    insertPstmt.setString(10, "0");
+					    
+					    if (MvType.equals("GR")) {
+					    	insertPstmt.setDouble(11, Qty);
+					    	insertPstmt.setDouble(12, 0);
+					    	insertPstmt.setDouble(13, 0);
+					    	insertPstmt.setDouble(14, 0);
+					    	insertPstmt.setDouble(15, Qty);
+					    	insertPstmt.executeUpdate();
+					    }else {
+					    	insertPstmt.setDouble(11, 0);
+					    	insertPstmt.setDouble(12, 0);
+					    	insertPstmt.setDouble(13, 0);
+					    	insertPstmt.setDouble(14, Qty);
+					    	insertPstmt.setDouble(15, -Qty);
+					    	insertPstmt.executeUpdate();
+					    }
+						String FileUpSql = "UPDATE InvenLogl SET RegistOX = ? WHERE keyvalue = ?";
+						PreparedStatement FileUpPstmt = conn.prepareStatement(FileUpSql);
+						FileUpPstmt.setString(1, "O");
+						FileUpPstmt.setString(2, DataSearchRs.getString("keyvalue"));
+						FileUpPstmt.executeUpdate();
+					} // if(QueryRs.next()){...} else {...} 끝
+				} // while(DataSearchRs.next()) 끝
+			} // while (FileSearchRs.next()) 끝
 		} catch (SQLException e) {
 			// TODO: handle exception
 			YN = "Bad";

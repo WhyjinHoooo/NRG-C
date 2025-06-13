@@ -115,6 +115,7 @@ $(document).ready(function(){
 	        processData: false, // [필수]
 	        contentType: false, // [필수]
 	        success: function(res) {
+	        	location.reload();
 	        	console.log(res.result)
 	        },
 	        error: function(xhr) {

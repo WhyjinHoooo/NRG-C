@@ -115,6 +115,7 @@ $(document).ready(function(){
 	        processData: false, // [필수]
 	        contentType: false, // [필수]
 	        success: function(res) {
+	        	location.reload();
 	        	console.log(res.result)
 	        },
 	        error: function(xhr) {
@@ -243,6 +244,27 @@ $(document).ready(function(){
 	    	});
 		}
 	});
+	$('.DownBtn').click(function(){
+		if(confirm('창고수불데이터를 다운로드 하시겠습니까?')){
+			alert('다운로드를 시작합니다.');
+			$.ajax({
+		        url: "${contextPath}/MatDataDown",
+		        type: "GET",
+		        success: function(data, status, xhr) {
+		            var blob = new Blob([data], {type: "text/csv"});
+		            var link = document.createElement("a");
+		            link.href = window.URL.createObjectURL(blob);
+		            link.download = "창고수불데이터.csv";
+		            link.click();
+		        },
+		        error: function(xhr, status, error) {
+		            alert("다운로드 실패: " + error);
+		        }
+		    });
+		}else{
+			alert('다운로드를 취소합니다.');
+		}
+	})
 })
 </script>
 <jsp:include page="../Header.jsp"></jsp:include>
@@ -295,6 +317,7 @@ $(document).ready(function(){
 			</table>
 		</div>
 		<div class="Btn-Area">
+			<button class="DownBtn">다운로드</button>
 			<button class="OkBtn">확정</button>
 			<button class="DelBtn">삭제</button>
 		</div>
