@@ -383,26 +383,24 @@ public class ApprovalDAO {
 							break;
 						}
 						TotalQty = InitQty + GrQty - GiQty;
-						if(TotalQty >= 0) {
-							String updateSql = "UPDATE sumtable SET GrTransacQty = ?, GiTransacQty = ?, EndStocQty = ? WHERE comcode = ? AND plant = ? AND warehouse = ? AND lotnum = ? AND matcode = ? AND mattype = ?";
-							PreparedStatement updatePstmt = conn.prepareStatement(updateSql);
-							updatePstmt.setDouble(1, GrQty);
-							updatePstmt.setDouble(2, GiQty);
-							updatePstmt.setDouble(3, TotalQty);
-							updatePstmt.setString(4, DataSearchRs.getString("comcode"));
-							updatePstmt.setString(5, DataSearchRs.getString("plant"));
-							updatePstmt.setString(6, DataSearchRs.getString("storcode"));
-							updatePstmt.setString(7, DataSearchRs.getString("lotnum"));
-							updatePstmt.setString(8, DataSearchRs.getString("matcode"));
-							updatePstmt.setString(9, DataSearchRs.getString("mattype"));
-							updatePstmt.executeUpdate();
+						String updateSql = "UPDATE sumtable SET GrTransacQty = ?, GiTransacQty = ?, EndStocQty = ? WHERE comcode = ? AND plant = ? AND warehouse = ? AND lotnum = ? AND matcode = ? AND mattype = ?";
+						PreparedStatement updatePstmt = conn.prepareStatement(updateSql);
+						updatePstmt.setDouble(1, GrQty);
+						updatePstmt.setDouble(2, GiQty);
+						updatePstmt.setDouble(3, TotalQty);
+						updatePstmt.setString(4, DataSearchRs.getString("comcode"));
+						updatePstmt.setString(5, DataSearchRs.getString("plant"));
+						updatePstmt.setString(6, DataSearchRs.getString("storcode"));
+						updatePstmt.setString(7, DataSearchRs.getString("lotnum"));
+						updatePstmt.setString(8, DataSearchRs.getString("matcode"));
+						updatePstmt.setString(9, DataSearchRs.getString("mattype"));
+						updatePstmt.executeUpdate();
 								
-							String FileUpSql = "UPDATE InvenLogl SET RegistOX = ? WHERE keyvalue = ?";
-							PreparedStatement FileUpPstmt = conn.prepareStatement(FileUpSql);
-							FileUpPstmt.setString(1, "O");
-							FileUpPstmt.setString(2, DataSearchRs.getString("keyvalue"));
-							FileUpPstmt.executeUpdate();
-						}
+						String FileUpSql = "UPDATE InvenLogl SET RegistOX = ? WHERE keyvalue = ?";
+						PreparedStatement FileUpPstmt = conn.prepareStatement(FileUpSql);
+						FileUpPstmt.setString(1, "O");
+						FileUpPstmt.setString(2, DataSearchRs.getString("keyvalue"));
+						FileUpPstmt.executeUpdate();
 					}else {
 						String insertSql = "INSERT INTO sumtable VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 						PreparedStatement insertPstmt = conn.prepareStatement(insertSql);
@@ -429,7 +427,7 @@ public class ApprovalDAO {
 					    	insertPstmt.setDouble(12, 0);
 					    	insertPstmt.setDouble(13, 0);
 					    	insertPstmt.setDouble(14, Qty);
-					    	insertPstmt.setDouble(15, -Qty);
+					    	insertPstmt.setDouble(15, Qty);
 					    	insertPstmt.executeUpdate();
 					    }
 						String FileUpSql = "UPDATE InvenLogl SET RegistOX = ? WHERE keyvalue = ?";

@@ -1,0 +1,564 @@
+@charset "UTF-8";
+html {
+    height: 100%;
+	}		
+body {
+    height: 100%;
+	}
+@media (max-width: 1920px) {
+	.ExcelSaveBtn {
+    width: 5%;
+    height: 3%;
+    margin: 0.3% 0% 0% 90%;
+    border-radius: 5px;
+    font-weight: bold;
+    font-size: small;
+    background: #5775AF;
+    border: 1px #5775AF;
+    color: white;
+	}
+	.ExcelSaveBtn:hover{
+	color: white;
+	border: 1px #87CEFA;
+	background: #87CEFA;
+	}
+	.ExcelSaveBtn:active{
+	color: white;
+	border: 1px #87CEFA;
+	background: #87CEFA;
+	}
+	.Hall {
+    display: flex;
+    flex-direction: row;
+    height: 71vh;
+    width: 100%;
+    margin-top: 0.3%;
+	}
+	.MainHall {
+    border: 1px solid black;
+    width: 30%;
+	height: 125%;
+ 	}
+	.SubHall {
+    border: 1px solid black;
+    margin-left: 2%;
+    width: 100%;
+    height: 125%;
+	}
+	.Title {
+	background: #260FB1;
+	color: white;
+	text-align: center;
+	font-size: x-large;
+	padding: 5px;
+	letter-spacing: 1.5em;
+    }
+    .MainHall > .Category > button {
+	width: 20%;
+	background: #F28C28;
+	color: #FFFFFF;
+	margin: 3px 0px 0px 10px;
+	padding: 5px;
+	font-weight: bolder;
+	font-size: small;
+	border: 0px;
+	border-radius: 5px;
+	}
+	.MainHall > .MainHallArray > .Main-Colume {
+	display: flex;
+	flex-direction: row;
+	margin: 20px 0px 0px 10px;
+	width: 100%;
+	font-size: small;
+	} 
+	.MainHall > .MainHallArray > .Main-Colume button {
+	background: #87CEEB;
+	margin-left: 0.5%;
+	border-radius: 5px;
+	width: 15%;
+	color: #333333;
+	font-weight: bold;
+	font-size: x-small;
+	}
+    .MainHall > .MainHallArray > .Main-Colume button:hover {
+	background: #333333;
+	color: #fff;
+	border: 1px solid #333333;
+    }
+	.MainHall > .MainHallArray > .Main-Colume button:active {
+	background: #333333;
+	color: #fff;
+	border: 1px solid #333333;
+	}
+	.MainHall > .MainHallArray > .Main-Colume label {
+	font-weight: bold;
+	font-size: medium;
+	display: inline-block;
+	width: 11em;
+	text-align: right;
+	letter-spacing: 0.1em;
+	}   
+    .MainHall > .MainHallArray > .Main-Colume input {
+	margin-left: 10px;
+	width: 35%;
+	text-align: center;
+	font-size: small;
+	}
+    .MainHall > .BtnArea {
+	height: 48%;
+	padding-top: 35%;
+	}
+    .MainHall > .BtnArea > button:nth-child(1) {
+	width: 25%;
+	height: 10%;
+	text-align: center;
+	background-color: #002060;
+	color: white;
+	border: 1px solid #1F4E79;
+	border-radius: 5px;
+	font-size: large;
+	margin-left: 10%;
+	}
+	.MainHall > .BtnArea > button:nth-child(1):hover {
+	background: #0068ff;
+	color: #fff;
+	border: 1px solid #0068ff;
+	}
+	.MainHall > .BtnArea > button:nth-child(1):active {
+	background: #0068ff;
+	color: #fff;
+	border: 1px solid #0068ff;
+	}
+	 .MainHall > .BtnArea > button:nth-child(2) {
+	width: 25%;
+	height: 10%;
+	text-align: center;
+	background-color: #FF4040;
+	color: white;
+	border: 1px solid #FF4040;
+	border-radius: 5px;
+	font-size: large;
+	}
+	.MainHall > .BtnArea > button:nth-child(2):hover {
+	background: #B3003F;
+	color: #fff;
+	border: 1px solid #B3003F;
+	}
+	.MainHall > .BtnArea > button:nth-child(2):active {
+	background: #B3003F;
+	color: #fff;
+	border: 1px solid #B3003F;
+	}
+	.MainHall > .BtnArea > button:nth-child(3) {
+	width: 25%;
+	height: 10%;
+	text-align: center;
+	background-color: #40FF40;
+	color: white;
+	border: 1px solid #40FF40;
+	border-radius: 5px;
+	font-size: large;
+	}
+	.MainHall > .BtnArea > button:nth-child(3):hover {
+	background: #3FB300;
+	color: #fff;
+	border: 1px solid #3FB300;
+	}
+	.MainHall > .BtnArea > button:nth-child(3):active {
+	background: #3FB300;
+	color: #fff;
+	border: 1px solid #3FB300;
+	}
+	.MainHall >.BtnArea > div#clock {
+    text-align: center;
+    font-weight: bold;
+    font-size: small;
+    margin: 5% 9% 0px 9%;
+    border: 1px solid;
+    width: -webkit-fill-available;
+    padding: 5%;
+    border-radius: 10px;
+ }
+	.MainHallArray {
+    height: 40%;
+	}
+	.MainHallArray > div:nth-child(1) > input{
+	background: #F2F2F2 !important; 
+	}
+	.Hall >.SubHall > table.InfoTable{
+	border-collapse: collapse;
+	width: 100%;
+	height: 92.1%;
+	table-layout: fixed;
+	overflow: scroll;
+    }
+    .Hall >.SubHall > table.InfoTable thead{
+    display: block;
+	width: 100%;
+	position: sticky;
+	top: 0;
+	z-index: 10;
+	overflow-x: hidden;
+    }
+   	.Hall >.SubHall > table.InfoTable tbody{
+	table-layout: fixed;
+	display: block;
+	width: 100.3%;
+	height: 100%;
+	max-height: 91%;
+	overflow-y: auto;
+	overflow-x: auto;
+	}
+	.Hall >.SubHall > table.InfoTable tbody td{
+	padding: 8px 5.5px;
+	border: 1px solid #ddd;
+	width: 131px;
+	height: 10px;
+	text-align: center;
+	font-size: 10px;
+	font-weight: bold;
+    }
+	.Hall > .SubHall > table.InfoTable thead > tr {
+	display: table;
+	table-layout: fixed;
+	width: 100%;
+    }
+	.Hall > .SubHall > table.InfoTable thead > tr > th:not(:nth-last-child(-n+6)) {
+    background-color: rgb(111, 167, 235);
+    top: 0;
+    color: white;
+    text-align: center;
+    z-index: 10;
+    padding: 8px;
+    border: 1px solid white;
+    width: 200px;
+    font-size: small;
+    letter-spacing: 0.5em
+	}
+    .Hall > .SubHall > table.InfoTable thead > tr > th:nth-last-child(-n+6){
+	background-color: rgb(111, 167, 235);
+	top: 0;
+	color: white;
+	text-align: center;
+	z-index: 10;
+	padding: 0px;
+	border: 1px solid white;
+	width: 334px;
+	font-size: 8px;
+    }
+    .Hall >.SubHall > table.InfoTable thead > tr > th > div:nth-child(1){
+	text-align: center;
+	border: 1px solid;
+	padding: 8px;
+	font-size: small;
+    }
+    .Hall >.SubHall > table.InfoTable thead > tr > th > div:nth-child(2){
+	display: flex; 
+	justify-content: center;
+    }
+    .Hall >.SubHall > table.InfoTable thead > tr > th > div:nth-child(2) > span{
+	flex: 1;
+    text-align: center;
+    border: 1px solid white;
+    box-sizing: border-box;
+    padding: 5px;
+    font-size: small;
+    }
+    .Hall >.SubHall > table.InfoTable tbody > tr {
+	    display: table;
+	    width: 100%;
+	    table-layout: fixed;
+	}
+	.Hall >.SubHall > table.InfoTable tbody > tr > td {
+	    padding: 8px;
+	    border: 1px solid #ddd;
+	    width: 125px;
+	    height: 10px;
+	    font-weight: bold;
+	}
+	.Hall >.SubHall > table.InfoTable tbody::-webkit-scrollbar {
+	    width: 5px;
+	}
+	.Hall >.SubHall > table.InfoTable tbody::-webkit-scrollbar-thumb {
+	    background-color: #2f3542;
+	    border-radius: 10px;
+	}
+	.Hall >.SubHall > table.InfoTable tbody::-webkit-scrollbar-track {
+	    background-color: white;
+	    border-radius: 1px;
+	    box-shadow: inset 0px 0px 5px white;
+	}
+	.Hall >.SubHall > table.InfoTable tbody::-webkit-scrollbar:horizontal {
+	    height: 10px;
+	}
+	.Hall >.SubHall > table.InfoTable tbody::-webkit-scrollbar-thumb:horizontal {
+	    background-color: black;
+	    border-radius: 10px;
+	}
+	.Hall >.SubHall > table.InfoTable tbody::-webkit-scrollbar-track:horizontal {
+	    background-color: white;
+	    border-radius: 1px;
+	    box-shadow: inset 0px 0px 5px white;
+	}
+  	footer {
+   	width: 75.4%;
+   	height: 4%;
+   	margin: 0.1% 0% 0% 24.5%;
+   	display: flex;
+   	flex-direction: row-reverse;
+   	}
+}
+/* @media only screen and (min-width: 2560px) {
+	.ExcelSaveBtn {
+    width: 5%;
+    height: 3%;
+    margin: 0.3% 0% 0% 90%;
+    border-radius: 5px;
+    font-weight: bold;
+    font-size: medium;
+    background: #5775AF;
+    border: 1px #5775AF;
+    color: white;
+	}
+	.ExcelSaveBtn:hover{
+	color: white;
+	border: 1px #87CEFA;
+	background: #87CEFA;
+	}
+	.ExcelSaveBtn:active{
+	color: white;
+	border: 1px #87CEFA;
+	background: #87CEFA;
+	}
+	.Hall {
+    display: flex;
+    flex-direction: row;
+    height: 85vh;
+    width: 100%;
+    margin-top: 0.3%;
+	}
+	.MainHall {
+    border: 1px solid black;
+    width: 30%;
+	height: 100%;
+ 	}
+	.SubHall {
+    border: 1px solid black;
+    margin-left: 2%;
+    width: 100%;
+	}
+	.Title {
+	background: #260FB1;
+	color: white;
+	text-align: center;
+	font-size: x-large;
+	padding: 5px;
+	letter-spacing: 1.5em;
+    }
+    .MainHall > .Category > button {
+	width: 21.5%;
+	background: #F28C28;
+	color: #FFFFFF;
+	margin: 3px 0px 0px 10px;
+	padding: 5px;
+	font-weight: bolder;
+	border: 0px;
+	border-radius: 5px;
+    }
+	.MainHall > .MainHallArray > .Main-Colume {
+	display: flex;
+	flex-direction: row;
+	margin: 20px 0px 0px 10px;
+	width: 100%;
+	} 
+	.MainHall > .MainHallArray > .Main-Colume button {
+	background: #87CEEB;
+	margin-left: 20px;
+	border-radius: 5px;
+	width: 15%;
+	color: #333333;
+	font-weight: bold;
+    }
+    .MainHall > .MainHallArray > .Main-Colume button:hover {
+	background: #333333;
+	color: #fff;
+	border: 1px solid #333333;
+    }
+	.MainHall > .MainHallArray > .Main-Colume button:active {
+	background: #333333;
+	color: #fff;
+	border: 1px solid #333333;
+	}
+	.MainHall > .MainHallArray > .Main-Colume label {
+	font-weight: 900;
+	display: inline-block;
+	width: 14em;
+	text-align: right;
+	letter-spacing: 0.1em;
+	}   
+    .MainHall > .MainHallArray > .Main-Colume input {
+	margin-left: 10px;
+	width: 200px;
+	text-align: center;
+    }
+    .MainHall > .BtnArea {
+	height: 48%;
+	}
+    .MainHall > .BtnArea > button:nth-child(1) {
+	width: 30%;
+	height: 10%;
+	text-align: center;
+	background-color: #002060;
+	color: white;
+	border: 1px solid #1F4E79;
+	border-radius: 10px;
+	font-size: 25px;
+	margin-left: 4.5%;
+	}
+	.MainHall > .BtnArea > button:nth-child(1):hover {
+	background: #0068ff;
+	color: #fff;
+	border: 1px solid #0068ff;
+	}
+	.MainHall > .BtnArea > button:nth-child(1):active {
+	background: #0068ff;
+	color: #fff;
+	border: 1px solid #0068ff;
+	}
+	 .MainHall > .BtnArea > button:nth-child(2) {
+	width: 30%;
+	height: 10%;
+	text-align: center;
+	background-color: #FF4040;
+	color: white;
+	border: 1px solid #FF4040;
+	border-radius: 10px;
+	font-size: 25px;
+	}
+	.MainHall > .BtnArea > button:nth-child(2):hover {
+	background: #B3003F;
+	color: #fff;
+	border: 1px solid #B3003F;
+	}
+	.MainHall > .BtnArea > button:nth-child(2):active {
+	background: #B3003F;
+	color: #fff;
+	border: 1px solid #B3003F;
+	}
+	.MainHall > .BtnArea > button:nth-child(3) {
+	width: 30%;
+	height: 10%;
+	text-align: center;
+	background-color: #40FF40;
+	color: white;
+	border: 1px solid #40FF40;
+	border-radius: 10px;
+	font-size: 25px;
+	}
+	.MainHall > .BtnArea > button:nth-child(3):hover {
+	background: #3FB300;
+	color: #fff;
+	border: 1px solid #3FB300;
+	}
+	.MainHall > .BtnArea > button:nth-child(3):active {
+	background: #3FB300;
+	color: #fff;
+	border: 1px solid #3FB300;
+	}
+	.MainHall >.BtnArea > div#clock {
+    text-align: center;
+    font-weight: bold;
+    font-size: xx-large;
+    margin: 15% 0px 0px 18%;
+    border: 1px solid;
+    width: fit-content;
+    padding: 5%;
+    border-radius: 10px;
+	}
+	.MainHallArray {
+    height: 40%;
+	}
+	.MainHallArray > div:nth-child(1) > input{
+	background: #F2F2F2 !important; 
+	}
+	.Hall >.SubHall > table.InfoTable{
+	border-collapse: collapse;
+	width: 100%;
+	height: 92.1%;
+	table-layout: fixed;
+	overflow: scroll;
+    }
+    .Hall >.SubHall > table.InfoTable thead{
+    display: table;
+    width: 100%;
+    }
+   	.Hall >.SubHall > table.InfoTable tbody{
+	table-layout: fixed;
+	display: block;
+	width: 100.3%;
+	height: 116%;
+	max-height: 101.8%;
+	overflow-y: auto;
+	}
+	.Hall >.SubHall > table.InfoTable tbody td{
+	padding: 8px 5.5px;
+	border: 1px solid #ddd;
+	width: 131px;
+	height: 10px;
+	text-align: center;
+	font-size: 10px;
+	font-weight: bold;
+    }
+    .Hall > .SubHall > table.InfoTable thead > tr > th:not(:nth-last-child(-n+5)){
+	background-color: rgb(111, 167, 235);
+	position: sticky;
+	top: 0;
+	color: white;
+	text-align: center;
+	z-index: 10;
+	padding: 8px;
+	border: 1px solid white;
+	width: 80px;
+	font-size: 11px;
+    }
+    .Hall > .SubHall > table.InfoTable thead > tr > th:nth-last-child(-n+5){
+	background-color: rgb(111, 167, 235);
+	position: sticky;
+	top: 0;
+	color: white;
+	text-align: center;
+	z-index: 10;
+	padding: 0px;
+	border: 1px solid white;
+	width: 120px;
+	font-size: 11px;
+    }
+    .Hall >.SubHall > table.InfoTable thead > tr > th > div:nth-child(1){
+	text-align: center;
+	border: 1px solid;
+	padding: 8px;
+    }
+    .Hall >.SubHall > table.InfoTable thead > tr > th > div:nth-child(2){
+	display: flex; 
+	justify-content: center;
+    }
+    .Hall >.SubHall > table.InfoTable thead > tr > th > div:nth-child(2) > span{
+	flex: 1;
+    text-align: center;
+    border: 1px solid white;
+    box-sizing: border-box;
+    padding: 5px;
+    }
+    .Hall >.SubHall > table.InfoTable tbody::-webkit-scrollbar {
+    width: 5px;
+  	}
+  	.Hall >.SubHall > table.InfoTable tbody::-webkit-scrollbar-thumb {
+    background-color: #2f3542;
+    border-radius: 10px;
+  	}
+  	.Hall >.SubHall > table.InfoTable tbody::-webkit-scrollbar-track {
+    background-color: white;
+    border-radius: 1px;
+    box-shadow: inset 0px 0px 5px white;
+  	}
+} */

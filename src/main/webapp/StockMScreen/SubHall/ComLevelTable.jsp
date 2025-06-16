@@ -1,0 +1,55 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+</head>
+<body>
+	<tr>
+		<th>순번</th><th>회사</th><th>품번</th><th>품명</th><th>재고유형</th><th>단위</th>
+			<th>
+				<div>기초</div>
+		        <div>
+		          <span>수량</span>
+		          <span>금액</span>
+		        </div>
+			</th>
+			<th>
+				<div>입고</div>
+		        <div>
+		          <span>수량</span>
+		          <span>금액</span>
+		        </div>
+			</th>
+			<th>
+				<div>이동입고</div>
+		        <div>
+		          <span>수량</span>
+		          <span>금액</span>
+		        </div>
+			</th>
+			<th>
+				<div>이동출고</div>
+		        <div>
+		          <span>수량</span>
+		          <span>금액</span>
+		        </div>
+			</th>
+			<th>
+				<div>출고</div>
+		        <div>
+		          <span>수량</span>
+		          <span>금액</span>
+		        </div>
+			</th>
+			<th>
+				<div>기말</div>
+		        <div>
+		          <span>수량</span>
+		          <span>금액</span>
+		        </div>
+			</th>
+		</tr>
+</body>
+</html>
