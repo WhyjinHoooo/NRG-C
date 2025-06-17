@@ -97,6 +97,25 @@ public class SavedDataLoading extends HttpServlet {
                 writer.print("{\"result\":\"fail\", \"message\":\"" + e.getMessage().replace("\"","\\\"") + "\"}");
 			}
         	break;
+        case "/Lot_LoadData.do":
+        	try {
+            	JSONObject jsonObj = new JSONObject(jsonString);
+                Iterator<String> keys = jsonObj.keys();
+                while(keys.hasNext()) {
+                    String key = keys.next();
+                    Object value = jsonObj.get(key);
+                    System.out.println(key + " : " + value);
+                }
+                LoadedData = dao.StdLotWarLv(jsonObj);
+                if(LoadedData == null) {
+                	writer.print("{\"result\":\"fail\"}");
+                }else {
+                	writer.print("{\"result\":\"success\", \"List\":" + LoadedData + "}");
+                }
+			} catch (Exception e) {
+				// TODO: handle exception
+			} 
+        	break;
         }
         writer.flush();
 	}

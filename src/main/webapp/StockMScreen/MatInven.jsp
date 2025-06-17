@@ -204,7 +204,7 @@ $(document).ready(function() {
 		
 	});
 	TestFunction('Company');
-	InitialTable(17);
+	InitialTable(18);
 	$('.ResBtn').click(function(){
 		TimeSetting = setInterval(updateClock, 1000);
 		$('.SearOp').each(function(){
@@ -226,28 +226,27 @@ $(document).ready(function() {
     	switch(value){
     	case '1':
     		$("footer").show();
-    		$('.LvP, .LvS, .LvM').prop('hidden',true);
+    		$('.LvP, .LvS, .LvL').prop('hidden',true);
     		count = 18;
     		condition = 1;
     		break;
     	case '2':
     		$("footer").show();
     		$('.LvP').prop('hidden',false);
-    		$('.LvS, LvM').prop('hidden',true);
+    		$('.LvS, .LvL').prop('hidden',true);
     		count = 19;
     		condition = 2;
     		break;
     	case '3':
     		$("footer").show();
     		$('.LvP, .LvS').prop('hidden',false);
-    		$('.LvM').prop('hidden',true);
+    		$('.LvL').prop('hidden',true);
     		count = 20;
     		condition = 3;
     		break;
     	case '4':
     		$("footer").hide();
-    		$('.LvP, .LvM').prop('hidden',false);
-    		$('.LvS').prop('hidden',true);
+    		$('.LvP, .LvL, .LvS').prop('hidden',false);
     		count = 21;
     		condition = 4;
     		var UserId = $('.UserId').val();
@@ -283,8 +282,7 @@ $(document).ready(function() {
     	var PlantData = $('.PlantCode').val();
     	var SLoData = $('.SLocCode').val();
     	var MatType = $('.MatType').val()
-    	var MovIn = $('.MovCode-In').val();
-    	var MovOut = $('.MovCode-Out').val();
+    	var LotNum = $('.LotNum').val();
     	if (isNaN(IntEndDate)) {
     	    alert('유효하지 않은 날짜 형식입니다.');
     	    return false;
@@ -315,10 +313,11 @@ $(document).ready(function() {
 							for(var i = 0; i < data.List.length; i++){
     						   var row = '<tr>' +
     	    			        '<td>' + (i + 1).toString().padStart(2,'0') + '</td>' + 
-    	    			        '<td>' + (data.List[i].comcode || '') + '</td>' + 
-    	    			        '<td>' + (data.List[i].matcode || '') + '</td>' + 
-    	    			        '<td>' + (data.List[i].matdesc || '') + '</td>' + 
-    	    			        '<td>' + (data.List[i].spec || '') + '</td>' + 
+    	    			        '<td>' + (data.List[i].comcode || 'N/A') + '</td>' + 
+    	    			        '<td>' + (data.List[i].matcode || 'N/A') + '</td>' + 
+    	    			        '<td>' + (data.List[i].matdesc || 'N/A') + '</td>' +
+    	    			        '<td>' + (data.List[i].mattype || 'N/A') + '</td>' + 
+    	    			        '<td>' + (data.List[i].spec || 'N/A') + '</td>' + 
     	    			        '<td>' + (data.List[i].beginStocqty_sum ?? 0) + '</td>' + 
     	    			        '<td>' + (data.List[i].Initial_Amt ?? 0) + '</td>' + 
     	    			        '<td>' + (data.List[i].GrTransacQty_sum ?? 0) + '</td>' + 
@@ -384,7 +383,8 @@ $(document).ready(function() {
     	    			        }
     							row += 
     							'<td>' + (data.List[i].matcode || 'N/A') + '</td>' + 
- 		    			       	'<td>' + (data.List[i].matdesc || 'N/A') + '</td>' + 
+ 		    			       	'<td>' + (data.List[i].matdesc || 'N/A') + '</td>' +
+ 		    			       	'<td>' + (data.List[i].mattype || 'N/A') + '</td>' + 
  		    			       	'<td>' + (data.List[i].spec || 'N/A') + '</td>' +
     	    			        '<td>' + (data.List[i].beginStocqty_sum ?? 0) + '</td>' + 
     	    			        '<td>' + (data.List[i].Initial_Amt ?? 0) + '</td>' + 
@@ -411,46 +411,48 @@ $(document).ready(function() {
     		break;
     	case '4':
     		List['PlantData'] = PlantData;
-    		List['MovIn'] = MovIn;
-    		List['MovOut'] = MovOut;
+    		List['SLoData'] = SLoData;
     		List['MatType'] = MatType;
+    		List['LotNum'] = LotNum;
     		$.ajax({
     			//url : '${contextPath}/Report/AjaxSet/Mov_LoadData.jsp',
-    			url : '${contextPath}/SavedDataLoading/Lot_LoadData.jsp',
+    			url : '${contextPath}/SavedDataLoading/Lot_LoadData.do',
     			type : 'POST',
     			data :  JSON.stringify(List),
     			contentType: 'application/json; charset=utf-8',
     			dataType: 'json',
     			async: false,
     			success: function(data){
-    				console.log(data);
-    				if(data.length === 0){
-    			    	alert('해당하는 자재에 대한 데이터가 존재하지 않습니다.');
-    			    	$('.MatCode').val('');
-    			    	return false;
-    			    }
-    			    $('.InfoTable-Body').empty();
-    			    for(var i = 0 ; i < data.length ; i++){
-    			        var row = '<tr>' +
-    			        '<td>' + (data[i].DocDate || '') + '</td>' + 
-    			        '<td>' + (data[i].MatDocNum || '') + '</td>' +
-    			        '<td>' + (data[i].ItemNum || '') + '</td>' + 
-						'<td>' + (data[i].Material || '') + '</td>' + 
-						'<td>' + (data[i].MaterialDescription || '') + '</td>' + 
-						'<td>' + (data[i].InvUnit ?? '') + '</td>' + 
-						'<td>' + (data[i].MovType ?? '') + '</td>' + 
-						'<td>' + (data[i].MoveTypeDes ?? '') + '</td>' + 
-						'<td>' + (data[i].Quantity ?? 0) + '</td>' + 
-						'<td>' + (data[i].StoLoca ?? '') + '</td>' + 
-						'<td>' + (data[i].STORAGR_NAME ?? '') + '</td>' + 
-						'<td>' + (data[i].OrderNum ?? 'N/A') + '</td>' + 
-						'<td>' + (data[i].CostObject ?? 'N/A') + '</td>' + 
-						'<td>' + (data[i].Plant ?? '') + '</td>' +
-						'<td>' + ComData + '</td>' + 
-						'<td>' + (data[i].InputPerson ?? '') + '</td>' + 
-						'</tr>';
-    			        $('.InfoTable-Body').append(row);
-    			    }
+    				if(data.result === "success"){
+    					if(data.List.length > 0) {
+    						for(var i = 0; i < data.List.length; i++){
+    							var row = '<tr>' +
+    							'<td>' + (i + 1).toString().padStart(2,'0') + '</td>' + 
+    	    			        '<td>' + (data.List[i].comcode || 'N/A') + '</td>' +
+    	    			        '<td>' + (data.List[i].plant || 'N/A') + '</td>' +
+    	    			        '<td>' + (data.List[i].warehouse || 'N/A') + '</td>' +
+    							'<td>' + (data.List[i].lotnum || 'N/A') + '</td>' + 
+ 		    			       	'<td>' + (data.List[i].matcode || 'N/A') + '</td>' +
+ 		    			       	'<td>' + (data.List[i].matdesc || 'N/A') + '</td>' + 
+ 		    			       	'<td>' + (data.List[i].mattype || 'N/A') + '</td>' +
+ 		    			       	'<td>' + (data.List[i].spec || 'N/A') + '</td>' +
+    	    			        '<td>' + (data.List[i].beginStocqty_sum ?? 0) + '</td>' + 
+    	    			        '<td>' + (data.List[i].Initial_Amt ?? 0) + '</td>' + 
+    	    			        '<td>' + (data.List[i].GrTransacQty_sum ?? 0) + '</td>' + 
+    	    			        '<td>' + (data.List[i].Purchase_Amt ?? 0) + '</td>' + 
+    	    			        '<td>' + (data.List[i].GrTransferQty_sum ?? 0) + '</td>' + 
+    	    			        '<td>' + (data.List[i].Material_Amt ?? 0) + '</td>' + 
+    	    			        '<td>' + (data.List[i].GiTransferQty_sum ?? 0) + '</td>' + 
+    	    			        '<td>' + (data.List[i].Transfer_Amt ?? 0) + '</td>' + 
+    	    			        '<td>' + (data.List[i].GiTransferQty_sum ?? 0) + '</td>' + 
+    	    			        '<td>' + (data.List[i].Inventory_Amt ?? 0) + '</td>' +
+    	    			        '<td>' + (data.List[i].EndStocQty_sum ?? 0) + '</td>' + 
+    	    			        '<td>' + (data.List[i].Inventory_Amt ?? 0) + '</td>' + 
+ 		    			       	'</tr>';
+	     			        $('.InfoTable-Body').append(row);
+    						}
+    					}
+    				}
     			},
     			error: function(jqXHR, textStatus, errorThrown){
     				alert('오류 발생: ' + textStatus + ', ' + errorThrown);
@@ -506,19 +508,14 @@ String UserIdNumber = (String)session.getAttribute("UserIdNumber");
 				<input type="text" class="SLocCode SearOp" name="SLocCode" onclick="InfoSearch('SLoSearch')" placeholder="SELECT" readonly>
 				<button>Del</button>
 			</div>
- 			<div class="Main-Colume LvM" hidden>
+ 			<div class="Main-Colume LvL" hidden>
 				<label>❗재고유형 : </label>
 				<input type="text" class="MatType SearOp" name="MatType" onclick="InfoSearch('TypeSearch')" readonly placeholder="SELECT">
 				<button>Del</button>
 			</div>
-			<div class="Main-Colume LvM" hidden>
-				<label>입출고 구분(From) : </label>
-				<input type="text" class="MovCode-In MovCode SearOp" name="MovCode-In" onclick="InfoSearch('MovSearch')" readonly placeholder="SELECT">
-				<button>Del</button>
-			</div>
-			<div class="Main-Colume LvM" hidden>
-				<label>입출고 구분(To) : </label>
-				<input type="text" class="MovCode-Out MovCode SearOp" name="MovCode-Out" onclick="InfoSearch('MovSearch')" readonly placeholder="SELECT">
+			<div class="Main-Colume LvL" hidden>
+				<label>❗조달로트번호 : </label>
+				<input type="text" class="LotNum SearOp" name="MovCode-In" onclick="InfoSearch('MovSearch')" readonly placeholder="SELECT">
 				<button>Del</button>
 			</div>
 			<div class="Main-Colume">

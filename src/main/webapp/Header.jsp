@@ -97,7 +97,7 @@ $(document).ready(function(){
               	</ul>
               	<a class="dropdown-item dropdown-toggle" href="#">수불 조회/확정</a>
             	<ul class="dropdown-menu">
-                	<li><a class="dropdown-item" href="#">수불 조회/확정</a></li>
+                	<li><a class="dropdown-item" href="${contextPath}/StockMScreen/MatInven.jsp">수불 조회/확정</a></li>
                 	<li><a class="dropdown-item" href="#">로딩자료 수정</a></li>
               	</ul>
             </li>         
