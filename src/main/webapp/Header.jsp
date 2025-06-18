@@ -83,13 +83,13 @@ $(document).ready(function(){
                 	<li><a class="dropdown-item" href="${contextPath}/StockFUpdate/Up_WorkOrder.jsp">작지 ID생성실적</a></li>
               	</ul>
               	<a class="dropdown-item dropdown-toggle" href="#">수불 생성</a>
-            	<ul class="dropdown-menu">
-                	<li><a class="dropdown-item" href="#">자재수불 생성</a></li>
-                	<li><a class="dropdown-item" href="#">공정수불 생성</a></li>
-                	<li><a class="dropdown-item" href="#">반제품 수불 생성</a></li>
-                	<li><a class="dropdown-item" href="#">상품 수불 생성</a></li>
-                	<li><a class="dropdown-item" href="#">제품 수불 생성</a></li>
-              	</ul>
+	            	<ul class="dropdown-menu">
+	                	<li><a class="dropdown-item" href="#">자재수불 생성</a></li>
+	                	<li><a class="dropdown-item" href="#">공정수불 생성</a></li>
+	                	<li><a class="dropdown-item" href="#">반제품 수불 생성</a></li>
+	                	<li><a class="dropdown-item" href="#">상품 수불 생성</a></li>
+	                	<li><a class="dropdown-item" href="#">제품 수불 생성</a></li>
+	              	</ul>
               	<a class="dropdown-item dropdown-toggle" href="#">수불 등록/수정</a>
             	<ul class="dropdown-menu">
                 	<li><a class="dropdown-item" href="#">타계정출고 등록</a></li>

@@ -332,16 +332,6 @@ $(document).ready(function() {
     	    			        '<td>' + (data.List[i].Inventory_Amt ?? 0) + '</td>' + 
     	    			        '</tr>';
     	    			        $('.InfoTable-Body').append(row);
-/*     	    			        InQ += Number(data[i].Initial_Qty || 0);
-    	    			        InA += Number(data[i].Initial_Amt || 0);
-    	    			        PI += Number(data[i].Purchase_In || 0);
-    	    			        PA += Number(data[i].Purchase_Amt || 0);
-    	    			        MO += Number(data[i].Material_Out || 0);
-    	    			        MA += Number(data[i].Material_Amt || 0);
-    	    			        TI += Number(data[i].Transfer_InOut || 0);
-    	    			        TA += Number(data[i].Transfer_Amt || 0);
-    	    			        IQ += Number(data[i].Inventory_Qty || 0);
-    	    			        IA += Number(data[i].Inventory_Amt || 0); */
     					   }
     				   }
     			   }
@@ -415,7 +405,6 @@ $(document).ready(function() {
     		List['MatType'] = MatType;
     		List['LotNum'] = LotNum;
     		$.ajax({
-    			//url : '${contextPath}/Report/AjaxSet/Mov_LoadData.jsp',
     			url : '${contextPath}/SavedDataLoading/Lot_LoadData.do',
     			type : 'POST',
     			data :  JSON.stringify(List),
@@ -460,7 +449,6 @@ $(document).ready(function() {
         	});
     		break;
     	}
-    	TotalCount = [IA, IQ, TA, TI, MA, MO, PA, PI,InA, InQ];
     	applyCSS(condition);
     	clearInterval(TimeSetting);
     })
@@ -528,7 +516,7 @@ String UserIdNumber = (String)session.getAttribute("UserIdNumber");
 		<div class="BtnArea">
 			<button class="SearBtn">Search</button>
 			<button class="ResBtn">Reset</button>
-			<button class="SummBtn" onclick="InfoSearch('Summary')">Sum</button>
+			<button class="SummBtn">Sum</button>
 			<div class="TimeArea" id="clock">Loading...</div>
 		</div>
 		
