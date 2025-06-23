@@ -97,7 +97,7 @@ $(document).ready(function(){
               	</ul>
               	<a class="dropdown-item dropdown-toggle" href="#">수불 조회/확정</a>
             	<ul class="dropdown-menu">
-                	<li><a class="dropdown-item" href="${contextPath}/StockMScreen/MatInven.jsp">수불 조회/확정</a></li>
+                	<li><a class="dropdown-item" href="#">수불 조회/확정</a></li>
                 	<li><a class="dropdown-item" href="#">로딩자료 수정</a></li>
               	</ul>
             </li>         
@@ -109,19 +109,20 @@ $(document).ready(function(){
             <li class="dropdown-submenu">
             	<a class="dropdown-item dropdown-toggle" href="#">원자재</a>
             	<ul class="dropdown-menu">
-               		<li><a class="dropdown-item" href="#">기초 금액 연결</a></li>
+               		<li><a class="dropdown-item" href="#">수불 및 기초 금액 연결</a></li>
                		<li><a class="dropdown-item" href="#">매입 생성연결</a></li>
-               		<li><a class="dropdown-item" href="#">부대비 정산등록</a></li>
-               		<li><a class="dropdown-item" href="#">재고 금액 생성</a></li>
+               		<li><a class="dropdown-item" href="#">미착부대비 정산등록</a></li>
+               		<li><a class="dropdown-item" href="#">축로 및 재고 금액 생성</a></li>
               	</ul>
               	<a class="dropdown-item dropdown-toggle" href="#">자재수불 보회</a>
             	<ul class="dropdown-menu">
-               		<li><a class="dropdown-item" href="#">수량 기준 수불표</a></li>
-               		<li><a class="dropdown-item" href="#">수량+금액 기준 수불표</a></li>
-               		<li><a class="dropdown-item" href="#">유형별 자재 입출현황</a></li>
+               		<li><a class="dropdown-item " href="${contextPath}/StockMScreen/MatInven.jsp">수량기준 원자재 수불표</a></li>
+               		<li><a class="dropdown-item" href="#">입출고유형별 발생현황</a></li>
+               		<li><a class="dropdown-item" href="#">원자재 결산 수불표</a></li>
+               		<li><a class="dropdown-item" href="#">입출고 유형별 요약수불표</a></li>
+               		<li><a class="dropdown-item" href="#">입출고 유형별 상세조회</a></li>
                		<li><a class="dropdown-item" href="#">거래처/자재별 매입현황</a></li>
-               		<li><a class="dropdown-item" href="#">기간 자재별 재고변동</a></li>
-               		<li><a class="dropdown-item" href="#">기간 투입재료비 추세</a></li>
+               		<li><a class="dropdown-item" href="#">기간 자재별 추세</a></li>
               	</ul>
             </li>         
           </ul>

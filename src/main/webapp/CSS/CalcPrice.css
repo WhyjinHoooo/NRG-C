@@ -1,0 +1,304 @@
+@charset "UTF-8";
+html {
+    height: 100%;
+	}		
+body {
+    height: 100%;
+	}
+@media (max-width: 1920px) {
+	.ExcelSaveBtn {
+    width: 5%;
+    height: 3%;
+    margin: 0.3% 0% 0% 90%;
+    border-radius: 5px;
+    font-weight: bold;
+    font-size: small;
+    background: #5775AF;
+    border: 1px #5775AF;
+    color: white;
+	}
+	.ExcelSaveBtn:hover{
+	color: white;
+	border: 1px #87CEFA;
+	background: #87CEFA;
+	}
+	.ExcelSaveBtn:active{
+	color: white;
+	border: 1px #87CEFA;
+	background: #87CEFA;
+	}
+	.Hall {
+    display: flex;
+    flex-direction: row;
+    height: 71vh;
+    width: 100%;
+    margin-top: 0.3%;
+	}
+	.MainHall {
+    border: 1px solid black;
+    width: 30%;
+	height: 125%;
+ 	}
+	.SubHall {
+    border: 1px solid black;
+    margin-left: 2%;
+    width: 100%;
+    height: 125%;
+	}
+	.Title {
+	background: #260FB1;
+	color: white;
+	text-align: center;
+	font-size: x-large;
+	padding: 5px;
+	letter-spacing: 1.5em;
+    }
+    .MainHall > .Category > button {
+	width: 20%;
+	background: #F28C28;
+	color: #FFFFFF;
+	margin: 3px 0px 0px 10px;
+	padding: 5px;
+	font-weight: bolder;
+	font-size: small;
+	border: 0px;
+	border-radius: 5px;
+	}
+	.MainHall > .MainHallArray > .Main-Colume {
+	display: flex;
+	flex-direction: row;
+	margin: 20px 0px 0px 10px;
+	width: 100%;
+	font-size: small;
+	}
+	.MainHall > .MainHallArray > .Main-Colume label {
+	font-weight: bold;
+	font-size: medium;
+	display: inline-block;
+	width: 11em;
+	text-align: right;
+	letter-spacing: 0.1em;
+	}   
+    .MainHall > .MainHallArray > .Main-Colume input {
+	margin-left: 10px;
+	width: 35%;
+	text-align: center;
+	font-size: small;
+	}
+	.MainHall > .MainHallArray > .Main-Colume select {
+	margin-left: 10px;
+	width: 37%;
+	text-align: center;
+	font-size: small;
+	}
+    .MainHall > .BtnArea {
+	height: 48%;
+	padding-top: 35%;
+	display: flex;
+	justify-content: space-evenly;
+    }
+    .MainHall > .BtnArea > button:nth-child(1) {
+	width: 25%;
+	height: 10%;
+	text-align: center;
+	background-color: #002060;
+	color: white;
+	border: 1px solid #1F4E79;
+	border-radius: 5px;
+	font-size: large;
+	}
+	.MainHall > .BtnArea > button:nth-child(1):hover {
+	background: #0068ff;
+	color: #fff;
+	border: 1px solid #0068ff;
+	}
+	.MainHall > .BtnArea > button:nth-child(1):active {
+	background: #0068ff;
+	color: #fff;
+	border: 1px solid #0068ff;
+	}
+	 .MainHall > .BtnArea > button:nth-child(2) {
+	width: 25%;
+	height: 10%;
+	text-align: center;
+	background-color: #FF4040;
+	color: white;
+	border: 1px solid #FF4040;
+	border-radius: 5px;
+	font-size: large;
+	}
+	.MainHall > .BtnArea > button:nth-child(2):hover {
+	background: #B3003F;
+	color: #fff;
+	border: 1px solid #B3003F;
+	}
+	.MainHall > .BtnArea > button:nth-child(2):active {
+	background: #B3003F;
+	color: #fff;
+	border: 1px solid #B3003F;
+	}
+	.Hall >.SubHall > table.InfoTable{
+	border-collapse: collapse;
+	width: 100%;
+	height: 92.1%;
+	table-layout: fixed;
+	overflow: scroll;
+    }
+    .Hall >.SubHall > table.InfoTable thead{
+    display: block;
+	width: 100%;
+	position: sticky;
+	top: 0;
+	z-index: 10;
+	overflow-x: hidden;
+    }
+	.Hall >.SubHall > table.InfoTable tbody{
+	table-layout: fixed;
+	display: block;
+	width: 100.4%;
+	height: 96%;
+	max-height: 100%;
+	overflow-y: auto;
+	overflow-x: auto;
+	}
+	.Hall >.SubHall > table.InfoTable tbody td{
+	padding: 8px 5.5px;
+	border: 1px solid #ddd;
+	width: 131px;
+	height: 10px;
+	text-align: center;
+	font-size: 10px;
+	font-weight: bold;
+    }
+	.Hall > .SubHall > table.InfoTable thead > tr {
+	display: table;
+	table-layout: fixed;
+	width: 100%;
+    }
+    .Hall > .SubHall > table.InfoTable thead > tr > th{
+    background-color: rgb(111, 167, 235);
+	top: 0;
+	color: white;
+	text-align: center;
+	z-index: 10;
+	padding: 0px;
+	border: 1px solid white;
+    font-size: small;
+    letter-spacing: 0.2em
+    }
+	.Hall > .SubHall > table.InfoTable thead > tr > th:nth-child(1)  { width: 50px; }
+	.Hall > .SubHall > table.InfoTable thead > tr > th:nth-child(2),
+	.Hall > .SubHall > table.InfoTable thead > tr > th:nth-child(4),
+	.Hall > .SubHall > table.InfoTable thead > tr > th:nth-child(5),
+	.Hall > .SubHall > table.InfoTable thead > tr > th:nth-child(8),
+	.Hall > .SubHall > table.InfoTable thead > tr > th:nth-child(9)  { width: 100px; }
+	.Hall > .SubHall > table.InfoTable thead > tr > th:nth-child(3)  { width: 200px; }
+	.Hall > .SubHall > table.InfoTable thead > tr > th:nth-child(6),
+	.Hall > .SubHall > table.InfoTable thead > tr > th:nth-child(10),
+	.Hall > .SubHall > table.InfoTable thead > tr > th:nth-child(11),
+	.Hall > .SubHall > table.InfoTable thead > tr > th:nth-child(12) { width: 250px; }
+	.Hall > .SubHall > table.InfoTable thead > tr > th:nth-child(7)  { width: 400px; }
+	
+	.Hall > .SubHall > table.InfoTable thead > tr > th:nth-child(6) > div:nth-child(1),
+	.Hall > .SubHall > table.InfoTable thead > tr > th:nth-child(7) > div:nth-child(1),
+	.Hall > .SubHall > table.InfoTable thead > tr > th:nth-child(10) > div:nth-child(1),
+	.Hall > .SubHall > table.InfoTable thead > tr > th:nth-child(11) > div:nth-child(1) {
+	    padding: 10px;
+	}
+	.Hall > .SubHall > table.InfoTable thead > tr > th:nth-child(6) > div:nth-child(2),
+	.Hall > .SubHall > table.InfoTable thead > tr > th:nth-child(7) > div:nth-child(2),
+	.Hall > .SubHall > table.InfoTable thead > tr > th:nth-child(10) > div:nth-child(2),
+	.Hall > .SubHall > table.InfoTable thead > tr > th:nth-child(11) > div:nth-child(2) {
+	    display: flex;
+	    justify-content: center;
+	}
+	.Hall > .SubHall > table.InfoTable thead > tr > th:nth-child(6) > div:nth-child(2) > span,
+	.Hall > .SubHall > table.InfoTable thead > tr > th:nth-child(10) > div:nth-child(2) > span,
+	.Hall > .SubHall > table.InfoTable thead > tr > th:nth-child(11) > div:nth-child(2) > span,
+	.Hall > .SubHall > table.InfoTable thead > tr > th:nth-child(7) > div:nth-child(2) > span {
+	    flex: 1;
+	    text-align: center;
+	    border: 1px solid white;
+	    box-sizing: border-box;
+	    padding: 10px;
+	    font-size: small;
+	}
+
+    .Hall >.SubHall > table.InfoTable tbody > tr {
+	    display: table;
+	    width: 100%;
+	    table-layout: fixed;
+	}
+	.Hall > .SubHall > table.InfoTable tbody td:not(:empty){
+	padding: 3px 3px;
+	}
+	.Hall > .SubHall > table.InfoTable tbody td:empty:nth-child(1){width: 39px;} 
+	.Hall > .SubHall > table.InfoTable tbody td:empty:nth-child(2){width: 89px;} 
+	.Hall > .SubHall > table.InfoTable tbody td:empty:nth-child(3){width: 189px;} 
+	.Hall > .SubHall > table.InfoTable tbody td:empty:nth-child(4){width: 89px;} 
+	.Hall > .SubHall > table.InfoTable tbody td:empty:nth-child(5){width: 89px;} 
+	.Hall > .SubHall > table.InfoTable tbody td:empty:nth-child(6){width: 113px;}
+	.Hall > .SubHall > table.InfoTable tbody td:empty:nth-child(7){width: 113px;}
+	.Hall > .SubHall > table.InfoTable tbody td:empty:nth-child(8){width: 88px;}
+	.Hall > .SubHall > table.InfoTable tbody td:empty:nth-child(9){width: 88px;}
+	.Hall > .SubHall > table.InfoTable tbody td:empty:nth-child(10){width: 88px;}
+	.Hall > .SubHall > table.InfoTable tbody td:empty:nth-child(11){width: 88px;}
+	.Hall > .SubHall > table.InfoTable tbody td:empty:nth-child(12){width: 91px;}
+	.Hall > .SubHall > table.InfoTable tbody td:empty:nth-child(13){width: 90px;}
+	.Hall > .SubHall > table.InfoTable tbody td:empty:nth-child(14){width: 112px;}
+	.Hall > .SubHall > table.InfoTable tbody td:empty:nth-child(15){width: 112px;}
+	.Hall > .SubHall > table.InfoTable tbody td:empty:nth-child(16){width: 115px;}
+	.Hall > .SubHall > table.InfoTable tbody td:empty:nth-child(17){width: 113px;}
+	.Hall > .SubHall > table.InfoTable tbody td:empty:nth-child(18){width: 241px;}
+	
+	.Hall > .SubHall > table.InfoTable tbody td:not(:empty):nth-child(1){width: 210px;}
+	.Hall > .SubHall > table.InfoTable tbody td:not(:empty):nth-child(2){width: 210px;}
+	.Hall > .SubHall > table.InfoTable tbody td:not(:empty):nth-child(3){width: 210px;}
+	.Hall > .SubHall > table.InfoTable tbody td:not(:empty):nth-child(4){width: 210px;font-size: xx-small;}
+	.Hall > .SubHall > table.InfoTable tbody td:not(:empty):nth-child(5){width: 210px;}
+	.Hall > .SubHall > table.InfoTable tbody td:not(:empty):nth-child(6){width: 210px;}
+	.Hall > .SubHall > table.InfoTable tbody td:not(:empty):nth-child(7){width: 160px;}
+	.Hall > .SubHall > table.InfoTable tbody td:not(:empty):nth-child(8){width: 160px;}
+	.Hall > .SubHall > table.InfoTable tbody td:not(:empty):nth-child(9){width: 160px;}
+	.Hall > .SubHall > table.InfoTable tbody td:not(:empty):nth-child(10){width: 163px;}
+	.Hall > .SubHall > table.InfoTable tbody td:not(:empty):nth-child(11){width: 160px;}
+	.Hall > .SubHall > table.InfoTable tbody td:not(:empty):nth-child(12){width: 160px;}
+	.Hall > .SubHall > table.InfoTable tbody td:not(:empty):nth-child(13){width: 160px;}
+	.Hall > .SubHall > table.InfoTable tbody td:not(:empty):nth-child(14){width: 160px;}
+	.Hall > .SubHall > table.InfoTable tbody td:not(:empty):nth-child(15){width: 160px;}
+	.Hall > .SubHall > table.InfoTable tbody td:not(:empty):nth-child(16){width: 162px;}
+	.Hall > .SubHall > table.InfoTable tbody td:not(:empty):nth-child(17){width: 160px;}
+	.Hall > .SubHall > table.InfoTable tbody td:not(:empty):nth-child(18){width: 150px;}
+	
+	.Hall >.SubHall > table.InfoTable tbody::-webkit-scrollbar {
+	    width: 5px;
+	}
+	.Hall >.SubHall > table.InfoTable tbody::-webkit-scrollbar-thumb {
+	    background-color: #2f3542;
+	    border-radius: 10px;
+	}
+	.Hall >.SubHall > table.InfoTable tbody::-webkit-scrollbar-track {
+	    background-color: white;
+	    border-radius: 1px;
+	    box-shadow: inset 0px 0px 5px white;
+	}
+	.Hall >.SubHall > table.InfoTable tbody::-webkit-scrollbar:horizontal {
+	    height: 10px;
+	}
+	.Hall >.SubHall > table.InfoTable tbody::-webkit-scrollbar-thumb:horizontal {
+	    background-color: black;
+	    border-radius: 10px;
+	}
+	.Hall >.SubHall > table.InfoTable tbody::-webkit-scrollbar-track:horizontal {
+	    background-color: white;
+	    border-radius: 1px;
+	    box-shadow: inset 0px 0px 5px white;
+	}
+  	footer {
+   	width: 75.4%;
+   	height: 4%;
+   	margin: 0.1% 0% 0% 24.5%;
+   	display: flex;
+   	flex-direction: row-reverse;
+   	}
+}
