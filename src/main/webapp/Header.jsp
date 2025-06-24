@@ -118,7 +118,7 @@ $(document).ready(function(){
             	<ul class="dropdown-menu">
                		<li><a class="dropdown-item " href="${contextPath}/StockMScreen/MatInven.jsp">수량기준 원자재 수불표</a></li>
                		<li><a class="dropdown-item" href="#">입출고유형별 발생현황</a></li>
-               		<li><a class="dropdown-item" href="#">원자재 결산 수불표</a></li>
+               		<li><a class="dropdown-item" href="${contextPath}/RawmPrice/Rawm_StockSheet.jsp">원자재 결산 수불표</a></li>
                		<li><a class="dropdown-item" href="#">입출고 유형별 요약수불표</a></li>
                		<li><a class="dropdown-item" href="#">입출고 유형별 상세조회</a></li>
                		<li><a class="dropdown-item" href="#">거래처/자재별 매입현황</a></li>

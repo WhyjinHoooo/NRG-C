@@ -27,10 +27,8 @@ function exportExcel() {
 	  // 1. thead 복제 및 헤더 분리
 	  const thead = originalTable.querySelector('thead').cloneNode(true);
 	  const tr = thead.querySelector('tr');
-
 	  // 새 헤더 배열
 	  const newThs = [];
-
 	  // 기존 th들을 순회하며 헤더 분리
 	  tr.querySelectorAll('th').forEach(th => {
 	    const divs = th.querySelectorAll('div');
@@ -50,19 +48,15 @@ function exportExcel() {
 	      newThs.push(newTh);
 	    }
 	  });
-
 	  // 기존 tr 내용 삭제 후 새 th들 추가
 	  tr.innerHTML = '';
 	  newThs.forEach(th => tr.appendChild(th));
-
 	  // 2. tbody 복제
 	  const tbody = originalTable.querySelector('tbody').cloneNode(true);
-
 	  // 3. 임시 테이블 생성 후 thead, tbody 붙이기
 	  const tempTable = document.createElement('table');
 	  tempTable.appendChild(thead);
 	  tempTable.appendChild(tbody);
-
 	  // 4. SheetJS를 이용해 엑셀 파일 생성 및 다운로드
 	  const wb = XLSX.utils.table_to_book(tempTable, { sheet: "Sheet1" });
 	  XLSX.writeFile(wb, 'exported_table.xlsx');
@@ -125,6 +119,7 @@ function DateSetting(){
 $(document).ready(function() {
 	DateSetting();
 	InitialTable();
+	var ComDate = $('.ComCode').val();
 	var CalcMonth = document.getElementById('IQDate');
 	var RecentYear = new Date().getFullYear();
 	var RecentMonth = new Date().getMonth() + 1;
@@ -141,9 +136,23 @@ $(document).ready(function() {
 	        year--;
 	    }
 	}
+	$('.CLBtn').click(function(){
+		$.ajax({
+			url : '${contextPath}/CostCalc/RawmPriceCalc.do',
+			type : 'POST',
+			data : { ComCode : ComDate},
+			dataType: 'text',
+			async: false,
+			success: function(data){},
+			error: function(jqXHR, textStatus, errorThrown){
+				alert('오류 발생: ' + textStatus + ', ' + errorThrown);
+	    	}
+    	});
+	})
     $('.SearBtn').click(function(){
 	    $('.InfoTable-Body').empty();
     })
+    
 });
 </script>
 <%
@@ -161,7 +170,7 @@ String UserIdNumber = (String)session.getAttribute("UserIdNumber");
 		<div class="MainHallArray">
 			<div class="Main-Colume">
 				<label>회사 : </label>
-				<input type="text" class="ComCode FilterOP" name="ComCode" onclick="InfoSearch('ComSearch')" readonly>
+				<input type="text" class="ComCode" name="ComCode" onclick="InfoSearch('ComSearch')" readonly>
 			</div>
 			<div class="Main-Colume">
 				<label>재고유형 : </label>
