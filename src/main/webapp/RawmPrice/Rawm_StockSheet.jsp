@@ -119,7 +119,7 @@ function DateSetting(){
 $(document).ready(function() {
 	DateSetting();
 	InitialTable();
-	var ComDate = $('.ComCode').val();
+	var ComData = $('.ComCode').val();
 	var CalcMonth = document.getElementById('IQDate');
 	var RecentYear = new Date().getFullYear();
 	var RecentMonth = new Date().getMonth() + 1;
@@ -140,7 +140,7 @@ $(document).ready(function() {
 		$.ajax({
 			url : '${contextPath}/CostCalc/RawmPriceCalc.do',
 			type : 'POST',
-			data : { ComCode : ComDate},
+			data : { ComCode : ComData},
 			dataType: 'text',
 			async: false,
 			success: function(data){},
