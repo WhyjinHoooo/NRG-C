@@ -119,7 +119,8 @@ function DateSetting(){
 $(document).ready(function() {
 	DateSetting();
 	InitialTable();
-	var ComData = $('.ComCode').val();
+	var ComData = null;
+	var MonthData = null;
 	var CalcMonth = document.getElementById('IQDate');
 	var RecentYear = new Date().getFullYear();
 	var RecentMonth = new Date().getMonth() + 1;
@@ -137,20 +138,71 @@ $(document).ready(function() {
 	    }
 	}
 	$('.CLBtn').click(function(){
+		ComData = $('.ComCode').val();
 		$.ajax({
 			url : '${contextPath}/CostCalc/RawmPriceCalc.do',
 			type : 'POST',
-			data : { ComCode : ComData},
+			data : {ComCode : ComData},
 			dataType: 'text',
 			async: false,
-			success: function(data){},
+			success: function(data){
+				if(data.result === "success"){
+					alert('결산이 완료되었습니다.');
+				}else{
+					alert('오류가 발생했습니다..');
+				}
+			},
 			error: function(jqXHR, textStatus, errorThrown){
 				alert('오류 발생: ' + textStatus + ', ' + errorThrown);
 	    	}
     	});
 	})
     $('.SearBtn').click(function(){
+		ComData = $('.ComCode').val();
+		MonthData = $('.IQDate').val();
+		console.log(ComData + ',' + MonthData);
 	    $('.InfoTable-Body').empty();
+		$.ajax({
+			url : '${contextPath}/CostCalc/RawmDataLoading.do',
+			type : 'POST',
+			data : JSON.stringify({ComCode : ComData, IQData : MonthData}),
+			contentType: 'application/json; charset=utf-8',
+			dataType: 'json',
+			async: false,
+			success: function(data){
+				console.log('data.result : ' + data.result);
+				if(data.result === "success"){
+					if(data.List.length > 0) {
+						for(var i = 0; i < data.List.length; i++){
+							var row = '<tr>' +
+							'<td>' +  ComData + '</td>' + 
+	    			        '<td>' + (data.List[i].matcode || 'N/A') + '</td>' +
+	    			        '<td>' + (data.List[i].matdesc || 'N/A') + '</td>' +
+	    			        '<td>' + (data.List[i].mattype || 'N/A') + '</td>' +
+							'<td>' + (data.List[i].spec || 'N/A') + '</td>' + 
+		    			    '<td>' + (data.List[i].beginStocqty || 'N/A') + '</td>' +
+		    			    '<td>' + (data.List[i].BsAmt || 'N/A') + '</td>' + 
+		    			    '<td>' + (data.List[i].GrTransacQty || 'N/A') + '</td>' +
+		    			    '<td>' + (data.List[i].GrPurAmt || 'N/A') + '</td>' +
+	    			        '<td>' + (data.List[i].GrSubAmt ?? 0) + '</td>' + 
+	    			        '<td>' + (data.List[i].GrSumAmt ?? 0) + '</td>' + 
+	    			        '<td>' + (data.List[i].GrTransferQty ?? 0) + '</td>' + 
+	    			        '<td>' + (data.List[i].GiTransferQty ?? 0) + '</td>' + 
+	    			        '<td>' + (data.List[i].GiTransacQty ?? 0) + '</td>' + 
+	    			        '<td>' + (data.List[i].GiAmt ?? 0) + '</td>' + 
+	    			        '<td>' + (data.List[i].EndStocQty ?? 0) + '</td>' + 
+	    			        '<td>' + (data.List[i].EsAmt ?? 0) + '</td>' + 
+	    			        '<td>' + (data.List[i].UnitPrice ?? 0) + '</td>' +
+		    			    '</tr>';
+     			        $('.InfoTable-Body').append(row);
+						}
+					}
+				}
+			},
+			error: function(jqXHR, textStatus, errorThrown){
+				alert('오류 발생: ' + textStatus + ', ' + errorThrown);
+	    	}
+    	});
     })
     
 });
