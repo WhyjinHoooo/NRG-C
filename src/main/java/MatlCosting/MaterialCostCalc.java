@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Iterator;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -46,20 +47,6 @@ public class MaterialCostCalc extends HttpServlet {
 		LocalDateTime now = LocalDateTime.now();
 		//String ClDate = (now.format(DateTimeFormatter.ofPattern("yyyy-MM"))).replace("-", ""); //이렇게 하면 202504처럼 저장됨
 		String ClDate = "202504"; // 일단은 강제로 설정해줌
-		BufferedReader br = request.getReader();
-		StringBuilder sb = new StringBuilder();
-		String line;
-		while ((line = br.readLine()) != null) {
-		    sb.append(line);
-		}
-		String body = sb.toString();
-		System.out.println("body: " + body);
-		// body를 JSONObject로 파싱해서 ComCode, IQData 추출
-		JSONObject json = new JSONObject(body);
-		String ComCode = json.getString("ComCode");
-		String IQData = json.getString("IQData");
-		System.out.println(ComCode);
-		
 		String action = request.getPathInfo();
 		
 		MatCostCalcDAO Dao = new MatCostCalcDAO();
@@ -67,7 +54,9 @@ public class MaterialCostCalc extends HttpServlet {
 		try {
 			switch(action) {
 			case "/RawmPriceCalc.do":
-				DaoResult = Dao.CostCalcFun(ClDate, ComCode);
+				String Cocd = request.getParameter("ComCode");
+				DaoResult = Dao.CostCalcFun(ClDate, Cocd);
+	    		System.out.println("업데이트 결과 : " + DaoResult);
 		    	if (DaoResult == null || DaoResult.equals("No")) {
 		    	    writer.print("{\"result\":\"fail\", \"message\":\"DaoResult null이거나 'No'입니다.\"}");
 		    	} else {
@@ -75,13 +64,51 @@ public class MaterialCostCalc extends HttpServlet {
 		    	}
 				break;
 			case "/RawmDataLoading.do":
+				BufferedReader br = request.getReader();
+				StringBuilder sb = new StringBuilder();
+				String line;
+				while ((line = br.readLine()) != null) {
+				    sb.append(line);
+				}
+				String body = sb.toString();
+				System.out.println("body: " + body);
+				JSONObject json = new JSONObject(body);
+				String ComCode = json.getString("ComCode");
+				String IQData = json.getString("IQData");
 				DaoResult = Dao.DataLoadFun(IQData, ComCode);
-				System.out.println(DaoResult);
                 if(DaoResult == null) {
                 	writer.print("{\"result\":\"fail\"}");
                 }else {
                 	writer.print("{\"result\":\"success\", \"List\":" + DaoResult + "}");
                 }
+				break;
+			case "/RawmLineDataLoading.do":
+				System.out.println("RawmLineDataLoading.do");
+				BufferedReader br1 = request.getReader();
+			    StringBuilder sb1 = new StringBuilder();
+			    String line1;
+			    while ((line1 = br1.readLine()) != null) {
+			        sb1.append(line1);
+			    }
+			    String jsonString = sb1.toString();
+			    try {
+			        JSONObject jsonObj = new JSONObject(jsonString);
+			        Iterator<String> keys = jsonObj.keys();
+			        while(keys.hasNext()) {
+			            String key = keys.next();
+			            Object value = jsonObj.get(key);
+			            System.out.println(key + " : " + value);
+			        }
+			        DaoResult = Dao.LineDataLoadFun(jsonObj);
+			        System.out.println("DaoResult : " + DaoResult);
+			        if(DaoResult == null) {
+	                	writer.print("{\"result\":\"fail\"}");
+	                }else {
+	                	writer.print("{\"result\":\"success\", \"List\":" + DaoResult + "}");
+	                }
+			    } catch(Exception e) {
+			        e.printStackTrace();
+			    }
 				break;
 			}
 			writer.flush();
@@ -89,5 +116,4 @@ public class MaterialCostCalc extends HttpServlet {
 			// TODO: handle exception
 		}
 	}
-
 }

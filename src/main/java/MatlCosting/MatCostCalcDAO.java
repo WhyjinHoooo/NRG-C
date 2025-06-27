@@ -6,9 +6,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-
+import java.util.*;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.sql.DataSource;
@@ -47,6 +45,7 @@ public class MatCostCalcDAO {
 			cal.add(Calendar.MONTH, -1);
 			String PastVal = sdf.format(cal.getTime()); // 202412
 			System.out.println(CurrVal + "," + PastVal + "," + ComCodeVal);
+			Double SumTableBeginQty = 0.0; // SumTable 기초수량
 			Double beginStocqty = 0.0; // 기초수량
 			Double BsAmt = 0.0;
 			Double GrTransacQty = 0.0;  // 입고수량
@@ -99,10 +98,10 @@ public class MatCostCalcDAO {
 				MDSS_Pstmt.setString(3, rs.getString("matcode"));
 				ResultSet MSDD_Rs = MDSS_Pstmt.executeQuery();
 				if(MSDD_Rs.next()) {
+					SumTableBeginQty = MSDD_Rs.getDouble("beginStocqty_sum");
 					beginStocqty = rs.getDouble("EndStocQty");
 					BsAmt = rs.getDouble("EsAmt");
 					GrTransacQty = MSDD_Rs.getDouble("GrTransacQty_sum");
-					
 					// 입고금액 입력하는 부분
 					String PriceSql = "SELECT movetype, closingmon, matcode, matdesc, spec, lotnum, mattype, quantity, SUM(amount) as SumAmount "
 						+ "FROM InvenLogl WHERE closingmon = ? AND matcode = ? AND LEFT(movetype, 2) = ? AND mattype = ? AND comcode = ? "
@@ -138,10 +137,15 @@ public class MatCostCalcDAO {
 					}
 
 					EndStocQty = beginStocqty + GrTransacQty - GiTransacQty;
-					UnitPrice = (BsAmt + GrSumAmt) / (beginStocqty + GrTransacQty);
+					double denominator = beginStocqty + GrTransacQty;
+					if (denominator != 0) {
+					    UnitPrice = (BsAmt + GrSumAmt) / denominator;
+					} else {
+					    UnitPrice = 0.0;
+					}
 					EsAmt = (double) Math.round(EndStocQty * UnitPrice);
-					
-					String InsertSql = "INSERT INTO sumrawmamt VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+
+					String InsertSql = "INSERT INTO sumrawmamt VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 					PreparedStatement Insert_Pstmt = conn.prepareStatement(InsertSql);
 					Insert_Pstmt.setString(1, CurrVal);
 					Insert_Pstmt.setString(2, ComCodeVal);
@@ -162,7 +166,14 @@ public class MatCostCalcDAO {
 					Insert_Pstmt.setDouble(17, EndStocQty);
 					Insert_Pstmt.setDouble(18, EsAmt);
 					Insert_Pstmt.setDouble(19, UnitPrice);
-					Insert_Pstmt.executeUpdate();	
+					if(Double.compare(beginStocqty, SumTableBeginQty) == 0) {
+						System.out.println("Good");
+						Insert_Pstmt.setString(20, "X"); // -> 문제 없음
+					}else {
+						System.out.println("Bad");
+						Insert_Pstmt.setString(20, "O"); // -> 문제 있음
+					}
+					Insert_Pstmt.executeUpdate();
 				}	
 			}
 			result = "Yes";
@@ -208,6 +219,7 @@ public class MatCostCalcDAO {
 				jsonObject.put("EndStocQty", rs.getString("EndStocQty"));
 				jsonObject.put("EsAmt", rs.getString("EsAmt"));
 				jsonObject.put("UnitPrice", rs.getString("UnitPrice"));
+				jsonObject.put("ErrorOX", rs.getString("ErrorOX"));
 				jsonArray.put(jsonObject);
 			}
 			if (jsonArray.length() == 0) {
@@ -218,6 +230,79 @@ public class MatCostCalcDAO {
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		}
+		return result;
+	}
+
+	public String LineDataLoadFun(JSONObject jsonObj) {
+		// TODO Auto-generated method stub
+		connDB();
+	    String result = null;
+	    ResultSet rs = null;
+	    try {
+	        boolean hasMatCode = jsonObj.has("MatCode") && jsonObj.get("MatCode") != null && !jsonObj.get("MatCode").toString().trim().isEmpty();
+
+	        if (hasMatCode) {
+	            sql = "SELECT * FROM InvenLogl WHERE "
+	                + "comcode = ? AND "
+	                + "mattype = ? AND "
+	                + "plant = ? AND "
+	                + "matcode = ? AND "
+	                + "movetype = ? AND "
+	                + "transactiondate >= ? AND transactiondate <= ?";
+	            pstmt = conn.prepareStatement(sql);
+	            pstmt.setString(1, jsonObj.getString("ComCode"));
+	            pstmt.setString(2, jsonObj.getString("MatType"));
+	            pstmt.setString(3, jsonObj.getString("PlantCode"));
+	            pstmt.setString(4, jsonObj.getString("MatCode"));
+	            pstmt.setString(5, jsonObj.getString("MVtype"));
+	            pstmt.setString(6, jsonObj.getString("FromDate").replace("-", ""));
+	            pstmt.setString(7, jsonObj.getString("EndDate").replace("-", ""));
+	        } else {
+	            sql = "SELECT * FROM InvenLogl WHERE "
+	                + "comcode = ? AND "
+	                + "mattype = ? AND "
+	                + "plant = ? AND "
+	                + "movetype = ? AND "
+	                + "transactiondate >= ? AND transactiondate <= ?";
+	            pstmt = conn.prepareStatement(sql);
+	            pstmt.setString(1, jsonObj.getString("ComCode"));
+	            pstmt.setString(2, jsonObj.getString("MatType"));
+	            pstmt.setString(3, jsonObj.getString("PlantCode"));
+	            pstmt.setString(4, jsonObj.getString("MVtype"));
+	            pstmt.setString(5, jsonObj.getString("FromDate").replace("-", ""));
+	            pstmt.setString(6, jsonObj.getString("EndDate").replace("-", ""));
+	        }
+			rs = pstmt.executeQuery();
+			JSONArray jsonArray = new JSONArray();
+			while(rs.next()) {
+				System.out.println("docnum : " + rs.getString("docnum"));
+				JSONObject jsonObject = new JSONObject();
+				jsonObject.put("docnum", rs.getString("docnum"));
+				jsonObject.put("transactiondate", rs.getString("transactiondate"));
+				jsonObject.put("matcode", rs.getString("matcode"));
+				jsonObject.put("matdesc", rs.getString("matdesc"));
+				jsonObject.put("movetype", rs.getString("movetype"));
+				jsonObject.put("mattype", rs.getString("mattype"));
+				jsonObject.put("lotnum", rs.getString("lotnum"));
+				jsonObject.put("quantity", rs.getString("quantity"));
+				jsonObject.put("workordnum", rs.getString("workordnum"));
+				jsonObject.put("procuordnum", rs.getString("procuordnum"));
+				jsonObject.put("salesordnum", rs.getString("salesordnum"));
+				jsonObject.put("vendcode", rs.getString("vendcode"));
+				jsonObject.put("vendDesc", rs.getString("vendDesc"));
+				jsonObject.put("storcode", rs.getString("storcode"));
+				jsonObject.put("stordesc", rs.getString("stordesc"));
+				jsonObject.put("plant", rs.getString("plant"));
+				jsonArray.put(jsonObject);
+			}
+			if (jsonArray.length() == 0) {
+		        result = null;
+		    } else {
+		        result = jsonArray.toString();
+		    }
+		}catch (Exception e) {
+			// TODO: handle exception
 		}
 		return result;
 	}
