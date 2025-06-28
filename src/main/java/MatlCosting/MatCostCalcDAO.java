@@ -190,6 +190,7 @@ public class MatCostCalcDAO {
 						Insert_Pstmt.setString(20, "O"); // -> 문제 있음
 					}
 					Insert_Pstmt.executeUpdate();
+					
 				}	
 			}
 			result = "Yes";
@@ -202,6 +203,63 @@ public class MatCostCalcDAO {
 	    }
 	
 		return result;
+	}
+	
+	public String GICalcResult(String MonthDate, String Material, Double Unitprice, Double GiAmt) {
+		String Result = "No";
+		String CurrDate = MonthDate; // 지금 날짜
+		String MatCode = Material; // 원자재 코드
+		Double MatPrice = Unitprice; // 단가
+		int TotalGiAmt = (int)Math.round(GiAmt); // SumRawmTalbe에 저장된 최종 값
+		int TotalPrice = 0;
+		ResultSet rs = null;
+		sql = "SELECT * FROM InvenLogl WHERE LEFT(movetype,2) = ? AND mattype = ? AND closingmon = ? AND matcode = ?";
+		try {
+			PreparedStatement pstmt = conn.prepareStatement(sql);
+			pstmt.setString(1, "GI");
+			pstmt.setString(2, "RAWM");
+			pstmt.setString(3, CurrDate);
+			pstmt.setString(4, MatCode);
+			rs = pstmt.executeQuery();
+			while(rs.next()) {
+				String LotNumber = rs.getString("lotnum");
+				Double GiQty = rs.getDouble("quantity"); // GI의 수량
+				int GiAmount = (int) Math.round(MatPrice * GiQty); // 최종값
+				String UpDateSql = "UPDATE InvenLogl SET amount = ? WHERE closingmon = ? AND matcode = ? AND mattype = ? AND LEFT(movetype,2) = ? AND lotnum = ?";
+				PreparedStatement UpSqlPstmt = conn.prepareStatement(UpDateSql);
+				UpSqlPstmt.setInt(1, GiAmount);
+				UpSqlPstmt.setString(2, CurrDate);
+				UpSqlPstmt.setString(3, MatCode);
+				UpSqlPstmt.setString(4, "RAWM");
+				UpSqlPstmt.setString(5, "GI");
+				UpSqlPstmt.setString(6, LotNumber);
+				UpSqlPstmt.executeUpdate();
+				TotalPrice += GiAmount;
+			}
+			if(TotalGiAmt == TotalPrice) {
+				Result = "Yes";
+			}else {
+				int Gap = TotalGiAmt - TotalPrice;
+				String ReNewSearchSql = "SELECT * FROM InvenLogl WHERE LEFT(movetype,2) = ? AND mattype = ? AND closingmon = ? AND matcode = ?";
+				PreparedStatement ReNewSearchPstmt = conn.prepareStatement(ReNewSearchSql);
+				ReNewSearchPstmt.setString(1, "GI");
+				ReNewSearchPstmt.setString(2, "RAWM");
+				ReNewSearchPstmt.setString(3, CurrDate);
+				ReNewSearchPstmt.setString(4, MatCode);
+				ResultSet ReNewSearchRs = ReNewSearchPstmt.executeQuery();
+				int RenewAmount = 0;
+				if(ReNewSearchRs.next()) {
+					if(Gap > 0) {
+						RenewAmount = ReNewSearchRs.getInt("amount") + Gap;
+					}else {
+						RenewAmount = ReNewSearchRs.getInt("amount") - Gap;
+					}
+				}
+			}
+		}catch (Exception e) {
+			// TODO: handle exception
+		}
+		return "";
 	}
 
 	public String DataLoadFun(String clDate, String comCode) {
