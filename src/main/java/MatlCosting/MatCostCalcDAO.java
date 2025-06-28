@@ -45,6 +45,7 @@ public class MatCostCalcDAO {
 			cal.add(Calendar.MONTH, -1);
 			String PastVal = sdf.format(cal.getTime()); // 202412
 			System.out.println(CurrVal + "," + PastVal + "," + ComCodeVal);
+			
 			Double SumTableBeginQty = 0.0; // SumTable 기초수량
 			Double beginStocqty = 0.0; // 기초수량
 			Double BsAmt = 0.0;
@@ -67,6 +68,21 @@ public class MatCostCalcDAO {
 			ResultSet rs = pstmt.executeQuery();
 			
 			while(rs.next()) {
+			    SumTableBeginQty = 0.0; // SumTable 기초수량
+			    beginStocqty = 0.0;     // 기초수량
+			    BsAmt = 0.0;
+			    GrTransacQty = 0.0;     // 입고수량
+			    GrPurAmt = 0.0;
+			    GrSubAmt = 0.0;
+			    GrSumAmt = 0.0;         // 최종 입고 금액
+			    GrTransferQty = 0.0;    // 이동입고 수량
+			    GiTransferQty = 0.0;    // 이동출고 수량
+			    GiTransacQty = 0.0;     // 출고수량
+			    GiAmt = 0.0;            // 최종 출고 금액
+			    EndStocQty = 0.0;       // 기말 수량
+			    EsAmt = 0.0;
+			    UnitPrice = 0.0;
+				
 				String MatDataSearchSql = "SELECT "
 					    + "s.closingMon AS s_closingMon, "
 					    + "s.comcode AS s_comcode, "
@@ -166,7 +182,7 @@ public class MatCostCalcDAO {
 					Insert_Pstmt.setDouble(17, EndStocQty);
 					Insert_Pstmt.setDouble(18, EsAmt);
 					Insert_Pstmt.setDouble(19, UnitPrice);
-					if(Double.compare(beginStocqty, SumTableBeginQty) == 0) {
+					if(Double.compare(beginStocqty, SumTableBeginQty) == 0) { // 실수타입을 비교하는 코드 Double.compare(실수, 실수), '=='를 쓰면 같은 값이라도 오차가 발생할 수 있어 실수를 비교할 때 사용하면 안됨
 						System.out.println("Good");
 						Insert_Pstmt.setString(20, "X"); // -> 문제 없음
 					}else {
