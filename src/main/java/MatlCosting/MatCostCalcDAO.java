@@ -227,7 +227,10 @@ public class MatCostCalcDAO {
 				MatCode = rs.getString("matcode"); // 자재코드
 				MatPrice = (int)Math.round(rs.getDouble("UnitPrice")); // 단가
 				TotalGiAmt = rs.getInt("GiAmt"); // SumRawmTalbe에 저장된 출고 값
-				System.out.println("1. 재료 : " + MatCode + ", 단가 : " + MatPrice + ", 총합 금액 : " + TotalGiAmt);
+				/*
+				 * System.out.println("1. 재료 : " + MatCode + ", 단가 : " + MatPrice + ", 총합 금액 : "
+				 * + TotalGiAmt);
+				 */
 				
 				String LineGiSearchSql = "SELECT * FROM InvenLogl WHERE LEFT(movetype,2) = ? AND mattype = ? AND closingmon = ? AND matcode = ?";
 				PreparedStatement LineGiSearchSql_Pstmt = conn.prepareStatement(LineGiSearchSql);
@@ -241,7 +244,10 @@ public class MatCostCalcDAO {
 					Double GiQty = LineGISearchSql_Pstmt_Rs.getDouble("quantity");
 					String GIKeyValue = LineGISearchSql_Pstmt_Rs.getString("keyvalue");
 					int GiAmount = (int)Math.round(GiQty * MatPrice); // SumRawmTalbe에 저장된 단가와 Line테이블에 있는 수량의 곱
-					System.out.println("2. 재료 : " + MatCode + ", 수량 : " + GiQty + ", 키값 : " + GIKeyValue + ", 가격 : " + GiAmount);
+					/*
+					 * System.out.println("2. 재료 : " + MatCode + ", 수량 : " + GiQty + ", 키값 : " +
+					 * GIKeyValue + ", 가격 : " + GiAmount);
+					 */
 					
 					String LineGIUpdateSql = "UPDATE InvenLogl SET amount = ? WHERE closingmon = ? AND matcode = ? AND keyvalue = ?";
 					PreparedStatement LineGIUpdateSql_Pstmt = conn.prepareStatement(LineGIUpdateSql);
@@ -252,10 +258,13 @@ public class MatCostCalcDAO {
 					LineGIUpdateSql_Pstmt.executeUpdate();
 					TotalPrice += GiAmount;
 				}
-				System.out.println("==========================================");
-				System.out.println("재료 : " + MatCode + "의 총합 : " + TotalGiAmt);
-				System.out.println("재료 : " + MatCode + "의 예상 총합 : " + TotalPrice);
-				System.out.println("재료 : " + MatCode + "의 두 총합의 차이 : " + (TotalGiAmt - TotalPrice));
+				/*
+				 * System.out.println("==========================================");
+				 * System.out.println("재료 : " + MatCode + "의 총합 : " + TotalGiAmt);
+				 * System.out.println("재료 : " + MatCode + "의 예상 총합 : " + TotalPrice);
+				 * System.out.println("재료 : " + MatCode + "의 두 총합의 차이 : " + (TotalGiAmt -
+				 * TotalPrice));
+				 */
 				if(TotalGiAmt == TotalPrice) {
 					Result = "Yes";
 				}else {
