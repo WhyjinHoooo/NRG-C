@@ -183,7 +183,6 @@ public class MatCostCalcDAO {
 					Insert_Pstmt.setDouble(18, EsAmt);
 					Insert_Pstmt.setDouble(19, UnitPrice);
 					if(Double.compare(beginStocqty, SumTableBeginQty) == 0) { // 실수타입을 비교하는 코드 Double.compare(실수, 실수), '=='를 쓰면 같은 값이라도 오차가 발생할 수 있어 실수를 비교할 때 사용하면 안됨
-						System.out.println("Good");
 						Insert_Pstmt.setString(20, "X"); // -> 문제 없음
 					}else {
 						System.out.println("Bad");
@@ -193,7 +192,13 @@ public class MatCostCalcDAO {
 					
 				}	
 			}
-			result = "Yes";
+			String GIUpdateResult = GICalcResult(CurrVal);
+			if(GIUpdateResult.equals("Yes")) {
+				result = "Yes";
+			}else {
+				result = "No";
+			}
+			
 		} catch (ParseException e) {
 	        System.out.println("날짜 파싱 오류: " + e.getMessage());
 	        e.printStackTrace();
@@ -205,61 +210,89 @@ public class MatCostCalcDAO {
 		return result;
 	}
 	
-	public String GICalcResult(String MonthDate, String Material, Double Unitprice, Double GiAmt) {
+	public String GICalcResult(String MonthDate) {
 		String Result = "No";
 		String CurrDate = MonthDate; // 지금 날짜
-		String MatCode = Material; // 원자재 코드
-		Double MatPrice = Unitprice; // 단가
-		int TotalGiAmt = (int)Math.round(GiAmt); // SumRawmTalbe에 저장된 최종 값
+		String MatCode = null; // 원자재 코드
+		int MatPrice = 0; // SumRawmTalbe에 저장된 단가
+		int TotalGiAmt = 0; // SumRawmTalbe에 저장된 최종 값
 		int TotalPrice = 0;
 		ResultSet rs = null;
-		sql = "SELECT * FROM InvenLogl WHERE LEFT(movetype,2) = ? AND mattype = ? AND closingmon = ? AND matcode = ?";
+		sql = "SELECT * FROM sumrawmamt WHERE closingMon = ?";
 		try {
 			PreparedStatement pstmt = conn.prepareStatement(sql);
-			pstmt.setString(1, "GI");
-			pstmt.setString(2, "RAWM");
-			pstmt.setString(3, CurrDate);
-			pstmt.setString(4, MatCode);
+			pstmt.setString(1, CurrDate);
 			rs = pstmt.executeQuery();
 			while(rs.next()) {
-				String LotNumber = rs.getString("lotnum");
-				Double GiQty = rs.getDouble("quantity"); // GI의 수량
-				int GiAmount = (int) Math.round(MatPrice * GiQty); // 최종값
-				String UpDateSql = "UPDATE InvenLogl SET amount = ? WHERE closingmon = ? AND matcode = ? AND mattype = ? AND LEFT(movetype,2) = ? AND lotnum = ?";
-				PreparedStatement UpSqlPstmt = conn.prepareStatement(UpDateSql);
-				UpSqlPstmt.setInt(1, GiAmount);
-				UpSqlPstmt.setString(2, CurrDate);
-				UpSqlPstmt.setString(3, MatCode);
-				UpSqlPstmt.setString(4, "RAWM");
-				UpSqlPstmt.setString(5, "GI");
-				UpSqlPstmt.setString(6, LotNumber);
-				UpSqlPstmt.executeUpdate();
-				TotalPrice += GiAmount;
-			}
-			if(TotalGiAmt == TotalPrice) {
-				Result = "Yes";
-			}else {
-				int Gap = TotalGiAmt - TotalPrice;
-				String ReNewSearchSql = "SELECT * FROM InvenLogl WHERE LEFT(movetype,2) = ? AND mattype = ? AND closingmon = ? AND matcode = ?";
-				PreparedStatement ReNewSearchPstmt = conn.prepareStatement(ReNewSearchSql);
-				ReNewSearchPstmt.setString(1, "GI");
-				ReNewSearchPstmt.setString(2, "RAWM");
-				ReNewSearchPstmt.setString(3, CurrDate);
-				ReNewSearchPstmt.setString(4, MatCode);
-				ResultSet ReNewSearchRs = ReNewSearchPstmt.executeQuery();
-				int RenewAmount = 0;
-				if(ReNewSearchRs.next()) {
-					if(Gap > 0) {
-						RenewAmount = ReNewSearchRs.getInt("amount") + Gap;
-					}else {
-						RenewAmount = ReNewSearchRs.getInt("amount") - Gap;
-					}
+				MatCode = rs.getString("matcode"); // 자재코드
+				MatPrice = (int)Math.round(rs.getDouble("UnitPrice")); // 단가
+				TotalGiAmt = rs.getInt("GiAmt"); // SumRawmTalbe에 저장된 출고 값
+				System.out.println("1. 재료 : " + MatCode + ", 단가 : " + MatPrice + ", 총합 금액 : " + TotalGiAmt);
+				
+				String LineGiSearchSql = "SELECT * FROM InvenLogl WHERE LEFT(movetype,2) = ? AND mattype = ? AND closingmon = ? AND matcode = ?";
+				PreparedStatement LineGiSearchSql_Pstmt = conn.prepareStatement(LineGiSearchSql);
+				LineGiSearchSql_Pstmt.setString(1, "GI");
+				LineGiSearchSql_Pstmt.setString(2, "RAWM");
+				LineGiSearchSql_Pstmt.setString(3, CurrDate);
+				LineGiSearchSql_Pstmt.setString(4, MatCode);
+				ResultSet LineGISearchSql_Pstmt_Rs = LineGiSearchSql_Pstmt.executeQuery();
+				TotalPrice = 0;
+				while(LineGISearchSql_Pstmt_Rs.next()) {
+					Double GiQty = LineGISearchSql_Pstmt_Rs.getDouble("quantity");
+					String GIKeyValue = LineGISearchSql_Pstmt_Rs.getString("keyvalue");
+					int GiAmount = (int)Math.round(GiQty * MatPrice); // SumRawmTalbe에 저장된 단가와 Line테이블에 있는 수량의 곱
+					System.out.println("2. 재료 : " + MatCode + ", 수량 : " + GiQty + ", 키값 : " + GIKeyValue + ", 가격 : " + GiAmount);
+					
+					String LineGIUpdateSql = "UPDATE InvenLogl SET amount = ? WHERE closingmon = ? AND matcode = ? AND keyvalue = ?";
+					PreparedStatement LineGIUpdateSql_Pstmt = conn.prepareStatement(LineGIUpdateSql);
+					LineGIUpdateSql_Pstmt.setInt(1, GiAmount);
+					LineGIUpdateSql_Pstmt.setString(2, CurrDate);
+					LineGIUpdateSql_Pstmt.setString(3, MatCode);
+					LineGIUpdateSql_Pstmt.setString(4, GIKeyValue);
+					LineGIUpdateSql_Pstmt.executeUpdate();
+					TotalPrice += GiAmount;
 				}
+				System.out.println("==========================================");
+				System.out.println("재료 : " + MatCode + "의 총합 : " + TotalGiAmt);
+				System.out.println("재료 : " + MatCode + "의 예상 총합 : " + TotalPrice);
+				System.out.println("재료 : " + MatCode + "의 두 총합의 차이 : " + (TotalGiAmt - TotalPrice));
+				if(TotalGiAmt == TotalPrice) {
+					Result = "Yes";
+				}else {
+					int Gap = TotalGiAmt - TotalPrice;
+					int AbsGap = Math.abs(Gap);
+					String RenewSearchSql = "SELECT * FROM InvenLogl WHERE LEFT(movetype,2) = ? AND mattype = ? AND closingmon = ? AND matcode = ?";
+					PreparedStatement RenewSearchSql_Pstmt = conn.prepareStatement(RenewSearchSql);
+					RenewSearchSql_Pstmt.setString(1, "GI");
+					RenewSearchSql_Pstmt.setString(2, "RAWM");
+					RenewSearchSql_Pstmt.setString(3, CurrDate);
+					RenewSearchSql_Pstmt.setString(4, MatCode);
+					ResultSet RenewSearchSql_Pstmt_Rs = RenewSearchSql_Pstmt.executeQuery();
+					if(RenewSearchSql_Pstmt_Rs.next()) {
+						String UpdateTgtKeyValue = RenewSearchSql_Pstmt_Rs.getString("keyvalue");
+						int pdateTgtAmount = RenewSearchSql_Pstmt_Rs.getInt("amount");
+						String RenewUpdateSql = "UPDATE InvenLogl SET amount = ? WHERE closingmon = ? AND matcode = ? AND keyvalue = ?";
+						PreparedStatement RenewUpdateSql_Pstmt = conn.prepareStatement(RenewUpdateSql);
+						if(Gap > 0) {
+							RenewUpdateSql_Pstmt.setInt(1, pdateTgtAmount + AbsGap);
+						}else {
+							RenewUpdateSql_Pstmt.setInt(1, pdateTgtAmount - AbsGap);
+						}
+						RenewUpdateSql_Pstmt.setString(2, CurrDate);
+						RenewUpdateSql_Pstmt.setString(3, MatCode);
+						RenewUpdateSql_Pstmt.setString(4, UpdateTgtKeyValue);
+						RenewUpdateSql_Pstmt.executeUpdate();
+					}
+					Result = "Yes";
+				}
+				Result = "Yes";
 			}
 		}catch (Exception e) {
 			// TODO: handle exception
+			e.printStackTrace();
+			Result = "No";
 		}
-		return "";
+		return Result;
 	}
 
 	public String DataLoadFun(String clDate, String comCode) {
