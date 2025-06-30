@@ -8,7 +8,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>공정별 작업실적 현황</title>
+<title>작업지시서 현황</title>
 </head>
 <body>
 <script>
@@ -22,9 +22,10 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 function InitialTable(){
 	$('.InfoTable-Body').empty();
+	var HeaderLength = $('thead.InfoTable-Header th').length;
 	for (let i = 0; i < 1000; i++) {
         const row = $('<tr></tr>');
-        for (let j = 0; j < 12; j++) {
+        for (let j = 0; j < HeaderLength; j++) {
             row.append('<td></td>');
         }
         $('.InfoTable-Body').append(row);
@@ -101,6 +102,7 @@ $(document).ready(function(){
 	$('#UploadBtn').click(function(e) {
 		e.preventDefault();
 	    var fileInput = $('#textFile')[0];
+	    console.log(fileInput.files);
 	    if (!fileInput.files.length) {
 	        alert('파일을 선택하세요!');
 	        return;
@@ -222,7 +224,7 @@ $(document).ready(function(){
 		
 		<div class="InfoInput">
 			<label>UPLODA DATA :  </label>
-			<input type="text" class="UploadDataCode FilterOP" name="UploadDataCode" onclick="InfoSearch('FileSearch')" placeholder="SELECT" readonly>
+			<input type="text" class="UploadDataCode FilterOP" name="UploadDataCode" value="POL" readonly>
 		</div>
 		
 		<div class="InfoInput">
@@ -243,12 +245,13 @@ $(document).ready(function(){
 	</div>
 	<div class="StockArea-Result">
 		<div class="StockArea-Data-Area">
-			<div class="Title">공정별 작업실적 현황</div>
+			<div class="Title">작업지시서 발생실적 현황</div>
 			<table class="InfoTable">
 					<thead class="InfoTable-Header">
 					<tr>
-						<th>순번</th><th>결산월</th><th>공정</th><th>공정명</th><th>수불구분</th><th>작지번호</th><th>작지유형</th><th>제조품번</th>
-						<th>제조품</th><th>제조Lot</th><th>중량</th><th>공장</th><th>기업</th>
+						<th>결산월</th><th>작지</th><th>제조Lot</th><th>조달구분</th><th>Line</th><th>상태</th><th>관련설비</th><th>코드</th>
+						<th>제조품</th><th>지시/제조날짜</th><th>Kg지시량</th><th>L지시량</th><th>지시확정일</th><th>작업시간</th><th>제조시간</th>
+						<th>투입시작시간</th><th>교반시작시간</th><th>샘픔체취시간</th><th>소분시작일자</th><th>소분완료일자</th><th>소분중량</th>
 					</tr>
 				</thead>
 				<tbody class="InfoTable-Body">
@@ -260,11 +263,12 @@ $(document).ready(function(){
 			<button class="DelBtn">삭제</button>
 		</div>
 		<div class="StockArea-Uploading">
-			<div class="Title">공정별 작업실적 입력</div>
+			<div class="Title">작업지시서 발생실적 입력</div>
 			<div class="File-Uploading-Area">
 				<div class="InfoInput">
 					<label>검색 파일 :  </label>
 					<input type="file" id="textFile" accept=".txt" required>
+					<div id="ErrorMess">(File명 : "POLyyyymm.txt")</div>
 					<button id="UploadBtn">실행</button>
 					<button id="CancelBtn">취소</button>
 				</div>

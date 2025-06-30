@@ -130,7 +130,7 @@ public class upload extends HttpServlet {
             	dbResult = dao.Joborder(csvData, fileName); // 작업지시서
             	break;
             case "PWC":
-            	dbResult = dao.ProResult(csvData, fileName); // 공정별 작업실적
+            	dbResult = dao.ProResult(csvData, fileName); // 공정 작업실적
             	break;
             }
             out.print("{");
