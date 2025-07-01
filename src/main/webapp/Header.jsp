@@ -184,7 +184,7 @@ $(document).ready(function(){
           </ul>
         </li>
         <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle Category" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">발생원가 집계/배부</a>
+          <a class="nav-link dropdown-toggle Category" href="${contextPath}/AllocatedCost/CostAllocation.jsp" id="navbarDropdownMenuLink" role="button" aria-expanded="false">배부원가 등록/조회</a>
         </li>
       </ul>
     </div>

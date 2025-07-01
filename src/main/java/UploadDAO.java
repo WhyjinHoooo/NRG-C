@@ -209,6 +209,16 @@ public class UploadDAO {
                 pstmt.addBatch();
             }
             pstmt.executeBatch();  // 일괄 실행
+            
+            String ACSql = "INSERT INTO processcosttable (ClosingMon, WorkOrd, WorkType, ManufLot, ManufCode, ManufDesc, CostingLev, WorkSeq, ProcessCode, "
+            		+ "ProcessDesc, InOutType, InputQty, ProdQty, WipQty, MixTime, PackStartMon, PackClosMon, KeyValue) "
+            		+ "SELECT matseqlist.ClosingMon, matseqlist.WorkOrd, matseqlist.WorkType, "
+            		+ "matseqlist.ManufLot, matseqlist.Itemno, matseqlist.Item, matseqlist.CostingLv, "
+            		+ "matseqlist.WorkSeq, matseqlist.ProcessCode, matseqlist.ProcessDesc, matseqlist.InoutType, matseqlist.InputQty, matseqlist.ProdQty, "
+            		+ "matseqlist.WipQty, matseqlist.MixTime, matseqlist.PackStartMon, matseqlist.PackClosMon, "
+            		+ "CONCAT(matseqlist.ClosingMon, matseqlist.WorkOrd, matseqlist.ProcessCode) FROM matseqlist";
+            PreparedStatement ACPstmt = conn.prepareStatement(ACSql);
+            ACPstmt.executeUpdate();
             YN = "Yes";
         } catch (SQLException e) {
             e.printStackTrace();

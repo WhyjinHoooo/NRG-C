@@ -1,0 +1,271 @@
+@charset "UTF-8";
+html {
+    height: 100%;
+}
+@media (max-width: 1920px) {
+    .ACostArea_Head {
+	display: flex;
+	flex-direction: row;
+	height: 90%;
+	margin-top: 0.5%;
+    }
+	.ACostArea-Filter {
+	border: 1px solid;
+	width: 25%;
+	}
+	.ACostArea_Tail {
+    margin-left: 2%;
+    width: 73%;
+	}
+	.Title {
+	background: #260FB1;
+	color: white;
+	text-align: center;
+	font-size: x-large;
+	padding: 5px;
+	}
+	.ACostArea-Filter > .InfoInput {
+	display: flex;
+	flex-direction: row;
+	margin-top: 20px;
+	width: 100%;
+    }
+    .ACostArea-Filter > .InfoInput input {
+	margin-left: 10px;
+	width: 200px;
+	text-align: center;
+    }
+	.ACostArea-Filter > .InfoInput select{
+    margin-left: 10px;
+	width: 200px;
+	text-align: center;
+	}
+	.ACostArea-Filter > .InfoInput label{
+	font-weight: bold;
+	font-size: large;
+	display: inline-block;
+	width: 10em;
+	text-align: right;
+	letter-spacing: 0.1em;
+	font-family: sans-serif;
+    }
+    .ACostArea-Filter > button {
+	width: 40%;
+	height: 7%;
+	text-align: center;
+	background-color: #002060;
+	color: white;
+	border: 1px solid #1F4E79;
+	margin: 10% 0px 0px 35%;
+	border-radius: 5px;
+	font-size: large;
+	}
+	.ACostArea-Filter > button:hover {
+	background: #0068ff;
+	color: #fff;
+	border: 1px solid #0068ff;
+	}
+	.ACostArea-Filter > button:active {
+	background: #0068ff;
+	color: #fff;
+	border: 1px solid #0068ff;
+	}
+	
+	.ACostArea_Tail > .Btn-Area {
+	margin: 0.5% 0% 0.5% 0%;
+	display: flex;
+    justify-content: flex-end;
+	}
+	.ACostArea_Tail > .Btn-Area > button.OkBtn {
+    background: darkgreen;
+   	width: 10%;
+    height: 30px;
+    color: white;
+    font-weight: bold;
+    font-size: smaller;
+    margin-left: 1%;
+    border: 1px solid darkgreen;
+	padding: 5px;
+	border-radius: 5px;
+	}
+	.ACostArea_Tail > .Btn-Area > button.OkBtn:hover {
+	background: #32CD32;
+	color: #fff;
+	border: 1px solid #32CD32;
+	}
+	.ACostArea_Tail > .Btn-Area > button.OkBtn:active {
+	background: #32CD32;
+	color: black;
+	border: 1px solid #32CD32;
+	}
+	.ACostArea_Tail > .Btn-Area button.DelBtn {
+    background: darkred;
+    width: 10%;
+    height: 30px;
+    color: white;
+    font-weight: bold;
+    font-size: smaller;
+	margin-left: 1%;
+	border: 1px solid darkred;
+	padding: 5px;
+	border-radius: 5px;
+	}
+	.ACostArea_Tail > .Btn-Area button.DelBtn:hover {
+	background: #FA8072;
+	color: #fff;
+	border: 1px solid #FA8072;
+	}
+	.ACostArea_Tail > .Btn-Area button.DelBtn:active {
+	background: #FA8072;
+	color: black;
+	border: 1px solid #FA8072;
+	}
+	
+	.ACostArea-Uploading {
+    border: 1px solid;
+    height: 10%;
+	}
+	.ACostArea-Uploading > table.ACInputTable {
+	border-collapse: collapse;
+	width: 100%;
+	table-layout: fixed;
+	}
+	.ACostArea-Uploading > table.ACInputTable thead{
+    display: block;
+	width: 100%;
+	position: sticky;
+	top: 0;
+	z-index: 10;
+	overflow-x: hidden;
+    }
+   	.ACostArea-Uploading > table.ACInputTable tbody{
+	table-layout: fixed;
+	display: block;
+	}
+	.ACostArea-Uploading > table.ACInputTable thead > tr {
+	display: table;
+	table-layout: fixed;
+	width: 100%;
+    }
+	.ACostArea-Uploading > table.ACInputTable thead > tr > th {
+    background-color: rgb(111, 167, 235);
+    top: 0;
+    color: white;
+    text-align: center;
+    z-index: 10;
+    padding: 8px;
+    border: 1px solid white;
+    width: 150px;
+    font-size: xx-small;
+	}
+	.ACostArea-Uploading > table.ACInputTable tbody > tr {
+	display: table;
+	width: 100%;
+	table-layout: fixed;
+    }
+    .ACostArea-Uploading > table.ACInputTable tbody > tr > td {
+    width: 100%;
+	border: 1px solid #ddd;
+	text-align: center;
+    }
+    .ACostArea-Uploading > table.ACInputTable tbody > tr > td > input {
+    width: 97%;
+    text-align: right;
+	}
+    .ACostArea-Uploading > table.ACInputTable tbody > tr > td > input.AIDMonth {
+    text-align: center;
+	}
+	
+	.ACostArea-Data-Area {
+    border: 1px solid;
+    height: 85%;
+	}
+	.ACostArea-Data-Area > table.InfoTable {
+	border-collapse: collapse;
+	width: 100%;
+	height: 94.5%;
+	table-layout: fixed;
+	}
+    .ACostArea-Data-Area > table.InfoTable thead{
+    display: block;
+	width: 100%;
+	position: sticky;
+	top: 0;
+	z-index: 10;
+    }
+   	.ACostArea-Data-Area > table.InfoTable tbody{
+	table-layout: fixed;
+	display: block;
+	width: 100.3%;
+	height: 97%;
+	overflow-y: auto;
+	}
+	.ACostArea-Data-Area > table.InfoTable thead > tr {
+	display: table;
+	table-layout: fixed;
+	width: 100%;
+    }
+	.ACostArea-Data-Area > table.InfoTable thead > tr > th {
+    background-color: rgb(111, 167, 235);
+    top: 0;
+    color: white;
+    text-align: center;
+    z-index: 10;
+    padding: 8px;
+    border: 1px solid white;
+    width: 150px;
+    font-size: xx-small;
+	}
+	.ACostArea-Data-Area > table.InfoTable thead > tr > th:nth-child(1) {
+    background-color: rgb(111, 167, 235);
+    top: 0;
+    color: white;
+    text-align: center;
+    z-index: 10;
+    padding: 8px;
+    border: 1px solid white;
+    width: 60px;
+    font-size: xx-small;
+	}
+	.ACostArea-Data-Area > table.InfoTable tbody > tr {
+	display: table;
+	width: 99.9%;
+	table-layout: fixed;
+    }
+    .ACostArea-Data-Area > table.InfoTable tbody td:empty{
+	padding: 8px 5.5px;
+	border: 1px solid #ddd;
+	height: 10px;
+	text-align: center;
+	font-size: 10px;
+	font-weight: bold;
+    }
+    .ACostArea-Data-Area > table.InfoTable tbody td:empty:nth-child(1){width: 65px;} 
+	.ACostArea-Data-Area > table.InfoTable tbody td:empty{width: 155px;} 
+	
+    .ACostArea-Data-Area > table.InfoTable tbody td:not(:empty) {
+    padding: 8px 4px;
+    border: 1px solid #ddd;
+    width: 155px;
+    height: 10px;
+    text-align: center;
+    font-size: 10px;
+    font-weight: bold;
+	}
+	.ACostArea-Data-Area > table.InfoTable tbody td:not(:empty):nth-child(1) {
+	    width: 65px;
+	}
+    .ACostArea-Data-Area > table.InfoTable tbody::-webkit-scrollbar {
+	    width: 5px;
+	    margin-left: 100px;
+	}
+	.ACostArea-Data-Area > table.InfoTable tbody::-webkit-scrollbar-thumb {
+	    background-color: #2f3542;
+	    border-radius: 10px;
+	}
+	.ACostArea-Data-Area > table.InfoTable tbody::-webkit-scrollbar-track {
+	    background-color: white;
+	    border-radius: 1px;
+	    box-shadow: inset 0px 0px 5px white;
+	}
+}
