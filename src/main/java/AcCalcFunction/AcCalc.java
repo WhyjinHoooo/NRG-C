@@ -74,7 +74,7 @@ public class AcCalc extends HttpServlet {
                     Object value = jsonObj.get(key);
                 }
                 ResultData = dao.CostAllocation(jsonObj);
-                if(ResultData == null) {
+                if(ResultData == null || ResultData.equals("Fail")) {
                 	writer.print("{\"result\":\"fail\"}");
                 }else {
                 	writer.print("{\"result\":\"success\"}");
