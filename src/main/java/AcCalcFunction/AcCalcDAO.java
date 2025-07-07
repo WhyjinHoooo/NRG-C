@@ -14,6 +14,8 @@ import javax.sql.DataSource;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import com.mysql.cj.x.protobuf.MysqlxPrepare.Prepare;
+
 public class AcCalcDAO {
 	private Connection conn;
 	private PreparedStatement pstmt;
@@ -56,7 +58,8 @@ public class AcCalcDAO {
 			
 			String CalcResult = FirstProcess(DataList[0].trim(), DataList[1].trim(), DataList[2].trim(), DataList[3].trim(), DataList[4].trim());
 			String CalcGsp = StockVariance(DataList[0].trim(), DataList[1].trim(), DataList[2].trim(), DataList[3].trim(), DataList[4].trim());
-			if(CalcResult.equals("Yes") && CalcGsp.equals("Yes")) {
+			String WipCalc = WipmatCost(DataList[0].trim());
+			if(CalcResult.equals("Yes") && CalcGsp.equals("Yes") && WipCalc.equals("Yes")) {
 				result = "Success";
 			}else {
 				result = "Fail";
@@ -66,6 +69,49 @@ public class AcCalcDAO {
 			e.printStackTrace();
 		}
 		return "Success";
+	}
+
+	private String WipmatCost(String ClosingMonth) {
+		// TODO Auto-generated method stub
+		connDB();
+		String result = null;
+		String SelectSql = "SELECT * FROM processcosttable WHERE ClosingMon = ? AND InOutType = ? ORDER BY CostingLev, ProcessCode";
+		
+		String WipUpSql = null;
+		PreparedStatement WipUpPstmt = null;
+		
+		try {
+			PreparedStatement SelectPstmt = conn.prepareStatement(SelectSql);
+			SelectPstmt.setString(1, ClosingMonth);
+			SelectPstmt.setString(2, "OC");
+			ResultSet SelectRs = SelectPstmt.executeQuery();
+			while(SelectRs.next()) {
+				String KeyValue = SelectRs.getString("KeyValue");
+				
+				double WipQrt = SelectRs.getDouble("WipQty");
+				double InputQty = SelectRs.getDouble("InputQty");
+				
+				double MatCostSum = SelectRs.getDouble("MatCostSum");
+				double ManufCostSum = SelectRs.getDouble("ManufCostSum"); 
+				
+				int WipMatCost = (int)Math.round(MatCostSum * WipQrt / InputQty);
+				int WipMnaufCost = (int)Math.round(ManufCostSum * WipQrt / InputQty);
+				
+				WipUpSql = "UPDATE processcosttable SET WipMatCost = ?, WipMnaufCost = ? WHERE ClosingMon = ? AND KeyValue = ?";
+				WipUpPstmt = conn.prepareStatement(WipUpSql);
+				WipUpPstmt.setInt(1, WipMatCost);
+				WipUpPstmt.setInt(2, WipMnaufCost);
+				WipUpPstmt.setString(3, ClosingMonth);
+				WipUpPstmt.setString(4, KeyValue);
+				WipUpPstmt.executeUpdate();
+			}
+			result = "Yes";
+		}catch (Exception e) {
+			// TODO: handle exception
+			result = "No";
+		}
+		 
+		return result;
 	}
 
 	private String StockVariance(String ClosingMonth, String MC, String IC, String PC, String CMC) {
