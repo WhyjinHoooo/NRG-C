@@ -88,21 +88,43 @@ public class AcCalcDAO {
 			while(SelectRs.next()) {
 				String KeyValue = SelectRs.getString("KeyValue");
 				
-				double WipQrt = SelectRs.getDouble("WipQty");
-				double InputQty = SelectRs.getDouble("InputQty");
+				int FertMatCost = 0; //재품재료비
+				int FertManufCost = 0; // 재품가공비
 				
-				double MatCostSum = SelectRs.getDouble("MatCostSum");
-				double ManufCostSum = SelectRs.getDouble("ManufCostSum"); 
+				double WipQrt = SelectRs.getDouble("WipQty"); // 기말재공중량
+				double ProdQty = SelectRs.getDouble("ProdQty"); // 제품중량
 				
-				int WipMatCost = (int)Math.round(MatCostSum * WipQrt / InputQty);
-				int WipMnaufCost = (int)Math.round(ManufCostSum * WipQrt / InputQty);
+				double MatCostSum = SelectRs.getDouble("MatCostSum"); // 재료비 합계
+				double ManufCostSum = SelectRs.getDouble("ManufCostSum"); // 가공비 합계 
 				
-				WipUpSql = "UPDATE processcosttable SET WipMatCost = ?, WipMnaufCost = ? WHERE ClosingMon = ? AND KeyValue = ?";
+				int WipMatCost = 0; // 재공재료비
+				int WipMnaufCost = 0; // 재공가공비
+				if(WipQrt > 0 && ProdQty > 0) {
+					WipMatCost = (int)Math.round(MatCostSum * WipQrt / (WipQrt + ProdQty)); 
+					WipMnaufCost = (int)Math.round(ManufCostSum * WipQrt / (WipQrt + ProdQty)); 
+					 
+					FertMatCost = (int)Math.round(MatCostSum - WipMatCost);
+					FertManufCost = (int)Math.round(ManufCostSum - WipMnaufCost);
+				}else if(WipQrt == 0) {
+					WipMatCost = 0;
+					WipMnaufCost = 0;
+					FertMatCost = (int)MatCostSum;
+					FertManufCost = (int)ManufCostSum;
+				}else if(ProdQty == 0){
+					WipMatCost = (int)MatCostSum;
+					WipMnaufCost = (int)ManufCostSum;
+					FertMatCost = 0;
+					FertManufCost = 0;
+				}
+				
+				WipUpSql = "UPDATE processcosttable SET WipMatCost = ?, WipMnaufCost = ?, FertMatCost = ?, FertManufCost = ? WHERE ClosingMon = ? AND KeyValue = ?";
 				WipUpPstmt = conn.prepareStatement(WipUpSql);
 				WipUpPstmt.setInt(1, WipMatCost);
 				WipUpPstmt.setInt(2, WipMnaufCost);
-				WipUpPstmt.setString(3, ClosingMonth);
-				WipUpPstmt.setString(4, KeyValue);
+				WipUpPstmt.setInt(3, FertMatCost);
+				WipUpPstmt.setInt(4, FertManufCost);
+				WipUpPstmt.setString(5, ClosingMonth);
+				WipUpPstmt.setString(6, KeyValue);
 				WipUpPstmt.executeUpdate();
 			}
 			result = "Yes";

@@ -210,9 +210,9 @@ public class UploadDAO {
             }
             pstmt.executeBatch();  // 일괄 실행
             
-            String ACSql = "INSERT INTO processcosttable (ClosingMon, WorkOrd, WorkType, ManufLot, ManufCode, ManufDesc, CostingLev, WorkSeq, ProcessCode, "
+            String ACSql = "INSERT INTO processcosttable (ComCode, PlantCode, ClosingMon, WorkOrd, WorkType, ManufLot, ManufCode, ManufDesc, CostingLev, WorkSeq, ProcessCode, "
             		+ "ProcessDesc, InOutType, InputQty, ProdQty, WipQty, MixTime, PackStartMon, PackClosMon, KeyValue) "
-            		+ "SELECT matseqlist.ClosingMon, matseqlist.WorkOrd, matseqlist.WorkType, "
+            		+ "SELECT matseqlist.ComCode, matseqlist.Plant, matseqlist.ClosingMon, matseqlist.WorkOrd, matseqlist.WorkType, "
             		+ "matseqlist.ManufLot, matseqlist.Itemno, matseqlist.Item, matseqlist.CostingLv, "
             		+ "matseqlist.WorkSeq, matseqlist.ProcessCode, matseqlist.ProcessDesc, matseqlist.InoutType, matseqlist.InputQty, matseqlist.ProdQty, "
             		+ "matseqlist.WipQty, matseqlist.MixTime, matseqlist.PackStartMon, matseqlist.PackClosMon, "
