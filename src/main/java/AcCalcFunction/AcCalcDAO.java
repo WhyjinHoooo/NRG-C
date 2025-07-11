@@ -37,7 +37,7 @@ public class AcCalcDAO {
 	public String CostAllocation(JSONObject jsonObj) {
 		connDB();
 		
-		String[] keyOrder = {"AIDMonth", "OP10", "OP20", "OP30", "OP40", "OP50", "ComCode"};
+		String[] keyOrder = {"AIDMonth", "OP10", "OP20", "OP30", "OP40", "OP50", "ComCode", "PlantCode"};
 		String[] DataList = new String[keyOrder.length];
 		String result = null;
 		for (int i = 0; i < keyOrder.length; i++) {
@@ -59,6 +59,9 @@ public class AcCalcDAO {
 			String CalcResult = FirstProcess(DataList[0].trim(), DataList[1].trim(), DataList[2].trim(), DataList[3].trim(), DataList[4].trim());
 			String CalcGsp = StockVariance(DataList[0].trim(), DataList[1].trim(), DataList[2].trim(), DataList[3].trim(), DataList[4].trim());
 			String WipCalc = WipmatCost(DataList[0].trim());
+			String LineCostCalc = LineSort(DataList[0].trim(), DataList[6].trim());
+			String CostCalc = GoodsCost(DataList[0].trim(), DataList[6].trim(), DataList[7].trim()); 
+			
 			if(CalcResult.equals("Yes") && CalcGsp.equals("Yes") && WipCalc.equals("Yes")) {
 				result = "Success";
 			}else {
@@ -69,6 +72,98 @@ public class AcCalcDAO {
 			e.printStackTrace();
 		}
 		return "Success";
+	}
+
+	private String LineSort(String ClosingDate, String ComCode) {
+		// TODO Auto-generated method stub
+		String result = null;
+		String WordSortSql = "SELECT WorkOrd, SUM(FertMatCost) as FMC, SUM(FertManufCost) AS FMFC FROM processcosttable WHERE ClosingMon = ? AND ComCode = ? GROUP BY WorkOrd";
+		try {
+			PreparedStatement WordSortPstmt = conn.prepareStatement(WordSortSql);
+			WordSortPstmt.setString(1, ClosingDate);
+			WordSortPstmt.setString(2, ComCode);
+			ResultSet WordSortRs = WordSortPstmt.executeQuery();
+	
+			String KeyWord = null;
+			double SumOfMatCost = 0.0;
+			double SumOfManuCost = 0.0;
+			
+			while(WordSortRs.next()) {
+				KeyWord = WordSortRs.getString("WorkOrd");
+				SumOfMatCost = WordSortRs.getDouble("FMC");
+				SumOfManuCost = WordSortRs.getDouble("FMFC");
+				
+				String SumOfQtySql = "SELECT SUM(quantity) as SumOfQty FROM InvenLogl WHERE workordnum = ? AND mattype != ?";
+				PreparedStatement SumOfQtyPstmt = conn.prepareStatement(SumOfQtySql);
+				SumOfQtyPstmt.setString(1, KeyWord);
+				SumOfQtyPstmt.setString(2, "RAWM");
+				ResultSet SumOfQtyRs = SumOfQtyPstmt.executeQuery();
+				double SumofQty = 0.0;
+				if(SumOfQtyRs.next()) {
+					SumofQty = SumOfQtyRs.getDouble("SumOfQty");
+				}		
+				String LineItemSearch = "SELECT * FROM InvenLogl WHERE workordnum = ? AND mattype != ? GROUP BY transactiondate";
+				PreparedStatement LineItenSearchPstmt = conn.prepareStatement(LineItemSearch);
+				LineItenSearchPstmt.setString(1, KeyWord);
+				LineItenSearchPstmt.setString(2, "RAWM");
+				ResultSet LineItemSearchRs = LineItenSearchPstmt.executeQuery();
+				while(LineItemSearchRs.next()) {
+					String ItemKeyVal = LineItemSearchRs.getString("keyvalue");
+					double Qty = LineItemSearchRs.getDouble("quantity");
+					int Amount = 0;
+					int amtOhC = 0;
+					
+					Amount = (int)Math.round(SumOfMatCost * Qty / SumofQty);
+					amtOhC = (int)Math.round(SumOfManuCost * Qty / SumofQty);
+					
+					String LineItemUpSql = "UPDATE InvenLogl SET amount = ?, amtOhC = ? WHERE keyvalue = ?";
+					PreparedStatement LineItemUpPstmt = conn.prepareStatement(LineItemUpSql);
+					LineItemUpPstmt.setInt(1, Amount);
+					LineItemUpPstmt.setInt(2, amtOhC);
+					LineItemUpPstmt.setString(3, ItemKeyVal);
+					LineItemUpPstmt.executeUpdate();
+				}
+			}
+			result = "Yes";
+		}catch (Exception e) {
+			// TODO: handle exception
+			e.printStackTrace();
+			result = "No";
+		}
+		return result;
+	}
+
+	private String GoodsCost(String ClosingDate, String ComCode, String PlantCode) {
+		// TODO Auto-generated method stub
+		int[] Beforepatch = {Integer.parseInt(ClosingDate.substring(0, 4)), Integer.parseInt(ClosingDate.substring(4))};
+		if(Beforepatch[1] - 1 == 0) {
+			Beforepatch[0] -= 1;
+			Beforepatch[1] = 12;
+		}else {
+			Beforepatch[1] -= 1;
+		}
+		String PastClosingDate = Integer.toString(Beforepatch[0]) + String.format("%02d", Beforepatch[1]);
+		
+		try {
+			
+			String ScanSql = "SELECT * FROM productcost WHERE closingmon = ? AND comcode = ? AND plant = ?";
+			PreparedStatement ScanPstmt = conn.prepareStatement(ScanSql);
+			ScanPstmt.setString(1, PastClosingDate);
+			ScanPstmt.setString(2, ComCode);
+			ScanPstmt.setString(3, PlantCode);
+			ResultSet ScanRs = ScanPstmt.executeQuery();
+			if(!ScanRs.next()) {
+				String LineQuerySql = "SELECT * FROM InvenLogl WHERE closingmon = ? AND comcode = ? AND plant = ? AND ";
+				PreparedStatement LineQueryPstmt = conn.prepareStatement(LineQuerySql);
+				LineQueryPstmt.setString(1, ClosingDate);
+				LineQueryPstmt.setString(2, ComCode);
+				LineQueryPstmt.setString(3, PlantCode);
+			}
+		}catch (Exception e) {
+			// TODO: handle exception
+		}
+		
+		return null;
 	}
 
 	private String WipmatCost(String ClosingMonth) {

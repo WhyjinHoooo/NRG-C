@@ -216,7 +216,7 @@ $(document).ready(function(){
 		
 		<div class="InfoInput">
 			<label>Plant :  </label>
-			<input type="text" class="PlantCode FilterOP" name="PlantCode" onclick="InfoSearch('PlantSearch')" placeholder="SELECT" readonly>
+			<input type="text" class="PlantCode FilterOP AID" name="PlantCode" onclick="InfoSearch('PlantSearch')" placeholder="SELECT" readonly>
 		</div>
 		
 		<div class="InfoInput">
