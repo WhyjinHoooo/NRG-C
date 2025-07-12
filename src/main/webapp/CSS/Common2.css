@@ -121,6 +121,28 @@ html {
 	border: 1px solid #FA8072;
 	}
 	
+	.ACostArea_Tail > .Btn-Area button.QueryBtn {
+    background: #00008b;
+    width: 10%;
+    height: 30px;
+    color: white;
+    font-weight: bold;
+    font-size: smaller;
+	margin-left: 1%;
+	border: 1px solid #00008b;
+	padding: 5px;
+	border-radius: 5px;
+	}
+	.ACostArea_Tail > .Btn-Area button.QueryBtn:hover {
+	background: #7280fa;
+	color: #fff;
+	border: 1px solid #7280fa;
+	}
+	.ACostArea_Tail > .Btn-Area button.QueryBtn:active {
+	background: #7280fa;
+	color: black;
+	border: 1px solid #7280fa;
+	}
 	.ACostArea-Uploading {
     border: 1px solid;
     height: 10%;
@@ -264,6 +286,168 @@ html {
 	    border-radius: 10px;
 	}
 	.ACostArea-Data-Area > table.InfoTable tbody::-webkit-scrollbar-track {
+	    background-color: white;
+	    border-radius: 1px;
+	    box-shadow: inset 0px 0px 5px white;
+	}
+	
+	/* -------------- */
+	.GoodSCoatSum-State {
+    border: 1px solid;
+    height: 40%;
+	}
+	.GoodSCoatSum-State > table.ACInputTable {
+	border-collapse: collapse;
+	width: 100%;
+	height: 90%;
+	table-layout: fixed;
+	}
+	.GoodSCoatSum-State > table.ACInputTable thead{
+    display: block;
+	width: 100%;
+	position: sticky;
+	top: 0;
+	z-index: 10;
+	overflow-x: hidden;
+    }
+   	.GoodSCoatSum-State > table.ACInputTable tbody{
+	table-layout: fixed;
+    display: block;
+    height: 91%;
+    width: 100.4%;
+    max-height: 95%;
+    overflow-y: auto;
+    overflow-x: hidden;
+	}
+	.GoodSCoatSum-State > table.ACInputTable thead > tr {
+	display: table;
+	table-layout: fixed;
+	width: 100%;
+    }
+	.GoodSCoatSum-State > table.ACInputTable thead > tr > th {
+    background-color: rgb(111, 167, 235);
+    top: 0;
+    color: white;
+    text-align: center;
+    z-index: 10;
+    padding: 8px;
+    border: 1px solid white;
+    font-size: xx-small;
+	}
+	.GoodSCoatSum-State > table.ACInputTable tbody > tr {
+	display: table;
+	width: 100%;
+	table-layout: fixed;
+    }
+    .GoodSCoatSum-State > table.ACInputTable tbody > tr > td {
+    width: 100%;
+	border: 1px solid #ddd;
+	text-align: center;
+	padding: 1%;
+	font-weight: bold;
+    }
+    .GoodSCoatSum-State > table.ACInputTable tbody::-webkit-scrollbar {
+	    width: 5px;
+	    margin-left: 100px;
+	}
+	.GoodSCoatSum-State > table.ACInputTable tbody::-webkit-scrollbar-thumb {
+	    background-color: #2f3542;
+	    border-radius: 10px;
+	}
+	.GoodSCoatSum-State > table.ACInputTable tbody::-webkit-scrollbar-track {
+	    background-color: white;
+	    border-radius: 1px;
+	    box-shadow: inset 0px 0px 5px white;
+	}
+	
+	.CostingAmtTable {
+    border: 1px solid;
+    height: 55%;
+	}
+	.CostingAmtTable > table.InfoTable {
+	border-collapse: collapse;
+	width: 100%;
+	height: 94.5%;
+	table-layout: fixed;
+	}
+    .CostingAmtTable > table.InfoTable thead{
+    display: block;
+	width: 100%;
+	position: sticky;
+	top: 0;
+	z-index: 10;
+    }
+   	.CostingAmtTable > table.InfoTable tbody{
+	table-layout: fixed;
+	display: block;
+	width: 100.3%;
+	height: 97%;
+	overflow-y: auto;
+	}
+	.CostingAmtTable > table.InfoTable thead > tr {
+	display: table;
+	table-layout: fixed;
+	width: 100%;
+    }
+	.CostingAmtTable > table.InfoTable thead > tr > th {
+    background-color: rgb(111, 167, 235);
+    top: 0;
+    color: white;
+    text-align: center;
+    z-index: 10;
+    padding: 8px;
+    border: 1px solid white;
+    width: 150px;
+    font-size: xx-small;
+	}
+	.CostingAmtTable > table.InfoTable thead > tr > th:nth-child(1) {
+    background-color: rgb(111, 167, 235);
+    top: 0;
+    color: white;
+    text-align: center;
+    z-index: 10;
+    padding: 8px;
+    border: 1px solid white;
+    width: 60px;
+    font-size: xx-small;
+	}
+	.CostingAmtTable > table.InfoTable tbody > tr {
+	display: table;
+	width: 99.9%;
+	table-layout: fixed;
+    }
+    .CostingAmtTable > table.InfoTable tbody td:empty{
+	padding: 8px 5.5px;
+	border: 1px solid #ddd;
+	height: 10px;
+	text-align: center;
+	font-size: 10px;
+	font-weight: bold;
+    }
+    .CostingAmtTable > table.InfoTable tbody td:empty:nth-child(1){width: 65px;} 
+	.CostingAmtTable > table.InfoTable tbody td:empty{width: 155px;} 
+	
+    .CostingAmtTable > table.InfoTable tbody td:not(:empty) {
+    padding: 8px 4px;
+    border: 1px solid #ddd;
+    width: 155px;
+    height: 10px;
+    text-align: center;
+    font-size: 10px;
+    font-weight: bold;
+	}
+	.CostingAmtTable > table.InfoTable tbody td:not(:empty):nth-child(1) {
+	    width: 65px;
+	}
+    .CostingAmtTable > table.InfoTable tbody::-webkit-scrollbar {
+	    width: 5px;
+	    margin-left: 100px;
+	}
+	.CostingAmtTable > table.InfoTable tbody::-webkit-scrollbar-thumb {
+	    background-color: #2f3542;
+	    border-radius: 10px;
+	}
+	.CostingAmtTable > table.InfoTable tbody::-webkit-scrollbar-track {
 	    background-color: white;
 	    border-radius: 1px;
 	    box-shadow: inset 0px 0px 5px white;
