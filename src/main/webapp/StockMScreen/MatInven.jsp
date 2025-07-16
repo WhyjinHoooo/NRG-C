@@ -516,7 +516,6 @@ String UserIdNumber = (String)session.getAttribute("UserIdNumber");
 		<div class="BtnArea">
 			<button class="SearBtn">Search</button>
 			<button class="ResBtn">Reset</button>
-			<button class="SummBtn">Sum</button>
 			<div class="TimeArea" id="clock">Loading...</div>
 		</div>
 		

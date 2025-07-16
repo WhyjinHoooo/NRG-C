@@ -45,8 +45,7 @@ public class MaterialCostCalc extends HttpServlet {
         PrintWriter writer = response.getWriter();
         
 		LocalDateTime now = LocalDateTime.now();
-		//String ClDate = (now.format(DateTimeFormatter.ofPattern("yyyy-MM"))).replace("-", ""); //이렇게 하면 202504처럼 저장됨
-		String ClDate = "202504"; // 일단은 강제로 설정해줌
+		String ClDate = (now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))).replace("-", ""); //이렇게 하면 202504처럼 저장됨
 		String action = request.getPathInfo();
 		
 		MatCostCalcDAO Dao = new MatCostCalcDAO();
@@ -55,11 +54,15 @@ public class MaterialCostCalc extends HttpServlet {
 			switch(action) {
 			case "/RawmPriceCalc.do":
 				String Cocd = request.getParameter("ComCode");
-				DaoResult = Dao.CostCalcFun(ClDate, Cocd);
+				String GetClDate = request.getParameter("IQData");
+				DaoResult = Dao.CostCalcFun(GetClDate, Cocd, ClDate);
 	    		System.out.println("업데이트 결과 : " + DaoResult);
 		    	if (DaoResult == null || DaoResult.equals("No")) {
 		    	    writer.print("{\"result\":\"fail\", \"message\":\"DaoResult null이거나 'No'입니다.\"}");
-		    	} else {
+		    	} else if(DaoResult == null || DaoResult.equals("Impossible")){
+		    		writer.print("{\"result\":\"fail\", \"message\":\"해당 결산월은 이미 결산되었습니다.\"}");
+		    	}
+		    	else{
 		    	    writer.print("{\"result\":\"success\", \"message\":\"정상적으로 처리되었습니다.\"}");
 		    	}
 				break;

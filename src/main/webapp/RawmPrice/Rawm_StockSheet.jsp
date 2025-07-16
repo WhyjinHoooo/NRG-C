@@ -139,19 +139,68 @@ $(document).ready(function() {
 	}
 	$('.CLBtn').click(function(){
 		ComData = $('.ComCode').val();
-		console.log(ComData);
+		MonthData = $('.IQDate').val();
 		$.ajax({
 			url : '${contextPath}/CostCalc/RawmPriceCalc.do',
 			type : 'POST',
-			data : {ComCode : ComData},
+			data : {ComCode : ComData, IQData : MonthData},
 			dataType: 'json',
 			async: false,
 			success: function(data){
 				console.log(data.result);
 				if(data.result === "success"){
 					alert('결산이 완료되었습니다.');
+					if (!MonthData || MonthData.trim() === '') {
+					    // 필요하다면 사용자에게 안내 메시지도 추가 가능
+					    alert('월 데이터를 입력하세요!');
+					    return false;
+					}else{
+						$('.InfoTable-Body').empty();
+						$.ajax({
+							url : '${contextPath}/CostCalc/RawmDataLoading.do',
+							type : 'POST',
+							data : JSON.stringify({ComCode : ComData, IQData : MonthData}),
+							contentType: 'application/json; charset=utf-8',
+							dataType: 'json',
+							async: false,
+							success: function(data){
+								console.log('data.result : ' + data.result);
+								if(data.result === "success"){
+									if(data.List.length > 0) {
+										for(var i = 0; i < data.List.length; i++){
+											var row = '<tr>' +
+											'<td>' +  ComData + '</td>' + 
+					    			        '<td>' + (data.List[i].matcode || 'N/A') + '</td>' +
+					    			        '<td>' + (data.List[i].matdesc || 'N/A') + '</td>' +
+					    			        '<td>' + (data.List[i].mattype || 'N/A') + '</td>' +
+											'<td>' + (data.List[i].spec || 'N/A') + '</td>' + 
+						    			    '<td>' + (data.List[i].beginStocqty || 'N/A') + '</td>' +
+						    			    '<td>' + (data.List[i].BsAmt || 'N/A') + '</td>' + 
+						    			    '<td>' + (data.List[i].GrTransacQty || 'N/A') + '</td>' +
+						    			    '<td>' + (data.List[i].GrPurAmt || 'N/A') + '</td>' +
+					    			        '<td>' + (data.List[i].GrSubAmt ?? 'N/A') + '</td>' + 
+					    			        '<td>' + (data.List[i].GrSumAmt ?? 'N/A') + '</td>' + 
+					    			        '<td>' + (data.List[i].GrTransferQty ?? 'N/A') + '</td>' + 
+					    			        '<td>' + (data.List[i].GiTransferQty ?? 'N/A') + '</td>' + 
+					    			        '<td>' + (data.List[i].GiTransacQty ?? 'N/A') + '</td>' + 
+					    			        '<td>' + (data.List[i].GiAmt ?? 'N/A') + '</td>' + 
+					    			        '<td>' + (data.List[i].EndStocQty ?? 'N/A') + '</td>' + 
+					    			        '<td>' + (data.List[i].EsAmt ?? 'N/A') + '</td>' + 
+					    			        '<td>' + (data.List[i].UnitPrice ?? 'N/A') + '</td>' +
+					    			        '<td>' + (data.List[i].ErrorOX ?? 'N/A') + '</td>' +
+						    			    '</tr>';
+				     			        $('.InfoTable-Body').append(row);
+										}
+									}
+								}
+							},
+							error: function(jqXHR, textStatus, errorThrown){
+								alert('오류 발생: ' + textStatus + ', ' + errorThrown);
+					    	}
+				    	});
+					}
 				}else{
-					alert('오류가 발생했습니다..');
+					alert(data.message);
 				}
 			},
 			error: function(jqXHR, textStatus, errorThrown){
@@ -159,60 +208,6 @@ $(document).ready(function() {
 	    	}
     	});
 	})
-    $('.SearBtn').click(function(){
-		ComData = $('.ComCode').val();
-		MonthData = $('.IQDate').val();
-		console.log(ComData + ' : ' +  MonthData);
-		if (!MonthData || MonthData.trim() === '') {
-		    // 필요하다면 사용자에게 안내 메시지도 추가 가능
-		    alert('월 데이터를 입력하세요!');
-		    return false;
-		}else{
-			$('.InfoTable-Body').empty();
-			$.ajax({
-				url : '${contextPath}/CostCalc/RawmDataLoading.do',
-				type : 'POST',
-				data : JSON.stringify({ComCode : ComData, IQData : MonthData}),
-				contentType: 'application/json; charset=utf-8',
-				dataType: 'json',
-				async: false,
-				success: function(data){
-					console.log('data.result : ' + data.result);
-					if(data.result === "success"){
-						if(data.List.length > 0) {
-							for(var i = 0; i < data.List.length; i++){
-								var row = '<tr>' +
-								'<td>' +  ComData + '</td>' + 
-		    			        '<td>' + (data.List[i].matcode || 'N/A') + '</td>' +
-		    			        '<td>' + (data.List[i].matdesc || 'N/A') + '</td>' +
-		    			        '<td>' + (data.List[i].mattype || 'N/A') + '</td>' +
-								'<td>' + (data.List[i].spec || 'N/A') + '</td>' + 
-			    			    '<td>' + (data.List[i].beginStocqty || 'N/A') + '</td>' +
-			    			    '<td>' + (data.List[i].BsAmt || 'N/A') + '</td>' + 
-			    			    '<td>' + (data.List[i].GrTransacQty || 'N/A') + '</td>' +
-			    			    '<td>' + (data.List[i].GrPurAmt || 'N/A') + '</td>' +
-		    			        '<td>' + (data.List[i].GrSubAmt ?? 'N/A') + '</td>' + 
-		    			        '<td>' + (data.List[i].GrSumAmt ?? 'N/A') + '</td>' + 
-		    			        '<td>' + (data.List[i].GrTransferQty ?? 'N/A') + '</td>' + 
-		    			        '<td>' + (data.List[i].GiTransferQty ?? 'N/A') + '</td>' + 
-		    			        '<td>' + (data.List[i].GiTransacQty ?? 'N/A') + '</td>' + 
-		    			        '<td>' + (data.List[i].GiAmt ?? 'N/A') + '</td>' + 
-		    			        '<td>' + (data.List[i].EndStocQty ?? 'N/A') + '</td>' + 
-		    			        '<td>' + (data.List[i].EsAmt ?? 'N/A') + '</td>' + 
-		    			        '<td>' + (data.List[i].UnitPrice ?? 'N/A') + '</td>' +
-		    			        '<td>' + (data.List[i].ErrorOX ?? 'N/A') + '</td>' +
-			    			    '</tr>';
-	     			        $('.InfoTable-Body').append(row);
-							}
-						}
-					}
-				},
-				error: function(jqXHR, textStatus, errorThrown){
-					alert('오류 발생: ' + textStatus + ', ' + errorThrown);
-		    	}
-	    	});
-		}
-    })
     
 });
 </script>
@@ -244,8 +239,7 @@ String UserIdNumber = (String)session.getAttribute("UserIdNumber");
 		</div>
 		
 		<div class="BtnArea">
-			<button class="CLBtn">결산</button>
-			<button class="SearBtn">조회</button>
+			<button class="CLBtn">결산&조회</button>
 		</div>
 	</div>
 	
