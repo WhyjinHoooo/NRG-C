@@ -85,12 +85,53 @@ public class GoodsCostAllDao {
 	    JSONArray jsonArray = new JSONArray();
 		try {
 			String SelectSql = "SELECT ClosingMon, ComCode, PlantCode, WorkType, CostingLev, WorkOrd, "
-	    			+ "SUM(WipMatCost) as SumOfWMC, SUM(WipMnaufCost) as SumOfWMfC, SUM(FertMatCost) as SumOfFMC, SUM(FertManufCost) as SumOfFMfC "
+	    			+ "SUM(FertMatCost) as SumOfFMC, SUM(FertManufCost) as SumOfFMfC "
 	    			+ "FROM processcosttable WHERE ComCode = ? AND PlantCode = ? AND ClosingMon = ? GROUP BY WorkOrd ORDER BY CostingLev ASC";
 	    	pstmt = conn.prepareStatement(SelectSql);
 	    	pstmt.setString(1, DataList[0].trim());
 	    	pstmt.setString(2, DataList[1].trim());
 	    	pstmt.setString(3, DataList[2].trim());
+	    	ResultSet SelectRs = pstmt.executeQuery();
+	    	while(SelectRs.next()) {
+	    		double SumOfFMC = SelectRs.getDouble("SumOfFMC");
+	    		double SumOfFMfC = SelectRs.getDouble("SumOfFMfC");
+	    		String WorkOrd = SelectRs.getString("WorkOrd");
+	    		
+	    		String LineGrSearchSql = "SELECT * FROM InvenLogl WHERE workordnum = ? AND LEFT(movetype, 2) = ?";
+	    		PreparedStatement LineGrSearchPstmt = conn.prepareStatement(LineGrSearchSql);
+	    		LineGrSearchPstmt.setString(1, WorkOrd);
+	    		LineGrSearchPstmt.setString(2, "GR");
+	    		ResultSet LineGrSearchRs = LineGrSearchPstmt.executeQuery();
+	    		double SumOfAmount = 0.0;
+	    		while(LineGrSearchRs.next()) {
+	    			SumOfAmount += LineGrSearchRs.getDouble("quantity");
+	    		}
+	    		String CP_LineGrSearchSql = "SELECT * FROM InvenLogl WHERE workordnum = ? AND LEFT(movetype, 2) = ?";
+	    		PreparedStatement CP_LineGrSearchPstmt = conn.prepareStatement(CP_LineGrSearchSql);
+	    		CP_LineGrSearchPstmt.setString(1, WorkOrd);
+	    		CP_LineGrSearchPstmt.setString(2, "GR");
+	    		ResultSet CP_LineGrSearchRs = CP_LineGrSearchPstmt.executeQuery();
+	    		while(CP_LineGrSearchRs.next()) {
+	    			String keyValue = CP_LineGrSearchRs.getString("keyvalue");
+	    			double Qty = CP_LineGrSearchRs.getDouble("quantity");
+	    			int EachAmount = (int)Math.round(Qty * SumOfFMC / SumOfAmount);
+	    			int EachAmtOhc = (int)Math.round(Qty * SumOfFMfC / SumOfAmount);
+	    			
+	    			String LineUpdateSql = "UPDATE InvenLogl SET amount = ?, amtOhC = ? WHERE keyvalue = ?";
+	    			PreparedStatement LineUpPstmt = conn.prepareStatement(LineUpdateSql);
+	    			LineUpPstmt.setInt(1, EachAmount);
+	    			LineUpPstmt.setInt(2, EachAmtOhc);
+	    			LineUpPstmt.setString(3, keyValue);
+	    			LineUpPstmt.executeUpdate();
+	    		}
+	    		// 1. InvenLogl에서 업데이트한 amout와 amtOhC의 합을 SumOfFMC랑 SumOfFMfC의 값을 비교
+	    		// 2. 비교 후 틀리면 조치 아니면 나둠
+	    		// 3. 조치 후, CostingAmtTab(신규 생성 예정)에 회사 레벨에 해당하는 sumtable의 값들을 CostingAmtTab의 기초수량, 입고수량, 출고수량, 기말수량에 INSERT
+	    		// 4. InvenLogl에서 재료의 입고재료비, 입고경비를 입력한 후, 재료비랑 경비의 단가를 계산한 후, 기말재료비 계산
+	    		// 5. 계산된 기말재료비, 입고재료비, 기초재료비를 통해 출고재료비 계산
+	    		// 6. 해당 재료의 재료비단가와 경비단가를 입고에 해당한는 수량의 amount와 amtohC에 곱한 후 합을 CostingAmtTab에서 계산한 값과 비교
+	    		// 7. 비교 후 틀리면 조치 아니면 나둠
+	    	}
 		}catch (Exception e) {
 			// TODO: handle exception
 			e.printStackTrace();

@@ -244,7 +244,8 @@ body {
 	padding: 0px;
 	border: 1px solid white;
 	width: 334px;
-	font-size: 8px;
+	font-size: small;
+	letter-spacing: 0.5em
     }
     .Hall >.SubHall > table.InfoTable thead > tr > th > div:nth-child(1){
 	text-align: center;

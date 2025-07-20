@@ -203,8 +203,7 @@ $(document).ready(function() {
 		}
 		
 	});
-	TestFunction('Company');
-	InitialTable(18);
+
 	$('.ResBtn').click(function(){
 		TimeSetting = setInterval(updateClock, 1000);
 		$('.SearOp').each(function(){
@@ -217,37 +216,39 @@ $(document).ready(function() {
 		$(this).closest('div').find('input').attr('placeholder', 'SELECT');
 	})
 	
+    var count = null;
+	TestFunction('Company');
+	InitialTable(12);
 	var condition = 1;
 	applyCSS(condition);
     var value = '1';
-    var count = null;
     $('.CateBtn').click(function() {
     	value = $(this).val();
     	switch(value){
     	case '1':
     		$("footer").show();
     		$('.LvP, .LvS, .LvL').prop('hidden',true);
-    		count = 18;
+    		count = 12;
     		condition = 1;
     		break;
     	case '2':
     		$("footer").show();
     		$('.LvP').prop('hidden',false);
     		$('.LvS, .LvL').prop('hidden',true);
-    		count = 19;
+    		count = 13;
     		condition = 2;
     		break;
     	case '3':
     		$("footer").show();
     		$('.LvP, .LvS').prop('hidden',false);
     		$('.LvL').prop('hidden',true);
-    		count = 20;
+    		count = 14;
     		condition = 3;
     		break;
     	case '4':
     		$("footer").hide();
     		$('.LvP, .LvL, .LvS').prop('hidden',false);
-    		count = 21;
+    		count = 15;
     		condition = 4;
     		var UserId = $('.UserId').val();
     		break;
@@ -319,17 +320,11 @@ $(document).ready(function() {
     	    			        '<td>' + (data.List[i].mattype || 'N/A') + '</td>' + 
     	    			        '<td>' + (data.List[i].spec || 'N/A') + '</td>' + 
     	    			        '<td>' + (data.List[i].beginStocqty_sum ?? 0) + '</td>' + 
-    	    			        '<td>' + (data.List[i].Initial_Amt ?? 0) + '</td>' + 
     	    			        '<td>' + (data.List[i].GrTransacQty_sum ?? 0) + '</td>' + 
-    	    			        '<td>' + (data.List[i].Purchase_Amt ?? 0) + '</td>' + 
     	    			        '<td>' + (data.List[i].GrTransferQty_sum ?? 0) + '</td>' + 
-    	    			        '<td>' + (data.List[i].Material_Amt ?? 0) + '</td>' + 
     	    			        '<td>' + (data.List[i].GiTransferQty_sum ?? 0) + '</td>' + 
-    	    			        '<td>' + (data.List[i].Transfer_Amt ?? 0) + '</td>' + 
     	    			        '<td>' + (data.List[i].GiTransferQty_sum ?? 0) + '</td>' + 
-    	    			        '<td>' + (data.List[i].Inventory_Amt ?? 0) + '</td>' +
     	    			        '<td>' + (data.List[i].EndStocQty_sum ?? 0) + '</td>' + 
-    	    			        '<td>' + (data.List[i].Inventory_Amt ?? 0) + '</td>' + 
     	    			        '</tr>';
     	    			        $('.InfoTable-Body').append(row);
     					   }
@@ -377,17 +372,11 @@ $(document).ready(function() {
  		    			       	'<td>' + (data.List[i].mattype || 'N/A') + '</td>' + 
  		    			       	'<td>' + (data.List[i].spec || 'N/A') + '</td>' +
     	    			        '<td>' + (data.List[i].beginStocqty_sum ?? 0) + '</td>' + 
-    	    			        '<td>' + (data.List[i].Initial_Amt ?? 0) + '</td>' + 
     	    			        '<td>' + (data.List[i].GrTransacQty_sum ?? 0) + '</td>' + 
-    	    			        '<td>' + (data.List[i].Purchase_Amt ?? 0) + '</td>' + 
     	    			        '<td>' + (data.List[i].GrTransferQty_sum ?? 0) + '</td>' + 
-    	    			        '<td>' + (data.List[i].Material_Amt ?? 0) + '</td>' + 
     	    			        '<td>' + (data.List[i].GiTransferQty_sum ?? 0) + '</td>' + 
-    	    			        '<td>' + (data.List[i].Transfer_Amt ?? 0) + '</td>' + 
     	    			        '<td>' + (data.List[i].GiTransferQty_sum ?? 0) + '</td>' + 
-    	    			        '<td>' + (data.List[i].Inventory_Amt ?? 0) + '</td>' +
     	    			        '<td>' + (data.List[i].EndStocQty_sum ?? 0) + '</td>' + 
-    	    			        '<td>' + (data.List[i].Inventory_Amt ?? 0) + '</td>' + 
  		    			       	'</tr>';
      			        $('.InfoTable-Body').append(row);
     						}
@@ -426,17 +415,11 @@ $(document).ready(function() {
  		    			       	'<td>' + (data.List[i].mattype || 'N/A') + '</td>' +
  		    			       	'<td>' + (data.List[i].spec || 'N/A') + '</td>' +
     	    			        '<td>' + (data.List[i].beginStocqty_sum ?? 0) + '</td>' + 
-    	    			        '<td>' + (data.List[i].Initial_Amt ?? 0) + '</td>' + 
     	    			        '<td>' + (data.List[i].GrTransacQty_sum ?? 0) + '</td>' + 
-    	    			        '<td>' + (data.List[i].Purchase_Amt ?? 0) + '</td>' + 
     	    			        '<td>' + (data.List[i].GrTransferQty_sum ?? 0) + '</td>' + 
-    	    			        '<td>' + (data.List[i].Material_Amt ?? 0) + '</td>' + 
     	    			        '<td>' + (data.List[i].GiTransferQty_sum ?? 0) + '</td>' + 
-    	    			        '<td>' + (data.List[i].Transfer_Amt ?? 0) + '</td>' + 
     	    			        '<td>' + (data.List[i].GiTransferQty_sum ?? 0) + '</td>' + 
-    	    			        '<td>' + (data.List[i].Inventory_Amt ?? 0) + '</td>' +
     	    			        '<td>' + (data.List[i].EndStocQty_sum ?? 0) + '</td>' + 
-    	    			        '<td>' + (data.List[i].Inventory_Amt ?? 0) + '</td>' + 
  		    			       	'</tr>';
 	     			        $('.InfoTable-Body').append(row);
     						}
