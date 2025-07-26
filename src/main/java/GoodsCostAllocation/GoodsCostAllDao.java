@@ -126,13 +126,6 @@ public class GoodsCostAllDao {
 	    			LineUpPstmt.setString(3, keyValue);
 	    			LineUpPstmt.executeUpdate();
 	    		}
-	    		// 1. InvenLogl에서 업데이트한 amout와 amtOhC의 합을 SumOfFMC랑 SumOfFMfC의 값을 비교
-	    		// 2. 비교 후 틀리면 조치 아니면 나둠
-	    		// 3. 조치 후, CostingAmtTab(신규 생성 예정)에 회사 레벨에 해당하는 sumtable의 값들을 CostingAmtTab의 기초수량, 입고수량, 출고수량, 기말수량에 INSERT
-	    		// 4. InvenLogl에서 재료의 입고재료비, 입고경비를 입력한 후, 재료비랑 경비의 단가를 계산한 후, 기말재료비 계산
-	    		// 5. 계산된 기말재료비, 입고재료비, 기초재료비를 통해 출고재료비 계산
-	    		// 6. 해당 재료의 재료비단가와 경비단가를 입고에 해당한는 수량의 amount와 amtohC에 곱한 후 합을 CostingAmtTab에서 계산한 값과 비교
-	    		// 7. 비교 후 틀리면 조치 아니면 나둠
 	    		String LineGrSumChkSql = "SELECT SUM(amount) as SumAmount, sum(amtOhC) as SumAmtOhc FROM invenlogl_backup WHERE workordnum = ? AND LEFT(movetype, 2) = ?";
 	    		PreparedStatement LineGrSumChkPstmt = conn.prepareStatement(LineGrSumChkSql);
 	    		LineGrSumChkPstmt.setString(1, WorkOrd);
@@ -204,6 +197,140 @@ public class GoodsCostAllDao {
     				PrimCostingGiUpPstmt.setString(2, KetValue);
     				PrimCostingGiUpPstmt.executeUpdate();
     			}
+    		}
+    		String PrimCostingItemSearchSql_v2 = "SELECT * FROM productcost";
+    		PreparedStatement PrimCostingItemSearchPstmt_v2 = conn.prepareStatement(PrimCostingItemSearchSql_v2);
+    		ResultSet PrimCostingItemSearchRs_v2 = PrimCostingItemSearchPstmt_v2.executeQuery();
+    		while(PrimCostingItemSearchRs_v2.next()) {
+    			String ItemCode = PrimCostingItemSearchRs_v2.getString("matcode");
+    			String KetValue = PrimCostingItemSearchRs_v2.getString("KeyVal");
+    			
+    			double MatUnitP = 0.0;
+    			double ExpUnitP = 0.0;
+    			
+    			double BS_Qty = PrimCostingItemSearchRs_v2.getInt("BS_Qty");
+    			int BS_MatC = PrimCostingItemSearchRs_v2.getInt("BS_MatC");
+    			int BS_ExpC = PrimCostingItemSearchRs_v2.getInt("BS_ExpC");
+
+    			double GR_Qty = PrimCostingItemSearchRs_v2.getInt("GR_Qty");
+    			int GR_MatC = PrimCostingItemSearchRs_v2.getInt("GR_MatC");
+    			int GR_ExpC = PrimCostingItemSearchRs_v2.getInt("GR_ExpC");
+    			
+    			double Gi_Qty = PrimCostingItemSearchRs_v2.getInt("Gi_Qty");
+    			int Gi_MatC = PrimCostingItemSearchRs_v2.getInt("Gi_MatC");	
+    			int Gi_ExpC = PrimCostingItemSearchRs_v2.getInt("Gi_ExpC");
+
+    			double ES_Qty = PrimCostingItemSearchRs_v2.getInt("ES_Qty");
+    			int ES_MatC = PrimCostingItemSearchRs_v2.getInt("ES_MatC");
+    			int ES_ExpC = PrimCostingItemSearchRs_v2.getInt("ES_ExpC");
+
+    			MatUnitP = (BS_MatC + GR_MatC) / (BS_Qty + GR_Qty);
+    			ExpUnitP  = (BS_ExpC + GR_ExpC) / (BS_Qty + GR_Qty);
+    			
+    			ES_Qty = BS_Qty + GR_Qty - Gi_Qty;
+    			ES_MatC = (int)Math.round(ES_Qty * MatUnitP);
+    			ES_ExpC = (int)Math.round(ES_Qty * ExpUnitP);
+    			
+    			Gi_MatC = BS_MatC + GR_MatC - ES_MatC;
+    			Gi_ExpC = BS_ExpC + GR_ExpC - ES_ExpC;
+
+    			String LineItemTotalUpdateSql = "UPDATE productcost SET Gi_MatC = ?, Gi_ExpC = ?, ES_Qty = ?, ES_MatC = ?, ES_ExpC = ? "
+    					+ "WHERE KeyVal = ?";
+    			PreparedStatement LineItemTotalUpdatePstmt = conn.prepareStatement(LineItemTotalUpdateSql);
+    			LineItemTotalUpdatePstmt.setInt(1, Gi_MatC);
+    			LineItemTotalUpdatePstmt.setInt(2, Gi_ExpC);
+    			LineItemTotalUpdatePstmt.setDouble(3, ES_Qty);
+    			LineItemTotalUpdatePstmt.setInt(4, ES_MatC);
+    			LineItemTotalUpdatePstmt.setInt(5, ES_ExpC);
+    			LineItemTotalUpdatePstmt.setString(6, KetValue);
+    			LineItemTotalUpdatePstmt.executeUpdate();
+    		}
+    		
+    		String PrimCostingItemSearchSql_v3 = "SELECT * FROM productcost";
+    		PreparedStatement PrimCostingItemSearchPstmt_v3 = conn.prepareStatement(PrimCostingItemSearchSql_v3);
+    		ResultSet PrimCostingItemSearchRs_v3 = PrimCostingItemSearchPstmt_v3.executeQuery();
+    		while(PrimCostingItemSearchRs_v3.next()) {
+    			String ItemCode = PrimCostingItemSearchRs_v3.getString("matcode");
+    			int Gi_MatC = PrimCostingItemSearchRs_v3.getInt("Gi_MatC");
+    			int Gi_ExpCv = PrimCostingItemSearchRs_v3.getInt("Gi_ExpCv");
+    			
+    			double BS_Qty = PrimCostingItemSearchRs_v3.getInt("BS_Qty");
+    			int BS_MatC = PrimCostingItemSearchRs_v3.getInt("BS_MatC");
+    			int BS_ExpC = PrimCostingItemSearchRs_v3.getInt("BS_ExpC");
+
+    			double GR_Qty = PrimCostingItemSearchRs_v3.getInt("GR_Qty");
+    			int GR_MatC = PrimCostingItemSearchRs_v3.getInt("GR_MatC");
+    			int GR_ExpC = PrimCostingItemSearchRs_v3.getInt("GR_ExpC");
+    			
+    			double MatUnitP = 0.0;
+    			double ExpUnitP = 0.0;
+    			MatUnitP = (BS_MatC + GR_MatC) / (BS_Qty + GR_Qty);
+    			ExpUnitP  = (BS_ExpC + GR_ExpC) / (BS_Qty + GR_Qty);
+
+    			int SumOfAmtAboutGi = 0;
+    			int SumOfAmtOhCAboutGi = 0;
+    			String LinePrimCosItemSearchSql = "SELECT * FROM invenlogl_backup WHERE LEFT(movetype, 2) = ? AND mattype = ? AND matcode = ? GROUP BY matcode";
+    			PreparedStatement LinePrimCosItemSearchPstmt = conn.prepareStatement(LinePrimCosItemSearchSql);
+    			LinePrimCosItemSearchPstmt.setString(1, "GI");
+    			LinePrimCosItemSearchPstmt.setString(2, "FFGD");
+    			LinePrimCosItemSearchPstmt.setString(3, ItemCode);
+    			ResultSet LinePrimCosItemSearchRs = LinePrimCosItemSearchPstmt.executeQuery();
+    			while(LinePrimCosItemSearchRs.next()) {
+    				String KeyVal = LinePrimCosItemSearchRs.getString("keyvalue"); 
+    				double Qty = LinePrimCosItemSearchRs.getDouble("amount");
+    				int amt = (int)Math.round(Qty * MatUnitP);
+    				int amtOhC = (int)Math.round(Qty * ExpUnitP);
+    				SumOfAmtAboutGi += amt;
+    				SumOfAmtOhCAboutGi += amtOhC;
+    				String FFGDItemAmtUpSql = "UPDATE invenlogl_backup SET amount = ?, amtOhC = ? WHERE keyvalue = ?";
+    				PreparedStatement FFGDItemAmtUpPstmt = conn.prepareStatement(FFGDItemAmtUpSql);
+    				FFGDItemAmtUpPstmt.setInt(1, amt);
+    				FFGDItemAmtUpPstmt.setInt(2, amtOhC);
+    				FFGDItemAmtUpPstmt.setString(3, KeyVal);
+    				FFGDItemAmtUpPstmt.executeUpdate();
+    			}
+    			
+    			String LineGrSumChkSql = "SELECT SUM(amount) as SumAmount, sum(amtOhC) as SumAmtOhc FROM invenlogl_backup WHERE LEFT(movetype, 2) = ? AND mattype = ? AND  matcode = ?";
+	    		PreparedStatement LineGrSumChkPstmt = conn.prepareStatement(LineGrSumChkSql);
+	    		LineGrSumChkPstmt.setString(1, "GI");
+	    		LineGrSumChkPstmt.setString(2, "FFGD");
+	    		LineGrSumChkPstmt.setString(3, ItemCode);
+	    		ResultSet LineGrSumChkRs = LineGrSumChkPstmt.executeQuery();
+	    		if(LineGrSumChkRs.next()) {
+	    			int SumAmount = LineGrSumChkRs.getInt("SumAmount");
+	    			int SumAmtOhc = LineGrSumChkRs.getInt("SumAmtOhc");
+	    			
+	    			int SumAmtGap = SumOfAmtAboutGi - SumAmount;
+	    			int SumAmtOhcGap = SumOfAmtOhCAboutGi - SumAmtOhc;
+	    			
+	    			String LineItemFindSql = "SELECT * FROM invenlogl_backup WHERE LEFT(movetype, 2) = ? AND mattype = ? AND matcode = ?";
+	    			PreparedStatement LineItemPstmt = conn.prepareStatement(LineItemFindSql);
+	    			LineItemPstmt.setString(1, "GI");
+	    			LineItemPstmt.setString(2, "FFGD");
+	    			LineItemPstmt.setString(3, ItemCode);
+	    			ResultSet LineItemRs = LineItemPstmt.executeQuery();
+	    			if(LineItemRs.next()) {
+	    				String KeyValue = LineItemRs.getString("keyvalue");
+	    				int ItemAmt = LineItemRs.getInt("amount");
+	    				int ItemAmtOhC = LineItemRs.getInt("amtOhC");
+	    				if(SumAmtGap > 0) {
+	    					ItemAmt += SumAmtGap;
+		    			}else {
+		    				ItemAmt -= SumAmtGap;
+		    			}
+	    				if(SumAmtOhcGap > 0) {
+	    					ItemAmtOhC += SumAmtOhcGap; 
+	    				}else {
+	    					ItemAmtOhC -= SumAmtOhcGap;
+	    				}
+	    				String LineItemUpSql = "UPDATE invenlogl_backup SET amount = ?, amtOhC = ? WHERE keyvalue = ?";
+	    				PreparedStatement LineItemUpPstmt = conn.prepareStatement(LineItemUpSql);
+	    				LineItemUpPstmt.setInt(1, ItemAmt);
+	    				LineItemUpPstmt.setInt(2, ItemAmtOhC);
+	    				LineItemUpPstmt.setString(3, KeyValue);
+	    				LineItemUpPstmt.executeUpdate();
+	    			}
+	    		}
     		}
 		}catch (Exception e) {
 			// TODO: handle exception
