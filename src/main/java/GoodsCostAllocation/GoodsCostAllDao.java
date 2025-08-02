@@ -73,6 +73,7 @@ public class GoodsCostAllDao {
 		}
 		return result;
 	}
+	
 	public String GoodsCostCalc(JSONObject jsonObj) {
 		// TODO Auto-generated method stub
 		connDB();
@@ -170,14 +171,54 @@ public class GoodsCostAllDao {
     				+ "SELECT closingmon, comcode, plant, matcode, matdesc, spec, mattype, "
     				+ "SUM(quantity) as S_Qua, SUM(amount) as S_Amt, SUM(amtOhC) as S_AmtOhC, "
     				+ "CONCAT(invenlogl_backup.closingmon, invenlogl_backup.matcode)"
-    				+ "FROM invenlogl_backup WHERE LEFT(movetype, 2) = ? AND mattype = ? GROUP BY matcode";
+    				+ "FROM invenlogl_backup WHERE LEFT(movetype, 2) = ? AND mattype = ? AND closingmon = ? GROUP BY matcode";
     		PreparedStatement PrimCostingGrPstmt = conn.prepareStatement(PrimCostingGrSql);
     		PrimCostingGrPstmt.setString(1, "GR");
     		PrimCostingGrPstmt.setString(2, "FFGD");
+    		PrimCostingGrPstmt.setString(3, DataList[2].trim());
     		PrimCostingGrPstmt.executeUpdate();
     		
-    		String PrimCostingItemSearchSql = "SELECT * FROM productcost";
+    		String PastPresentSumSql_01 = "SELECT * FROM productcost WHERE closingmon = ?";
+    		PreparedStatement PastPresentPstmt_01 = conn.prepareStatement(PastPresentSumSql_01);
+    		String PastClosingDate = null;
+    		int PresentClosingDate_Y = Integer.parseInt(DataList[2].trim().substring(0, 4));
+    		int PresentClosingDate_M = Integer.parseInt(DataList[2].trim().substring(4));
+    		if(PresentClosingDate_M == 1) {
+    			PresentClosingDate_M = 12;
+    			PresentClosingDate_Y -= 1;
+    		}else {
+    			PresentClosingDate_M -= 1;
+    		}
+			PastClosingDate = PresentClosingDate_Y + String.format("%02d", PresentClosingDate_M);
+			PastPresentPstmt_01.setString(1, PastClosingDate);
+			ResultSet PastRs = PastPresentPstmt_01.executeQuery();
+			while(PastRs.next()) {
+				String ItemCode = PastRs.getString("matcode");
+				double P_ES_Qty = PastRs.getDouble("ES_Qty");
+				int P_ES_MatC = PastRs.getInt("ES_MatC");
+				int P_ES_LabC = PastRs.getInt("ES_LabC");
+				int P_ES_ExpC = PastRs.getInt("ES_ExpC");
+				String PastPresentSumSql_02 = "SELECT * FROM productcost WHERE closingmon = ? AND matcode = ?";
+				PreparedStatement PastPresentPstmt_02 = conn.prepareStatement(PastPresentSumSql_02);
+				PastPresentPstmt_02.setString(1, DataList[2].trim());
+				PastPresentPstmt_02.setString(2, ItemCode);
+				ResultSet PresentRs = PastPresentPstmt_02.executeQuery();
+				if(PresentRs.next()) {
+					String PresentUpSql = "UPDATE productcost SET BS_Qty = ?, BS_MatC = ?, BS_LabC = ?, BS_ExpC = ? WHERE closingmon = ? AND matcode = ?";
+					PreparedStatement PresentUpPstmt = conn.prepareStatement(PresentUpSql);
+					PresentUpPstmt.setDouble(1, P_ES_Qty);
+					PresentUpPstmt.setInt(2, P_ES_MatC);
+					PresentUpPstmt.setInt(3, P_ES_LabC);
+					PresentUpPstmt.setInt(4, P_ES_ExpC);
+					PresentUpPstmt.setString(5, DataList[2].trim());
+					PresentUpPstmt.setString(6, ItemCode);
+					PresentUpPstmt.executeUpdate();
+				}
+			}
+    		
+    		String PrimCostingItemSearchSql = "SELECT * FROM productcost WHERE closingmon = ?";
     		PreparedStatement PrimCostingItemSearchPstmt = conn.prepareStatement(PrimCostingItemSearchSql);
+    		PrimCostingItemSearchPstmt.setString(1, DataList[2].trim());
     		ResultSet PrimCostingItemSearchRs = PrimCostingItemSearchPstmt.executeQuery();
     		while(PrimCostingItemSearchRs.next()) {
     			String ItemCode = PrimCostingItemSearchRs.getString("matcode");
@@ -198,8 +239,9 @@ public class GoodsCostAllDao {
     				PrimCostingGiUpPstmt.executeUpdate();
     			}
     		}
-    		String PrimCostingItemSearchSql_v2 = "SELECT * FROM productcost";
+    		String PrimCostingItemSearchSql_v2 = "SELECT * FROM productcost WHERE closingmon = ?";
     		PreparedStatement PrimCostingItemSearchPstmt_v2 = conn.prepareStatement(PrimCostingItemSearchSql_v2);
+    		PrimCostingItemSearchPstmt_v2.setString(1, DataList[2].trim());
     		ResultSet PrimCostingItemSearchRs_v2 = PrimCostingItemSearchPstmt_v2.executeQuery();
     		while(PrimCostingItemSearchRs_v2.next()) {
     			String ItemCode = PrimCostingItemSearchRs_v2.getString("matcode");
@@ -246,13 +288,14 @@ public class GoodsCostAllDao {
     			LineItemTotalUpdatePstmt.executeUpdate();
     		}
     		
-    		String PrimCostingItemSearchSql_v3 = "SELECT * FROM productcost";
+    		String PrimCostingItemSearchSql_v3 = "SELECT * FROM productcost WHERE closingmon = ?";
     		PreparedStatement PrimCostingItemSearchPstmt_v3 = conn.prepareStatement(PrimCostingItemSearchSql_v3);
+    		PrimCostingItemSearchPstmt_v3.setString(1, DataList[2].trim());
     		ResultSet PrimCostingItemSearchRs_v3 = PrimCostingItemSearchPstmt_v3.executeQuery();
     		while(PrimCostingItemSearchRs_v3.next()) {
     			String ItemCode = PrimCostingItemSearchRs_v3.getString("matcode");
     			int Gi_MatC = PrimCostingItemSearchRs_v3.getInt("Gi_MatC");
-    			int Gi_ExpCv = PrimCostingItemSearchRs_v3.getInt("Gi_ExpCv");
+    			int Gi_ExpC = PrimCostingItemSearchRs_v3.getInt("Gi_ExpC");
     			
     			double BS_Qty = PrimCostingItemSearchRs_v3.getInt("BS_Qty");
     			int BS_MatC = PrimCostingItemSearchRs_v3.getInt("BS_MatC");
@@ -269,11 +312,14 @@ public class GoodsCostAllDao {
 
     			int SumOfAmtAboutGi = 0;
     			int SumOfAmtOhCAboutGi = 0;
-    			String LinePrimCosItemSearchSql = "SELECT * FROM invenlogl_backup WHERE LEFT(movetype, 2) = ? AND mattype = ? AND matcode = ? GROUP BY matcode";
+    			String LinePrimCosItemSearchSql = 
+    							"SELECT * FROM invenlogl_backup "
+    						+ 	"WHERE LEFT(movetype, 2) = ? AND mattype = ? AND matcode = ? AND closingmon = ? GROUP BY matcode";
     			PreparedStatement LinePrimCosItemSearchPstmt = conn.prepareStatement(LinePrimCosItemSearchSql);
     			LinePrimCosItemSearchPstmt.setString(1, "GI");
     			LinePrimCosItemSearchPstmt.setString(2, "FFGD");
     			LinePrimCosItemSearchPstmt.setString(3, ItemCode);
+    			LinePrimCosItemSearchPstmt.setString(4, DataList[2].trim());
     			ResultSet LinePrimCosItemSearchRs = LinePrimCosItemSearchPstmt.executeQuery();
     			while(LinePrimCosItemSearchRs.next()) {
     				String KeyVal = LinePrimCosItemSearchRs.getString("keyvalue"); 
@@ -290,11 +336,15 @@ public class GoodsCostAllDao {
     				FFGDItemAmtUpPstmt.executeUpdate();
     			}
     			
-    			String LineGrSumChkSql = "SELECT SUM(amount) as SumAmount, sum(amtOhC) as SumAmtOhc FROM invenlogl_backup WHERE LEFT(movetype, 2) = ? AND mattype = ? AND  matcode = ?";
+    			String LineGrSumChkSql = 
+    						"SELECT SUM(amount) as SumAmount, sum(amtOhC) as SumAmtOhc "
+    					+ 	"FROM invenlogl_backup WHERE "
+    					+ 	"LEFT(movetype, 2) = ? AND mattype = ? AND  matcode = ? AND closingmon = ?";
 	    		PreparedStatement LineGrSumChkPstmt = conn.prepareStatement(LineGrSumChkSql);
 	    		LineGrSumChkPstmt.setString(1, "GI");
 	    		LineGrSumChkPstmt.setString(2, "FFGD");
 	    		LineGrSumChkPstmt.setString(3, ItemCode);
+	    		LineGrSumChkPstmt.setString(4, DataList[2].trim());
 	    		ResultSet LineGrSumChkRs = LineGrSumChkPstmt.executeQuery();
 	    		if(LineGrSumChkRs.next()) {
 	    			int SumAmount = LineGrSumChkRs.getInt("SumAmount");
@@ -303,11 +353,12 @@ public class GoodsCostAllDao {
 	    			int SumAmtGap = SumOfAmtAboutGi - SumAmount;
 	    			int SumAmtOhcGap = SumOfAmtOhCAboutGi - SumAmtOhc;
 	    			
-	    			String LineItemFindSql = "SELECT * FROM invenlogl_backup WHERE LEFT(movetype, 2) = ? AND mattype = ? AND matcode = ?";
+	    			String LineItemFindSql = "SELECT * FROM invenlogl_backup WHERE LEFT(movetype, 2) = ? AND mattype = ? AND matcode = ? AND closingmon = ?";
 	    			PreparedStatement LineItemPstmt = conn.prepareStatement(LineItemFindSql);
 	    			LineItemPstmt.setString(1, "GI");
 	    			LineItemPstmt.setString(2, "FFGD");
 	    			LineItemPstmt.setString(3, ItemCode);
+	    			LineItemPstmt.setString(4, DataList[2].trim());
 	    			ResultSet LineItemRs = LineItemPstmt.executeQuery();
 	    			if(LineItemRs.next()) {
 	    				String KeyValue = LineItemRs.getString("keyvalue");
