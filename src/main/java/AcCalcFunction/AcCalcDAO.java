@@ -33,6 +33,43 @@ public class AcCalcDAO {
             e.printStackTrace();
         }
     }
+	public String CostAlloDataLoading(JSONObject jsonObj) {
+		connDB();
+		String[] keyOrder = {"ComCode", "PlantCode", "CalcMonth"};
+		String[] DataList = new String[keyOrder.length];
+		String result = null;
+		for (int i = 0; i < keyOrder.length; i++) {
+	        DataList[i] = jsonObj.has(keyOrder[i]) ? jsonObj.get(keyOrder[i]).toString() : "";
+	        System.out.println(DataList[i]);
+	    }
+		ResultSet rs = null;
+	    JSONArray jsonArray = new JSONArray();
+	    try {
+	    	SelectSql = "SELECT * FROM actable WHERE ComCode = ? AND ClosingDate = ?";
+	    	pstmt = conn.prepareStatement(SelectSql);
+	    	pstmt.setString(1, DataList[0].trim());
+	    	pstmt.setString(2, DataList[2].trim());
+	    	rs = pstmt.executeQuery();
+	    	while(rs.next()) {
+	    		JSONObject jsonObject = new JSONObject();
+	    		jsonObject.put("ClosingDate", rs.getString("ClosingDate"));
+		    	jsonObject.put("OP10", rs.getString("OP10"));
+		    	jsonObject.put("OP20", rs.getString("OP20"));
+		    	jsonObject.put("OP30", rs.getString("OP30"));
+		    	jsonObject.put("OP40", rs.getString("OP40"));
+		    	jsonObject.put("OP50", rs.getDouble("OP50"));
+			    jsonArray.put(jsonObject);
+	    	}
+		    if (jsonArray.length() == 0) {
+		        result = null;
+		    } else {
+		        result = jsonArray.toString();
+		    }
+	    }catch (Exception e) {
+			// TODO: handle exception
+		}
+		return result;
+	}
 	
 	public String CostAllocation(JSONObject jsonObj) {
 		connDB();
@@ -318,44 +355,6 @@ public class AcCalcDAO {
 				// TODO: handle exception
 				result = "No";
 			}
-		}
-		return result;
-	}
-
-	public String CostAlloDataLoading(JSONObject jsonObj) {
-		connDB();
-		String[] keyOrder = {"ComCode", "PlantCode", "CalcMonth"};
-		String[] DataList = new String[keyOrder.length];
-		String result = null;
-		for (int i = 0; i < keyOrder.length; i++) {
-	        DataList[i] = jsonObj.has(keyOrder[i]) ? jsonObj.get(keyOrder[i]).toString() : "";
-	        System.out.println(DataList[i]);
-	    }
-		ResultSet rs = null;
-	    JSONArray jsonArray = new JSONArray();
-	    try {
-	    	SelectSql = "SELECT * FROM actable WHERE ComCode = ? AND ClosingDate = ?";
-	    	pstmt = conn.prepareStatement(SelectSql);
-	    	pstmt.setString(1, DataList[0].trim());
-	    	pstmt.setString(2, DataList[2].trim());
-	    	rs = pstmt.executeQuery();
-	    	while(rs.next()) {
-	    		JSONObject jsonObject = new JSONObject();
-	    		jsonObject.put("ClosingDate", rs.getString("ClosingDate"));
-		    	jsonObject.put("OP10", rs.getString("OP10"));
-		    	jsonObject.put("OP20", rs.getString("OP20"));
-		    	jsonObject.put("OP30", rs.getString("OP30"));
-		    	jsonObject.put("OP40", rs.getString("OP40"));
-		    	jsonObject.put("OP50", rs.getDouble("OP50"));
-			    jsonArray.put(jsonObject);
-	    	}
-		    if (jsonArray.length() == 0) {
-		        result = null;
-		    } else {
-		        result = jsonArray.toString();
-		    }
-	    }catch (Exception e) {
-			// TODO: handle exception
 		}
 		return result;
 	}
