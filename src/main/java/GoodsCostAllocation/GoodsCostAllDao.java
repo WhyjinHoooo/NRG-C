@@ -421,20 +421,67 @@ public class GoodsCostAllDao {
 		    					Process_Cost_Table_Update_Pstmt.setString(8, MatProcess);
 		    					Process_Cost_Table_Update_Pstmt.executeUpdate();
 		    				}
-		    				String HalbSql = "SELECT * FROM processcosttable_copy WHERE WorkOrd = ?";
+		    				String HalbSql = "SELECT SUM(MatCostSum) as MatCostSum, SUM(ManufCostSum) as ManufCostSum FROM processcosttable_copy WHERE WorkOrd = ?";
 		    				PreparedStatement HalbPstmt = conn.prepareStatement(HalbSql);
 		    				HalbPstmt.setString(1, WorkOrdNum);
 		    				ResultSet HalbRs = HalbPstmt.executeQuery();
 		    				if(HalbRs.next()) {
-		    					int HalbMatCost = HalbRs.getInt("HalbMatCost");
-		    					int HalbManufCost = HalbRs.getInt("HalbManufCost");
-		    					
+		    					double HalbMatAddCost = HalbRs.getDouble("MatCostSum");
+		    					double HalbManufAddCost = HalbRs.getDouble("ManufCostSum");
+		    					String LineLv2PriceSearchSql = "SELECT COUNT(*) as ItemCount, SUM(quantity) as QtySum FROM invenlogl_backup WHERE workordnum = ? AND LEFT(movetype, 2) = ?";
+		    					PreparedStatement Lv2PricePstmt = conn.prepareStatement(LineLv2PriceSearchSql);
+		    					Lv2PricePstmt.setString(1, WorkOrdNum);
+		    					Lv2PricePstmt.setString(2, "GR");
+		    					ResultSet Lv2Rs = Lv2PricePstmt.executeQuery();
+		    					if(Lv2Rs.next()) {
+		    						int ItemCount = Lv2Rs.getInt("ItemCount");
+		    						int QtySum = (int)Math.round(Lv2Rs.getDouble("QtySum"));
+		    						String LineLv2PriceEditSql = null;
+		    						PreparedStatement LineLv2PriceEditPstmt = null; 
+		    						if(ItemCount > 0) {
+			    						switch(ItemCount) {
+			    						case 1:
+			    							System.out.println("1개-WorkOrdNum : " + WorkOrdNum);
+			    							System.out.println("MatCostSum : " + HalbMatAddCost + ", ManufCostSum : " + HalbManufAddCost);
+			    							LineLv2PriceEditSql = "UPDATE invenlogl_backup SET amount = ?, amtOhC = ? WHERE workordnum = ? AND LEFT(movetype, 2) = ?";
+			    							LineLv2PriceEditPstmt = conn.prepareStatement(LineLv2PriceEditSql);
+			    							LineLv2PriceEditPstmt.setDouble(1, HalbMatAddCost);
+			    							LineLv2PriceEditPstmt.setDouble(2, HalbManufAddCost);
+			    							LineLv2PriceEditPstmt.setString(3, WorkOrdNum);
+			    							LineLv2PriceEditPstmt.setString(4, "GR");
+			    							LineLv2PriceEditPstmt.executeUpdate();
+			    							break;
+			    						default:
+			    							System.out.println("1개이상-WorkOrdNum : " + WorkOrdNum);
+			    							System.out.println("MatCostSum : " + HalbMatAddCost + ", ManufCostSum : " + HalbManufAddCost);
+			    							String QtySql = "SELECT * FROM invenlogl_backup WHERE workordnum = ? AND LEFT(movetype, 2) = ?";
+			    							PreparedStatement QtyPstmt = conn.prepareStatement(QtySql);
+			    							QtyPstmt.setString(1, WorkOrdNum);
+			    							QtyPstmt.setString(2, "GR");
+			    							ResultSet QtyRs = QtyPstmt.executeQuery();
+			    							while(QtyRs.next()) {
+			    								int Qty = (int)Math.round(QtyRs.getDouble("quantity"));
+			    								String KeyData = QtyRs.getString("keyvalue");
+			    								
+			    								LineLv2PriceEditSql = "UPDATE invenlogl_backup SET amount = ?, amtOhC = ? WHERE workordnum = ? AND LEFT(movetype, 2) = ? AND keyvalue = ?";
+			    								LineLv2PriceEditPstmt = conn.prepareStatement(LineLv2PriceEditSql);
+				    							LineLv2PriceEditPstmt.setDouble(1, Math.round(HalbMatAddCost * Qty / QtySum));
+				    							LineLv2PriceEditPstmt.setDouble(2, Math.round(HalbManufAddCost * Qty / QtySum));
+				    							LineLv2PriceEditPstmt.setString(3, WorkOrdNum);
+				    							LineLv2PriceEditPstmt.setString(4, "GR");
+				    							LineLv2PriceEditPstmt.setString(5, KeyData);
+				    							LineLv2PriceEditPstmt.executeUpdate();
+			    							}
+			    							break;
+			    						}
+		    						}
+		    					}
 		    				}
 		    			}
 	    			}
 	    		}
     		}
-    		System.out.println("끝끝끝");
+    		System.out.println("끝끝끝입니당당.");
 		}catch (Exception e) {
 			// TODO: handle exception
 			e.printStackTrace();
