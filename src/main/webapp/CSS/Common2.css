@@ -21,7 +21,7 @@ html {
 	background: #260FB1;
 	color: white;
 	text-align: center;
-	font-size: x-large;
+	font-size: larger;
 	padding: 5px;
 	}
 	.ACostArea-Filter > .InfoInput {
@@ -170,15 +170,15 @@ html {
 	width: 100%;
     }
 	.ACostArea-Uploading > table.ACInputTable thead > tr > th {
-    background-color: rgb(111, 167, 235);
+    background-color: rgba(111, 167, 235, 0.5);
     top: 0;
-    color: white;
+    color: black;
     text-align: center;
     z-index: 10;
     padding: 8px;
     border: 1px solid white;
     width: 150px;
-    font-size: xx-small;
+    font-size: medium;
 	}
 	.ACostArea-Uploading > table.ACInputTable tbody > tr {
 	display: table;
@@ -325,14 +325,14 @@ html {
 	width: 100%;
     }
 	.GoodSCoatSum-State > table.ACInputTable thead > tr > th {
-    background-color: rgb(111, 167, 235);
+    background-color: rgba(111, 167, 235, 0.5);
     top: 0;
-    color: white;
+    color: black;
     text-align: center;
     z-index: 10;
     padding: 8px;
     border: 1px solid white;
-    font-size: xx-small;
+    font-size: medium;
 	}
 	.GoodSCoatSum-State > table.ACInputTable tbody > tr {
 	display: table;
@@ -390,26 +390,26 @@ html {
 	width: 100%;
     }
 	.CostingAmtTable > table.InfoTable thead > tr > th {
-    background-color: rgb(111, 167, 235);
+    background-color: rgba(111, 167, 235, 0.5);
     top: 0;
-    color: white;
+    color: black;
     text-align: center;
     z-index: 10;
     padding: 8px;
     border: 1px solid white;
     width: 150px;
-    font-size: xx-small;
+    font-size: medium;
 	}
 	.CostingAmtTable > table.InfoTable thead > tr > th:nth-child(1) {
-    background-color: rgb(111, 167, 235);
-    top: 0;
-    color: white;
+    background-color: rgba(111, 167, 235, 0.5);
+	top: 0;
+    color: black;
     text-align: center;
     z-index: 10;
     padding: 8px;
     border: 1px solid white;
     width: 60px;
-    font-size: xx-small;
+    font-size: medium;
 	}
 	.CostingAmtTable > table.InfoTable tbody > tr {
 	display: table;

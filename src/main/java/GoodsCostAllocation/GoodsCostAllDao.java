@@ -442,7 +442,6 @@ public class GoodsCostAllDao {
 			    						switch(ItemCount) {
 			    						case 1:
 			    							System.out.println("1개-WorkOrdNum : " + WorkOrdNum);
-			    							System.out.println("MatCostSum : " + HalbMatAddCost + ", ManufCostSum : " + HalbManufAddCost);
 			    							LineLv2PriceEditSql = "UPDATE invenlogl_backup SET amount = ?, amtOhC = ? WHERE workordnum = ? AND LEFT(movetype, 2) = ?";
 			    							LineLv2PriceEditPstmt = conn.prepareStatement(LineLv2PriceEditSql);
 			    							LineLv2PriceEditPstmt.setDouble(1, HalbMatAddCost);
@@ -453,7 +452,6 @@ public class GoodsCostAllDao {
 			    							break;
 			    						default:
 			    							System.out.println("1개이상-WorkOrdNum : " + WorkOrdNum);
-			    							System.out.println("MatCostSum : " + HalbMatAddCost + ", ManufCostSum : " + HalbManufAddCost);
 			    							String QtySql = "SELECT * FROM invenlogl_backup WHERE workordnum = ? AND LEFT(movetype, 2) = ?";
 			    							PreparedStatement QtyPstmt = conn.prepareStatement(QtySql);
 			    							QtyPstmt.setString(1, WorkOrdNum);
@@ -481,7 +479,7 @@ public class GoodsCostAllDao {
 	    			}
 	    		}
     		}
-    		System.out.println("끝끝끝입니당당.");
+    		System.out.println("끝끝끝");
 		}catch (Exception e) {
 			// TODO: handle exception
 			e.printStackTrace();

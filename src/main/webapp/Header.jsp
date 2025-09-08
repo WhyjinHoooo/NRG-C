@@ -131,7 +131,7 @@ $(document).ready(function(){
           <a class="nav-link dropdown-toggle Category" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">공정원가 관리</a>
           <ul class="dropdown-menu Sang" aria-labelledby="navbarDropdownMenuLink">
             <li class="dropdown-submenu">
-            	<a class="dropdown-item dropdown-toggle" href="#">공정 우너가 배분기준 등록/수정</a>
+            	<a class="dropdown-item dropdown-toggle" href="#">공정 원가 배분기준 등록/수정</a>
               	<a class="dropdown-item dropdown-toggle" href="#">배부적수 관리</a>
             	<ul class="dropdown-menu">
 	                <li><a class="dropdown-item" href="#">공정별 적수 생성</a></li>

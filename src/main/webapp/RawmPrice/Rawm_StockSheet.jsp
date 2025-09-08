@@ -174,19 +174,19 @@ $(document).ready(function() {
 					    			        '<td>' + (data.List[i].matdesc || 'N/A') + '</td>' +
 					    			        '<td>' + (data.List[i].mattype || 'N/A') + '</td>' +
 											'<td>' + (data.List[i].spec || 'N/A') + '</td>' + 
-						    			    '<td>' + (data.List[i].beginStocqty || 'N/A') + '</td>' +
-						    			    '<td>' + (data.List[i].BsAmt || 'N/A') + '</td>' + 
-						    			    '<td>' + (data.List[i].GrTransacQty || 'N/A') + '</td>' +
-						    			    '<td>' + (data.List[i].GrPurAmt || 'N/A') + '</td>' +
-					    			        '<td>' + (data.List[i].GrSubAmt ?? 'N/A') + '</td>' + 
-					    			        '<td>' + (data.List[i].GrSumAmt ?? 'N/A') + '</td>' + 
-					    			        '<td>' + (data.List[i].GrTransferQty ?? 'N/A') + '</td>' + 
-					    			        '<td>' + (data.List[i].GiTransferQty ?? 'N/A') + '</td>' + 
-					    			        '<td>' + (data.List[i].GiTransacQty ?? 'N/A') + '</td>' + 
-					    			        '<td>' + (data.List[i].GiAmt ?? 'N/A') + '</td>' + 
-					    			        '<td>' + (data.List[i].EndStocQty ?? 'N/A') + '</td>' + 
-					    			        '<td>' + (data.List[i].EsAmt ?? 'N/A') + '</td>' + 
-					    			        '<td>' + (data.List[i].UnitPrice ?? 'N/A') + '</td>' +
+						    			    '<td>' + (data.List[i].beginStocqty || '0.0') + '</td>' +
+						    			    '<td>' + (data.List[i].BsAmt || '0.0') + '</td>' + 
+						    			    '<td>' + (data.List[i].GrTransacQty || '0.0') + '</td>' +
+						    			    '<td>' + (data.List[i].GrPurAmt || '0.0') + '</td>' +
+					    			        '<td>' + (data.List[i].GrSubAmt ?? '0.0') + '</td>' + 
+					    			        '<td>' + (data.List[i].GrSumAmt ?? '0.0') + '</td>' + 
+					    			        '<td>' + (data.List[i].GrTransferQty ?? '0.0') + '</td>' + 
+					    			        '<td>' + (data.List[i].GiTransferQty ?? '0.0') + '</td>' + 
+					    			        '<td>' + (data.List[i].GiTransacQty ?? '0.0') + '</td>' + 
+					    			        '<td>' + (data.List[i].GiAmt ?? '0.0') + '</td>' + 
+					    			        '<td>' + (data.List[i].EndStocQty ?? '0.0') + '</td>' + 
+					    			        '<td>' + (data.List[i].EsAmt ?? '0.0') + '</td>' + 
+					    			        '<td>' + (data.List[i].UnitPrice ?? '0.0') + '</td>' +
 					    			        '<td>' + (data.List[i].ErrorOX ?? 'N/A') + '</td>' +
 						    			    '</tr>';
 				     			        $('.InfoTable-Body').append(row);

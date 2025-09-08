@@ -346,7 +346,6 @@ public class ApprovalDAO {
 			FileSearchSql = "SELECT * FROM invenlogh";
 			FileSearchPstmt = conn.prepareStatement(FileSearchSql);
 			FileSearchRs = FileSearchPstmt.executeQuery();
-			boolean Isfirst = true;
 			while (FileSearchRs.next()) {
 				DataSearchSql = "SELECT * FROM InvenLogl WHERE docnum = ? AND RegistOX = ? ORDER BY quantity DESC";
 				DataSearchPstmt = conn.prepareStatement(DataSearchSql);
