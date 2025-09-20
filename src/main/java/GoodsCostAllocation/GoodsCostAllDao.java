@@ -404,6 +404,7 @@ public class GoodsCostAllDao {
 //		    				if(Process_Cost_Table_Renew_Rs.next()) {
 //		    					double RawMatCost = Process_Cost_Table_Renew_Rs.getDouble("RawMatCost");
 //		    					double OthMatCost = Process_Cost_Table_Renew_Rs.getDouble("OthMatCost"); 
+	    				
 //		    					double ManufCost = Process_Cost_Table_Renew_Rs.getDouble("ManufCost");
 //		    					
 //		    					double MatCostSum = 0;
