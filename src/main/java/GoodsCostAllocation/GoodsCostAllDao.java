@@ -394,96 +394,236 @@ public class GoodsCostAllDao {
 	    				LineItemUpPstmt.setBigDecimal(2, new BigDecimal(ItemAmtOhC));
 	    				LineItemUpPstmt.setString(3, KeyValue);
 	    				LineItemUpPstmt.executeUpdate();
-	    				
-//!		    			if(MatType.equals("SFGD")) {
-//		    				String Process_Cost_Table_Renew_Sql = "SELECT * FROM processcosttable_copy WHERE ProcessCode = ? AND WorkOrd = ?";
-//		    				PreparedStatement Process_Cost_Table_Renew_Pstmt = conn.prepareStatement(Process_Cost_Table_Renew_Sql);
-//		    				Process_Cost_Table_Renew_Pstmt.setString(1, MatProcess);
-//		    				Process_Cost_Table_Renew_Pstmt.setString(2, WorkOrdNum);
-//		    				ResultSet Process_Cost_Table_Renew_Rs = Process_Cost_Table_Renew_Pstmt.executeQuery();
-//		    				if(Process_Cost_Table_Renew_Rs.next()) {
-//		    					double RawMatCost = Process_Cost_Table_Renew_Rs.getDouble("RawMatCost");
-//		    					double OthMatCost = Process_Cost_Table_Renew_Rs.getDouble("OthMatCost"); 
-	    				
-//		    					double ManufCost = Process_Cost_Table_Renew_Rs.getDouble("ManufCost");
-//		    					
-//		    					double MatCostSum = 0;
-//		    					double ManufCostSum = 0;
-//		    					
-//		    					MatCostSum = RawMatCost + ItemAmt + OthMatCost;
-//		    					ManufCostSum = ManufCost + ItemAmtOhC;
-//		    					
-//		    					String Process_Cost_Table_Update_Sql = "UPDATE processcosttable_copy SET HalbMatCost = ?, MatCostSum = ?, HalbManufCost = ?, ManufCostSum = ?, "
-//		    							+ "FertMatCost = ?, FertManufCost = ? WHERE WorkOrd = ? AND ProcessCode = ?";
-//		    					PreparedStatement Process_Cost_Table_Update_Pstmt = conn.prepareStatement(Process_Cost_Table_Update_Sql);
-//		    					Process_Cost_Table_Update_Pstmt.setDouble(1, ItemAmt);
-//		    					Process_Cost_Table_Update_Pstmt.setDouble(2, MatCostSum);
-//		    					Process_Cost_Table_Update_Pstmt.setDouble(3, ItemAmtOhC);
-//		    					Process_Cost_Table_Update_Pstmt.setDouble(4, ManufCostSum);
-//		    					Process_Cost_Table_Update_Pstmt.setDouble(5, MatCostSum);
-//		    					Process_Cost_Table_Update_Pstmt.setDouble(6, ManufCostSum);
-//		    					Process_Cost_Table_Update_Pstmt.setString(7, WorkOrdNum);
-//		    					Process_Cost_Table_Update_Pstmt.setString(8, MatProcess);
-//		    					Process_Cost_Table_Update_Pstmt.executeUpdate();
-//		    				}
-//		    				String HalbSql = "SELECT SUM(MatCostSum) as MatCostSum, SUM(ManufCostSum) as ManufCostSum FROM processcosttable_copy WHERE WorkOrd = ?";
-//		    				PreparedStatement HalbPstmt = conn.prepareStatement(HalbSql);
-//		    				HalbPstmt.setString(1, WorkOrdNum);
-//		    				ResultSet HalbRs = HalbPstmt.executeQuery();
-//		    				if(HalbRs.next()) {
-//		    					double HalbMatAddCost = HalbRs.getDouble("MatCostSum");
-//		    					double HalbManufAddCost = HalbRs.getDouble("ManufCostSum");
-//		    					String LineLv2PriceSearchSql = "SELECT COUNT(*) as ItemCount, SUM(quantity) as QtySum FROM invenlogl_backup WHERE workordnum = ? AND LEFT(movetype, 2) = ?";
-//		    					PreparedStatement Lv2PricePstmt = conn.prepareStatement(LineLv2PriceSearchSql);
-//		    					Lv2PricePstmt.setString(1, WorkOrdNum);
-//		    					Lv2PricePstmt.setString(2, "GR");
-//		    					ResultSet Lv2Rs = Lv2PricePstmt.executeQuery();
-//		    					if(Lv2Rs.next()) {
-//		    						int ItemCount = Lv2Rs.getInt("ItemCount");
-//		    						int QtySum = (int)Math.round(Lv2Rs.getDouble("QtySum"));
-//		    						String LineLv2PriceEditSql = null;
-//		    						PreparedStatement LineLv2PriceEditPstmt = null; 
-//		    						if(ItemCount > 0) {
-//			    						switch(ItemCount) {
-//			    						case 1:
-//			    							System.out.println("1개-WorkOrdNum : " + WorkOrdNum);
-//			    							LineLv2PriceEditSql = "UPDATE invenlogl_backup SET amount = ?, amtOhC = ? WHERE workordnum = ? AND LEFT(movetype, 2) = ?";
-//			    							LineLv2PriceEditPstmt = conn.prepareStatement(LineLv2PriceEditSql);
-//			    							LineLv2PriceEditPstmt.setDouble(1, HalbMatAddCost);
-//			    							LineLv2PriceEditPstmt.setDouble(2, HalbManufAddCost);
-//			    							LineLv2PriceEditPstmt.setString(3, WorkOrdNum);
-//			    							LineLv2PriceEditPstmt.setString(4, "GR");
-//			    							LineLv2PriceEditPstmt.executeUpdate();
-//			    							break;
-//			    						default:
-//			    							System.out.println("1개이상-WorkOrdNum : " + WorkOrdNum);
-//			    							String QtySql = "SELECT * FROM invenlogl_backup WHERE workordnum = ? AND LEFT(movetype, 2) = ?";
-//			    							PreparedStatement QtyPstmt = conn.prepareStatement(QtySql);
-//			    							QtyPstmt.setString(1, WorkOrdNum);
-//			    							QtyPstmt.setString(2, "GR");
-//			    							ResultSet QtyRs = QtyPstmt.executeQuery();
-//			    							while(QtyRs.next()) {
-//			    								int Qty = (int)Math.round(QtyRs.getDouble("quantity"));
-//			    								String KeyData = QtyRs.getString("keyvalue");
-//			    								
-//			    								LineLv2PriceEditSql = "UPDATE invenlogl_backup SET amount = ?, amtOhC = ? WHERE workordnum = ? AND LEFT(movetype, 2) = ? AND keyvalue = ?";
-//			    								LineLv2PriceEditPstmt = conn.prepareStatement(LineLv2PriceEditSql);
-//				    							LineLv2PriceEditPstmt.setDouble(1, Math.round(HalbMatAddCost * Qty / QtySum));
-//				    							LineLv2PriceEditPstmt.setDouble(2, Math.round(HalbManufAddCost * Qty / QtySum));
-//				    							LineLv2PriceEditPstmt.setString(3, WorkOrdNum);
-//				    							LineLv2PriceEditPstmt.setString(4, "GR");
-//				    							LineLv2PriceEditPstmt.setString(5, KeyData);
-//				    							LineLv2PriceEditPstmt.executeUpdate();
-//			    							}
-//			    							break;
-//			    						}
-//		    						}
-//		    					}
-//		    				}
-//!		    			}
 	    			}
 	    		}
     		}
+    		
+    		String PrimCostingItemSearchSql_v4 = "SELECT * FROM productcost WHERE closingmon = ? AND matType NOT IN (?, ?)";
+    		PreparedStatement PrimCostingItemSearchPstmt_v4 = conn.prepareStatement(PrimCostingItemSearchSql_v4);
+    		PrimCostingItemSearchPstmt_v4.setString(1, DataList[2].trim());
+    		PrimCostingItemSearchPstmt_v4.setString(2, "RAWM");
+    		PrimCostingItemSearchPstmt_v4.setString(3, "TMGD");
+    		ResultSet PrimCostingItemSearchRs_v4 = PrimCostingItemSearchPstmt_v4.executeQuery();
+    		while(PrimCostingItemSearchRs_v4.next()){
+    			String MatCode = PrimCostingItemSearchRs_v4.getString("matcode");
+    			String GetItemsSql = "SELECT workordnum, process, SUM(amount) AS sum_amount, SUM(amtOhC) AS sum_amtOhC "
+    					+ " FROM invenlogl_backup WHERE LEFT(movetype, 2) = ? AND matcode = ? AND closingmon = ? AND mattype NOT IN (?, ?) GROUP BY workordnum ORDER BY workordnum";
+    			PreparedStatement GetItemsPstmt = conn.prepareStatement(GetItemsSql);
+    			GetItemsPstmt.setString(1, "GI");
+    			GetItemsPstmt.setString(2, MatCode);
+    			GetItemsPstmt.setString(3, DataList[2].trim());
+    			GetItemsPstmt.setString(4, "RAWM");
+    			GetItemsPstmt.setString(5, "TMGD");
+    			ResultSet GetItemsRs = GetItemsPstmt.executeQuery();
+    			while(GetItemsRs.next()){
+    				String ProCode = GetItemsRs.getString("process");
+    				String WorkOrder = GetItemsRs.getString("workordnum");
+    				int ItemAmt = GetItemsRs.getInt("sum_amount");
+    				int ItemAmtOhC = GetItemsRs.getInt("sum_amtOhC");
+    				
+    				String Process_Cost_Table_Renew_Sql = "SELECT * FROM processcosttable_copy WHERE ProcessCode = ? AND WorkOrd = ?";
+    				PreparedStatement Process_Cost_Table_Renew_Pstmt = conn.prepareStatement(Process_Cost_Table_Renew_Sql);
+    				Process_Cost_Table_Renew_Pstmt.setString(1, ProCode);
+    				Process_Cost_Table_Renew_Pstmt.setString(2, WorkOrder);
+    				ResultSet Process_Cost_Table_Renew_Rs = Process_Cost_Table_Renew_Pstmt.executeQuery();
+    				if(Process_Cost_Table_Renew_Rs.next()) {
+    					double RawMatCost = Process_Cost_Table_Renew_Rs.getDouble("RawMatCost");
+    					double OthMatCost = Process_Cost_Table_Renew_Rs.getDouble("OthMatCost"); 
+    			
+    					double ManufCost = Process_Cost_Table_Renew_Rs.getDouble("ManufCost");
+    					
+    					double MatCostSum = 0;
+    					double ManufCostSum = 0;
+    					
+    					MatCostSum = RawMatCost + ItemAmt + OthMatCost;
+    					ManufCostSum = ManufCost + ItemAmtOhC;
+    					
+    					String Process_Cost_Table_Update_Sql = "UPDATE processcosttable_copy SET HalbMatCost = ?, MatCostSum = ?, HalbManufCost = ?, ManufCostSum = ?, "
+    							+ "FertMatCost = ?, FertManufCost = ? WHERE WorkOrd = ? AND ProcessCode = ?";
+    					PreparedStatement Process_Cost_Table_Update_Pstmt = conn.prepareStatement(Process_Cost_Table_Update_Sql);
+    					Process_Cost_Table_Update_Pstmt.setDouble(1, ItemAmt);
+    					Process_Cost_Table_Update_Pstmt.setDouble(2, MatCostSum);
+    					Process_Cost_Table_Update_Pstmt.setDouble(3, ItemAmtOhC);
+    					Process_Cost_Table_Update_Pstmt.setDouble(4, ManufCostSum);
+    					Process_Cost_Table_Update_Pstmt.setDouble(5, MatCostSum);
+    					Process_Cost_Table_Update_Pstmt.setDouble(6, ManufCostSum);
+    					Process_Cost_Table_Update_Pstmt.setString(7, WorkOrder);
+    					Process_Cost_Table_Update_Pstmt.setString(8, ProCode);
+    					Process_Cost_Table_Update_Pstmt.executeUpdate();
+    				}
+    				String HalbSql = "SELECT SUM(MatCostSum) as MatCostSum, SUM(ManufCostSum) as ManufCostSum FROM processcosttable_copy WHERE WorkOrd = ?";
+    				PreparedStatement HalbPstmt = conn.prepareStatement(HalbSql);
+    				HalbPstmt.setString(1, WorkOrder);
+    				ResultSet HalbRs = HalbPstmt.executeQuery();
+    				if(HalbRs.next()) {
+    					double HalbMatAddCost = HalbRs.getDouble("MatCostSum");
+    					double HalbManufAddCost = HalbRs.getDouble("ManufCostSum");
+    					String LineLv2PriceSearchSql = "SELECT COUNT(*) as ItemCount, SUM(quantity) as QtySum FROM invenlogl_backup WHERE workordnum = ? AND LEFT(movetype, 2) = ? AND mattype NOT IN ('RAWM', 'TMGD')";
+    					PreparedStatement Lv2PricePstmt = conn.prepareStatement(LineLv2PriceSearchSql);
+    					Lv2PricePstmt.setString(1, WorkOrder);
+    					Lv2PricePstmt.setString(2, "GR");
+    					ResultSet Lv2Rs = Lv2PricePstmt.executeQuery();
+    					if(Lv2Rs.next()) {
+    						int ItemCount = Lv2Rs.getInt("ItemCount");
+    						int QtySum = (int)Math.round(Lv2Rs.getDouble("QtySum"));
+    						String LineLv2PriceEditSql = null;
+    						PreparedStatement LineLv2PriceEditPstmt = null; 
+    						if(ItemCount > 0) {
+    							switch(ItemCount) {
+    							case 1:
+//    	    			이 과정에서 RAWM , TMFD는 대상이 아니다.
+    								System.out.println("1개-WorkOrdNum : " + WorkOrder);
+    								LineLv2PriceEditSql = "UPDATE invenlogl_backup SET amount = ?, amtOhC = ? WHERE workordnum = ? AND LEFT(movetype, 2) = ? AND mattype NOT IN ('RAWM', 'TMGD')";
+    								LineLv2PriceEditPstmt = conn.prepareStatement(LineLv2PriceEditSql);
+    								LineLv2PriceEditPstmt.setDouble(1, HalbMatAddCost);
+    								LineLv2PriceEditPstmt.setDouble(2, HalbManufAddCost);
+    								LineLv2PriceEditPstmt.setString(3, WorkOrder);
+    								LineLv2PriceEditPstmt.setString(4, "GR");
+    								LineLv2PriceEditPstmt.executeUpdate();
+    								break;
+    							default:
+    								System.out.println("1개이상-WorkOrdNum : " + WorkOrder);
+    								String QtySql = "SELECT * FROM invenlogl_backup WHERE workordnum = ? AND LEFT(movetype, 2) = ? AND mattype NOT IN ('RAWM', 'TMGD')";
+    								PreparedStatement QtyPstmt = conn.prepareStatement(QtySql);
+    								QtyPstmt.setString(1, WorkOrder);
+    								QtyPstmt.setString(2, "GR");
+    								ResultSet QtyRs = QtyPstmt.executeQuery();
+    								while(QtyRs.next()) {
+    									int Qty = (int)Math.round(QtyRs.getDouble("quantity"));
+    									String KeyData = QtyRs.getString("keyvalue");
+    									
+    									LineLv2PriceEditSql = "UPDATE invenlogl_backup SET amount = ?, amtOhC = ? WHERE workordnum = ? AND LEFT(movetype, 2) = ? AND keyvalue = ? AND mattype NOT IN ('RAWM', 'TMGD')";
+    									LineLv2PriceEditPstmt = conn.prepareStatement(LineLv2PriceEditSql);
+    	    							LineLv2PriceEditPstmt.setDouble(1, Math.round(HalbMatAddCost * Qty / QtySum));
+    	    							LineLv2PriceEditPstmt.setDouble(2, Math.round(HalbManufAddCost * Qty / QtySum));
+    	    							LineLv2PriceEditPstmt.setString(3, WorkOrder);
+    	    							LineLv2PriceEditPstmt.setString(4, "GR");
+    	    							LineLv2PriceEditPstmt.setString(5, KeyData);
+    	    							LineLv2PriceEditPstmt.executeUpdate();
+    								}
+    								String ForModySql = "SELECT SUM(amount) as SumAmount, SUM(amtOhC) as SumAmtOhc FROM invenlogl_backup WHERE workordnum = ? AND LEFT(movetype, 2) = 'GR' AND mattype NOT IN ('RAWM', 'TMGD')";
+    								PreparedStatement ForModyPstmt = conn.prepareStatement(ForModySql);
+    								ForModyPstmt.setString(1, WorkOrder);
+    								ResultSet ForModyRs = ForModyPstmt.executeQuery();
+    								if(ForModyRs.next()) {
+    									int SumAmount = ForModyRs.getInt("SumAmount");
+    									int SumAmtOhc = ForModyRs.getInt("SumAmtOhc");
+    									
+    									int AmtGap = 0;
+    									int OhcGap = 0;
+    									
+    									AmtGap = (int) (SumAmount - HalbMatAddCost);
+    									OhcGap = (int) (SumAmtOhc - HalbManufAddCost);
+    									
+    									String SearModiSql = "SELECT * FROM invenlogl_backup WHERE workordnum = ? AND LEFT(movetype, 2) = 'GR' AND mattype NOT IN ('RAWM', 'TMGD')";
+    									PreparedStatement SearModiPstmt = conn.prepareStatement(SearModiSql);
+    									SearModiPstmt.setString(1, WorkOrder);
+    									ResultSet SearModiRs = SearModiPstmt.executeQuery();
+    									if(SearModiRs.next()) {
+    										int Amt = SearModiRs.getInt("amount");
+    										int AmtOhc = SearModiRs.getInt("amtOhC");
+    										String KeyValue = SearModiRs.getString("keyvalue");
+    										
+    										String ModiSql = "UPDATE invenlogl_backup SET amount = ?, amtOhC = ? WHERE keyvalue = ?";
+    										PreparedStatement ModiPstmt = conn.prepareStatement(ModiSql);
+    										ModiPstmt.setInt(1, Amt - AmtGap);
+    										ModiPstmt.setInt(2, AmtOhc - OhcGap);
+    										ModiPstmt.setString(3, KeyValue);
+    										ModiPstmt.executeUpdate();
+    									}
+    								}
+    								break;
+    							}
+    						}
+    					}
+    				}
+    			}
+    		}
+//			String Process_Cost_Table_Renew_Sql = "SELECT * FROM processcosttable_copy WHERE ProcessCode = ? AND WorkOrd = ?";
+//			PreparedStatement Process_Cost_Table_Renew_Pstmt = conn.prepareStatement(Process_Cost_Table_Renew_Sql);
+//			Process_Cost_Table_Renew_Pstmt.setString(1, MatProcess);
+//			Process_Cost_Table_Renew_Pstmt.setString(2, WorkOrdNum);
+//			ResultSet Process_Cost_Table_Renew_Rs = Process_Cost_Table_Renew_Pstmt.executeQuery();
+//			if(Process_Cost_Table_Renew_Rs.next()) {
+//				double RawMatCost = Process_Cost_Table_Renew_Rs.getDouble("RawMatCost");
+//				double OthMatCost = Process_Cost_Table_Renew_Rs.getDouble("OthMatCost"); 
+		
+//				double ManufCost = Process_Cost_Table_Renew_Rs.getDouble("ManufCost");
+//				
+//				double MatCostSum = 0;
+//				double ManufCostSum = 0;
+//				
+//				MatCostSum = RawMatCost + ItemAmt + OthMatCost;
+//				ManufCostSum = ManufCost + ItemAmtOhC;
+//				
+//				String Process_Cost_Table_Update_Sql = "UPDATE processcosttable_copy SET HalbMatCost = ?, MatCostSum = ?, HalbManufCost = ?, ManufCostSum = ?, "
+//						+ "FertMatCost = ?, FertManufCost = ? WHERE WorkOrd = ? AND ProcessCode = ?";
+//				PreparedStatement Process_Cost_Table_Update_Pstmt = conn.prepareStatement(Process_Cost_Table_Update_Sql);
+//				Process_Cost_Table_Update_Pstmt.setDouble(1, ItemAmt);
+//				Process_Cost_Table_Update_Pstmt.setDouble(2, MatCostSum);
+//				Process_Cost_Table_Update_Pstmt.setDouble(3, ItemAmtOhC);
+//				Process_Cost_Table_Update_Pstmt.setDouble(4, ManufCostSum);
+//				Process_Cost_Table_Update_Pstmt.setDouble(5, MatCostSum);
+//				Process_Cost_Table_Update_Pstmt.setDouble(6, ManufCostSum);
+//				Process_Cost_Table_Update_Pstmt.setString(7, WorkOrdNum);
+//				Process_Cost_Table_Update_Pstmt.setString(8, MatProcess);
+//				Process_Cost_Table_Update_Pstmt.executeUpdate();
+//			}
+//			String HalbSql = "SELECT SUM(MatCostSum) as MatCostSum, SUM(ManufCostSum) as ManufCostSum FROM processcosttable_copy WHERE WorkOrd = ?";
+//			PreparedStatement HalbPstmt = conn.prepareStatement(HalbSql);
+//			HalbPstmt.setString(1, WorkOrdNum);
+//			ResultSet HalbRs = HalbPstmt.executeQuery();
+//			if(HalbRs.next()) {
+//				double HalbMatAddCost = HalbRs.getDouble("MatCostSum");
+//				double HalbManufAddCost = HalbRs.getDouble("ManufCostSum");
+//				String LineLv2PriceSearchSql = "SELECT COUNT(*) as ItemCount, SUM(quantity) as QtySum FROM invenlogl_backup WHERE workordnum = ? AND LEFT(movetype, 2) = ?";
+//				PreparedStatement Lv2PricePstmt = conn.prepareStatement(LineLv2PriceSearchSql);
+//				Lv2PricePstmt.setString(1, WorkOrdNum);
+//				Lv2PricePstmt.setString(2, "GR");
+//				ResultSet Lv2Rs = Lv2PricePstmt.executeQuery();
+//				if(Lv2Rs.next()) {
+//					int ItemCount = Lv2Rs.getInt("ItemCount");
+//					int QtySum = (int)Math.round(Lv2Rs.getDouble("QtySum"));
+//					String LineLv2PriceEditSql = null;
+//					PreparedStatement LineLv2PriceEditPstmt = null; 
+//					if(ItemCount > 0) {
+//						switch(ItemCount) {
+//						case 1:
+//    			이 과정에서 RAWM , TMFD는 대상이 아니다.
+//							System.out.println("1개-WorkOrdNum : " + WorkOrdNum);
+//							LineLv2PriceEditSql = "UPDATE invenlogl_backup SET amount = ?, amtOhC = ? WHERE workordnum = ? AND LEFT(movetype, 2) = ?";
+//							LineLv2PriceEditPstmt = conn.prepareStatement(LineLv2PriceEditSql);
+//							LineLv2PriceEditPstmt.setDouble(1, HalbMatAddCost);
+//							LineLv2PriceEditPstmt.setDouble(2, HalbManufAddCost);
+//							LineLv2PriceEditPstmt.setString(3, WorkOrdNum);
+//							LineLv2PriceEditPstmt.setString(4, "GR");
+//							LineLv2PriceEditPstmt.executeUpdate();
+//							break;
+//						default:
+//							System.out.println("1개이상-WorkOrdNum : " + WorkOrdNum);
+//							String QtySql = "SELECT * FROM invenlogl_backup WHERE workordnum = ? AND LEFT(movetype, 2) = ?";
+//							PreparedStatement QtyPstmt = conn.prepareStatement(QtySql);
+//							QtyPstmt.setString(1, WorkOrdNum);
+//							QtyPstmt.setString(2, "GR");
+//							ResultSet QtyRs = QtyPstmt.executeQuery();
+//							while(QtyRs.next()) {
+//								int Qty = (int)Math.round(QtyRs.getDouble("quantity"));
+//								String KeyData = QtyRs.getString("keyvalue");
+//								
+//								LineLv2PriceEditSql = "UPDATE invenlogl_backup SET amount = ?, amtOhC = ? WHERE workordnum = ? AND LEFT(movetype, 2) = ? AND keyvalue = ?";
+//								LineLv2PriceEditPstmt = conn.prepareStatement(LineLv2PriceEditSql);
+//    							LineLv2PriceEditPstmt.setDouble(1, Math.round(HalbMatAddCost * Qty / QtySum));
+//    							LineLv2PriceEditPstmt.setDouble(2, Math.round(HalbManufAddCost * Qty / QtySum));
+//    							LineLv2PriceEditPstmt.setString(3, WorkOrdNum);
+//    							LineLv2PriceEditPstmt.setString(4, "GR");
+//    							LineLv2PriceEditPstmt.setString(5, KeyData);
+//    							LineLv2PriceEditPstmt.executeUpdate();
+//							}
+//							break;
+//						}
+//					}
+//				}
+//			}	
     		System.out.println("끝끝끝");
 		}catch (Exception e) {
 			// TODO: handle exception
