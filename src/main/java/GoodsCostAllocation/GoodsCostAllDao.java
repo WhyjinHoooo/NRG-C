@@ -427,6 +427,9 @@ public class GoodsCostAllDao {
     				Process_Cost_Table_Renew_Pstmt.setString(2, WorkOrder);
     				ResultSet Process_Cost_Table_Renew_Rs = Process_Cost_Table_Renew_Pstmt.executeQuery();
     				if(Process_Cost_Table_Renew_Rs.next()) {
+    					double InputQty = Process_Cost_Table_Renew_Rs.getDouble("InputQty");
+    					double WipQty = Process_Cost_Table_Renew_Rs.getDouble("WipQty");
+    					
     					double RawMatCost = Process_Cost_Table_Renew_Rs.getDouble("RawMatCost");
     					double OthMatCost = Process_Cost_Table_Renew_Rs.getDouble("OthMatCost"); 
     			
@@ -435,20 +438,28 @@ public class GoodsCostAllDao {
     					double MatCostSum = 0;
     					double ManufCostSum = 0;
     					
+    					int WipMatCost = 0;
+    					int WipMnaufCost = 0;
+    					
     					MatCostSum = RawMatCost + ItemAmt + OthMatCost;
     					ManufCostSum = ManufCost + ItemAmtOhC;
     					
-    					String Process_Cost_Table_Update_Sql = "UPDATE processcosttable_copy SET HalbMatCost = ?, MatCostSum = ?, HalbManufCost = ?, ManufCostSum = ?, "
+    					WipMatCost = (int)Math.round(MatCostSum * WipQty / InputQty);
+    					WipMnaufCost = (int)Math.round(ManufCostSum * WipQty / InputQty);
+    							
+    					String Process_Cost_Table_Update_Sql = "UPDATE processcosttable_copy SET HalbMatCost = ?, MatCostSum = ?, HalbManufCost = ?, ManufCostSum = ?, WipMatCost = ?, WipMnaufCost = ?, "
     							+ "FertMatCost = ?, FertManufCost = ? WHERE WorkOrd = ? AND ProcessCode = ?";
     					PreparedStatement Process_Cost_Table_Update_Pstmt = conn.prepareStatement(Process_Cost_Table_Update_Sql);
     					Process_Cost_Table_Update_Pstmt.setDouble(1, ItemAmt);
     					Process_Cost_Table_Update_Pstmt.setDouble(2, MatCostSum);
     					Process_Cost_Table_Update_Pstmt.setDouble(3, ItemAmtOhC);
     					Process_Cost_Table_Update_Pstmt.setDouble(4, ManufCostSum);
-    					Process_Cost_Table_Update_Pstmt.setDouble(5, MatCostSum);
-    					Process_Cost_Table_Update_Pstmt.setDouble(6, ManufCostSum);
-    					Process_Cost_Table_Update_Pstmt.setString(7, WorkOrder);
-    					Process_Cost_Table_Update_Pstmt.setString(8, ProCode);
+    					Process_Cost_Table_Update_Pstmt.setDouble(5, WipMatCost);
+    					Process_Cost_Table_Update_Pstmt.setDouble(6, WipMnaufCost);
+    					Process_Cost_Table_Update_Pstmt.setDouble(7, MatCostSum - WipMatCost);
+    					Process_Cost_Table_Update_Pstmt.setDouble(8, ManufCostSum - WipMnaufCost);
+    					Process_Cost_Table_Update_Pstmt.setString(9, WorkOrder);
+    					Process_Cost_Table_Update_Pstmt.setString(10, ProCode);
     					Process_Cost_Table_Update_Pstmt.executeUpdate();
     				}
     				String HalbSql = "SELECT SUM(MatCostSum) as MatCostSum, SUM(ManufCostSum) as ManufCostSum FROM processcosttable_copy WHERE WorkOrd = ?";
