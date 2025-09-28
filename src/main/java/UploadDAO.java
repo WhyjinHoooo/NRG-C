@@ -216,7 +216,7 @@ public class UploadDAO {
             		+ "matseqlist.ManufLot, matseqlist.Itemno, matseqlist.Item, matseqlist.CostingLv, "
             		+ "matseqlist.WorkSeq, matseqlist.ProcessCode, matseqlist.ProcessDesc, matseqlist.InoutType, matseqlist.InputQty, matseqlist.ProdQty, "
             		+ "matseqlist.WipQty, matseqlist.MixTime, matseqlist.PackStartMon, matseqlist.PackClosMon, "
-            		+ "CONCAT(matseqlist.ClosingMon, matseqlist.WorkOrd, matseqlist.ProcessCode) FROM matseqlist";
+            		+ "CONCAT(matseqlist.ClosingMon, matseqlist.WorkOrd, matseqlist.ProcessCode, matseqlist.InoutType) FROM matseqlist";
             PreparedStatement ACPstmt = conn.prepareStatement(ACSql);
             ACPstmt.executeUpdate();
             YN = "Yes";
