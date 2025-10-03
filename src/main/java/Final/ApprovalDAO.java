@@ -83,7 +83,7 @@ public class ApprovalDAO {
 	    		String InsertsqlL =
 	    			    "INSERT INTO InvenLogl (docnum, seq, movetype, closingmon, transactiondate, matcode, matdesc, spec, lotnum, mattype, quantity, amount, " +
 	    			    "storcode, stordesc, procuordnum, vendcode, vendDesc, DeleteYN, plant, comcode, keyvalue, RegistOX) " +
-	    			    "SELECT ?, ROW_NUMBER() OVER (ORDER BY (SELECT 1)), matstock.type, ?, matstock.delivery, matstock.itemno, matstock.item, matstock.spec, matstock.lot, matstock.stocktype, " +
+	    			    "SELECT ?, ROW_NUMBER() OVER (ORDER BY (SELECT 1)), matstock.type, ?, matstock.delivery, matstock.Matcode, matstock.MatDesc, matstock.spec, matstock.lot, matstock.stocktype, " +
 	    			    "matstock.weight, matstock.amount, matstock.whcode, matstock.warehouse, matstock.pono, matstock.vendor, matstock.vendorname, ?, " +
 	    			    "matstock.plant, matstock.company, CONCAT(?, LPAD(ROW_NUMBER() OVER (ORDER BY (SELECT 1)),4,'0')), ? " +
 	    			    "FROM matstock " +
@@ -155,10 +155,10 @@ public class ApprovalDAO {
 	    		}
 	    		String InsertsqlL =
 	    			    "INSERT INTO InvenLogl (docnum, seq, movetype, closingmon, transactiondate, matcode, matdesc, spec, lotnum, mattype, quantity, " +
-	    			    "storcode, stordesc, process, processDesc, workordnum, DeleteYN, plant, comcode, keyvalue, RegistOX) " +
-	    			    "SELECT ?, ROW_NUMBER() OVER (ORDER BY (SELECT 1)), matinput.type, ?, matinput.delivery, matinput.itemno, matinput.item, matinput.spec, matinput.lot, matinput.stocktype, " +
+	    			    "storcode, stordesc, process, processDesc, workordnum, DeleteYN, plant, comcode, keyvalue, RegistOX, CostingLv) " +
+	    			    "SELECT ?, ROW_NUMBER() OVER (ORDER BY (SELECT 1)), matinput.type, ?, matinput.delivery, matinput.MatCode, matinput.MatCode, matinput.spec, matinput.lot, matinput.stocktype, " +
 	    			    "matinput.amount, matinput.whcode, matinput.warehouse, matinput.process, matinput.processdes, matinput.pono, ?, " +
-	    			    "matinput.plant, matinput.company, CONCAT(?, LPAD(ROW_NUMBER() OVER (ORDER BY (SELECT 1)),4,'0')), ?  " +
+	    			    "matinput.plant, matinput.company, CONCAT(?, LPAD(ROW_NUMBER() OVER (ORDER BY (SELECT 1)),4,'0')), ?, matinput.CostingLev " +
 	    			    "FROM matinput " +
 	    			    "WHERE document = ?";
 	    		PreparedStatement InsertPstmtL = conn.prepareStatement(InsertsqlL);
@@ -228,10 +228,10 @@ public class ApprovalDAO {
 	    		}
 	    		String InsertsqlL =
 	    			    "INSERT INTO InvenLogl (docnum, seq, movetype, closingmon, transactiondate, matcode, matdesc, spec, lotnum, mattype, quantity, " +
-	    			    "storcode, stordesc, workordnum, DeleteYN, plant, comcode, keyvalue, RegistOX) " +
-	    			    "SELECT ?, ROW_NUMBER() OVER (ORDER BY (SELECT 1)), matsplit.type, ?, matsplit.delivery, matsplit.itemno, matsplit.item, matsplit.spec, matsplit.lot, matsplit.stocktype, " +
+	    			    "storcode, stordesc, workordnum, DeleteYN, plant, comcode, keyvalue, RegistOX, CostingLv) " +
+	    			    "SELECT ?, ROW_NUMBER() OVER (ORDER BY (SELECT 1)), matsplit.type, ?, matsplit.delivery, matsplit.MatCode, matsplit.MatDesc, matsplit.spec, matsplit.lot, matsplit.stocktype, " +
 	    			    "matsplit.weight, matsplit.whcode, matsplit.warehouse, matsplit.pono, ?, " +
-	    			    "matsplit.plant, matsplit.company, CONCAT(?, LPAD(ROW_NUMBER() OVER (ORDER BY (SELECT 1)),4,'0')), ?  " +
+	    			    "matsplit.plant, matsplit.company, CONCAT(?, LPAD(ROW_NUMBER() OVER (ORDER BY (SELECT 1)),4,'0')), ?, matsplit.CostingLev " +
 	    			    "FROM matsplit " +
 	    			    "WHERE document = ?";
 	    		PreparedStatement InsertPstmtL = conn.prepareStatement(InsertsqlL);
@@ -301,10 +301,10 @@ public class ApprovalDAO {
 	    		}
 	    		String InsertsqlL =
 	    			    "INSERT INTO InvenLogl (docnum, seq, movetype, closingmon, transactiondate, matcode, matdesc, spec, lotnum, mattype, quantity, " +
-	    			    "storcode, stordesc, salesordnum, vendcode, vendDesc, DeleteYN, plant, comcode, keyvalue, RegistOX) " +
-	    			    "SELECT ?, ROW_NUMBER() OVER (ORDER BY (SELECT 1)), matdeli.type, ?, matdeli.delivery, matdeli.itemno, matdeli.item, matdeli.spec, matdeli.lot, matdeli.stocktype, " +
+	    			    "storcode, stordesc, salesordnum, vendcode, vendDesc, DeleteYN, plant, comcode, keyvalue, RegistOX, CostingLv) " +
+	    			    "SELECT ?, ROW_NUMBER() OVER (ORDER BY (SELECT 1)), matdeli.type, ?, matdeli.delivery, matdeli.MatCode, matdeli.MatDesc, matdeli.spec, matdeli.lot, matdeli.stocktype, " +
 	    			    "matdeli.weight, matdeli.whcode, matdeli.warehouse, matdeli.pono, matdeli.vencode, matdeli.vender, ?, " +
-	    			    "matdeli.plant, matdeli.company, CONCAT(?, LPAD(ROW_NUMBER() OVER (ORDER BY (SELECT 1)),4,'0')), ?  " +
+	    			    "matdeli.plant, matdeli.company, CONCAT(?, LPAD(ROW_NUMBER() OVER (ORDER BY (SELECT 1)),4,'0')), ?, matdeli.CostingLev " +
 	    			    "FROM matdeli " +
 	    			    "WHERE document = ?";
 	    		PreparedStatement InsertPstmtL = conn.prepareStatement(InsertsqlL);

@@ -49,12 +49,12 @@ public class UploadDAO {
         }
 		return YN;
 	}
-	public String insertMSData(List<String[]> csvData) {
+	public String insertMSData(List<String[]> csvData) { // PUR 파일
         connDB();
         String YN = "No";
         PreparedStatement pstmt = null;
         try {
-            String sql = "INSERT INTO matstock VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+            String sql = "INSERT INTO matstock VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
             pstmt = conn.prepareStatement(sql);
             System.out.println("길이 : " + csvData.size());
             for (int i = 0; i < csvData.size(); i++) {
@@ -62,8 +62,8 @@ public class UploadDAO {
                 for (int j = 0; j < DataList.length; j++) {
                     pstmt.setString(j + 1, DataList[j].trim());
                 }
-                pstmt.setString(20, "PUR" + DataList[1].trim() + ".txt");
-                pstmt.setString(21, "PUR" + DataList[1].trim() + String.format("%04d", i + 1));
+                pstmt.setString(21, "PUR" + DataList[1].trim() + ".txt");
+                pstmt.setString(22, "PUR" + DataList[1].trim() + String.format("%04d", i + 1));
                 pstmt.addBatch();
             }
             pstmt.executeBatch();  // 일괄 실행
@@ -76,22 +76,22 @@ public class UploadDAO {
         }
         return YN;
     }
-	public String insertMIData(List<String[]> csvData) {
+	
+	public String insertMIData(List<String[]> csvData) { // BFG파일
         connDB();
         String YN = "No";
         PreparedStatement pstmt = null;
         try {
-            String sql = "INSERT INTO matinput VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+            String sql = "INSERT INTO matinput VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
             pstmt = conn.prepareStatement(sql);
             System.out.println("길이 : " + csvData.size());
             for (int i = 0; i < csvData.size(); i++) {
                 String[] DataList = csvData.get(i);
                 for (int j = 0; j < DataList.length; j++) {
-                	//System.out.println("DataList[" + j + "] : " + DataList[j].trim());
                     pstmt.setString(j + 1, DataList[j].trim());
                 }
-                pstmt.setString(17, "BFG" + DataList[1].trim() + ".txt");
-                pstmt.setString(18, "BFG" + DataList[1].trim() + String.format("%04d", i + 1));
+                pstmt.setString(18, "BFG" + DataList[1].trim() + ".txt");
+                pstmt.setString(19, "BFG" + DataList[1].trim() + String.format("%04d", i + 1));
                 pstmt.addBatch();
             }
             pstmt.executeBatch();  // 일괄 실행
@@ -104,12 +104,12 @@ public class UploadDAO {
         }
         return YN;
 	}
-	public String batchintake(List<String[]> csvData) {
+	public String batchintake(List<String[]> csvData) { // MGR파일
 		connDB();
         String YN = "No";
         PreparedStatement pstmt = null;
         try {
-            String sql = "INSERT INTO matsplit VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+            String sql = "INSERT INTO matsplit VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
             pstmt = conn.prepareStatement(sql);
             System.out.println("길이 : " + csvData.size());
             for (int i = 0; i < csvData.size(); i++) {
@@ -118,8 +118,8 @@ public class UploadDAO {
                 	//System.out.println("DataList[" + j + "] : " + DataList[j].trim());
                     pstmt.setString(j + 1, DataList[j].trim());
                 }
-                pstmt.setString(15, "MGR" + DataList[1].trim() + ".txt");
-                pstmt.setString(16, "MGR" + DataList[1].trim() + String.format("%04d", i + 1));
+                pstmt.setString(16, "MGR" + DataList[1].trim() + ".txt");
+                pstmt.setString(17, "MGR" + DataList[1].trim() + String.format("%04d", i + 1));
                 pstmt.addBatch();
             }
             pstmt.executeBatch();  // 일괄 실행
@@ -133,23 +133,21 @@ public class UploadDAO {
         return YN;
 	}
 	
-	public String SalesDelivery(List<String[]> csvData) {
+	public String SalesDelivery(List<String[]> csvData) { // SDG 파일
 		connDB();
         String YN = "No";
         PreparedStatement pstmt = null;
         try {
-            String sql = "INSERT INTO matdeli VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+            String sql = "INSERT INTO matdeli VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
             pstmt = conn.prepareStatement(sql);
             System.out.println("길이 : " + csvData.size());
             for (int i = 0; i < csvData.size(); i++) {
                 String[] DataList = csvData.get(i);
                 for (int j = 0; j < DataList.length; j++) {
-//                	System.out.println("i : " + i);
-//                	System.out.println("DataList[" + j + "] : " + DataList[j].trim());
                     pstmt.setString(j + 1, DataList[j].trim());
                 }
-                pstmt.setString(17, "SDG" + DataList[1].trim() + ".txt");
-                pstmt.setString(18, "SDG" + DataList[0].trim() + String.format("%04d", i + 1));
+                pstmt.setString(18, "SDG" + DataList[1].trim() + ".txt");
+                pstmt.setString(19, "SDG" + DataList[0].trim() + String.format("%04d", i + 1));
                 pstmt.addBatch();
             }
             pstmt.executeBatch();  // 일괄 실행
@@ -162,7 +160,7 @@ public class UploadDAO {
         }
         return YN;
 	}
-	public String Joborder(List<String[]> csvData, String file) {
+	public String Joborder(List<String[]> csvData, String file) { // POL 파일
 		connDB();
         String YN = "No";
         PreparedStatement pstmt = null;
@@ -191,7 +189,7 @@ public class UploadDAO {
         }
         return YN;
 	}
-	public String ProResult(List<String[]> csvData, String fileName) {
+	public String ProResult(List<String[]> csvData, String fileName) { // PWC파일
 		connDB();
         String YN = "No";
         PreparedStatement pstmt = null;

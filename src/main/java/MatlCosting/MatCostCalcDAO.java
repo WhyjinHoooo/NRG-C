@@ -208,12 +208,12 @@ public class MatCostCalcDAO {
 						
 					}	
 				}
-				String GIUpdateResult = GICalcResult(CurrVal);
-				if(GIUpdateResult.equals("Yes")) {
-					result = "Yes";
-				}else {
-					result = "No";
-				}
+//				String GIUpdateResult = GICalcResult(CurrVal);
+//				if(GIUpdateResult.equals("Yes")) {
+//					result = "Yes";
+//				}else {
+//					result = "No";
+//				}
 			}
 			
 		} catch (ParseException e) {

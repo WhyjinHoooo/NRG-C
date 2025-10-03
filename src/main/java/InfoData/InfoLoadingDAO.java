@@ -41,7 +41,7 @@ public class InfoLoadingDAO {
 	    ResultSet rs = null;
 	    JSONArray jsonArray = new JSONArray();
 	    try {
-		    String sql = "SELECT * FROM matstock WHERE company = ? AND plant = ? AND LEFT(keydata, 3) IN (?) AND period = ?";
+		    String sql = "SELECT * FROM matstock WHERE company = ? AND plant = ? AND LEFT(keydata, 3) IN (?) AND ClosingMon = ?";
 		    pstmt = conn.prepareStatement(sql);
 		    pstmt.setString(1, DataList[0]);
 		    pstmt.setString(2, DataList[1]);
@@ -51,10 +51,10 @@ public class InfoLoadingDAO {
 		    while(rs.next()) {
 		    	JSONObject jsonObject = new JSONObject();
 		    	jsonObject.put("typeData", rs.getString("type"));
-		    	jsonObject.put("period", rs.getString("period"));
+		    	jsonObject.put("period", rs.getString("ClosingMon"));
 		    	jsonObject.put("delivery", rs.getString("delivery"));
-		    	jsonObject.put("itemno", rs.getString("itemno"));
-		    	jsonObject.put("item", rs.getString("item"));
+		    	jsonObject.put("itemno", rs.getString("Matcode"));
+		    	jsonObject.put("item", rs.getString("MatDesc"));
 			    jsonObject.put("spec", rs.getString("spec"));
 			    jsonObject.put("lot", rs.getString("lot"));
 			    jsonObject.put("stocktype", rs.getString("stocktype"));
@@ -97,7 +97,7 @@ public class InfoLoadingDAO {
 	    ResultSet rs = null;
 	    JSONArray jsonArray = new JSONArray();
 	    try {
-		    String sql = "SELECT * FROM matinput WHERE company = ? AND plant = ? AND LEFT(keydata, 3) IN (?) AND period = ?";
+		    String sql = "SELECT * FROM matinput WHERE company = ? AND plant = ? AND LEFT(keydata, 3) IN (?) AND ClosingMon = ?";
 		    pstmt = conn.prepareStatement(sql);
 		    pstmt.setString(1, DataList[0]);
 		    pstmt.setString(2, DataList[1]);
@@ -107,10 +107,10 @@ public class InfoLoadingDAO {
 		    while(rs.next()) {
 		    	JSONObject jsonObject = new JSONObject();
 		    	jsonObject.put("typeData", rs.getString("type"));
-		    	jsonObject.put("period", rs.getString("period"));
+		    	jsonObject.put("period", rs.getString("ClosingMon"));
 		    	jsonObject.put("delivery", rs.getString("delivery"));
-		    	jsonObject.put("itemno", rs.getString("itemno"));
-		    	jsonObject.put("item", rs.getString("item"));
+		    	jsonObject.put("itemno", rs.getString("MatCode"));
+		    	jsonObject.put("item", rs.getString("MatDesc"));
 			    jsonObject.put("spec", rs.getString("spec"));
 			    jsonObject.put("lot", rs.getString("lot"));
 			    jsonObject.put("stocktype", rs.getString("stocktype"));
@@ -146,7 +146,7 @@ public class InfoLoadingDAO {
 	    ResultSet rs = null;
 	    JSONArray jsonArray = new JSONArray();
 	    try {
-		    String sql = "SELECT * FROM matsplit WHERE company = ? AND plant = ? AND LEFT(keydata, 3) IN (?) AND period = ?";
+		    String sql = "SELECT * FROM matsplit WHERE company = ? AND plant = ? AND LEFT(keydata, 3) IN (?) AND ClosingMon = ?";
 		    pstmt = conn.prepareStatement(sql);
 		    pstmt.setString(1, DataList[0]);
 		    pstmt.setString(2, DataList[1]);
@@ -156,10 +156,10 @@ public class InfoLoadingDAO {
 		    while(rs.next()) {
 		    	JSONObject jsonObject = new JSONObject();
 		    	jsonObject.put("typeData", rs.getString("type"));
-		    	jsonObject.put("period", rs.getString("period"));
+		    	jsonObject.put("period", rs.getString("ClosingMon"));
 		    	jsonObject.put("delivery", rs.getString("delivery"));
-		    	jsonObject.put("itemno", rs.getString("itemno"));
-		    	jsonObject.put("item", rs.getString("item"));
+		    	jsonObject.put("itemno", rs.getString("MatCode"));
+		    	jsonObject.put("item", rs.getString("MatDesc"));
 			    jsonObject.put("spec", rs.getString("spec"));
 			    jsonObject.put("stocktype", rs.getString("stocktype"));
 			    jsonObject.put("weight", String.format("%.3f", rs.getDouble("weight")));
@@ -191,7 +191,7 @@ public class InfoLoadingDAO {
 	    ResultSet rs = null;
 	    JSONArray jsonArray = new JSONArray();
 	    try {
-		    String sql = "SELECT * FROM matdeli WHERE company = ? AND plant = ? AND LEFT(keydata, 3) IN (?) AND period = ?";
+		    String sql = "SELECT * FROM matdeli WHERE company = ? AND plant = ? AND LEFT(keydata, 3) IN (?) AND ClosingMon = ?";
 		    pstmt = conn.prepareStatement(sql);
 		    pstmt.setString(1, DataList[0]);
 		    pstmt.setString(2, DataList[1]);
@@ -201,10 +201,10 @@ public class InfoLoadingDAO {
 		    while(rs.next()) {
 		    	JSONObject jsonObject = new JSONObject();
 		    	jsonObject.put("typeData", rs.getString("type"));
-		    	jsonObject.put("period", rs.getString("period"));
+		    	jsonObject.put("period", rs.getString("ClosingMon"));
 		    	jsonObject.put("delivery", rs.getString("delivery"));
-		    	jsonObject.put("itemno", rs.getString("itemno"));
-		    	jsonObject.put("item", rs.getString("item"));
+		    	jsonObject.put("itemno", rs.getString("MatCode"));
+		    	jsonObject.put("item", rs.getString("MatDesc"));
 			    jsonObject.put("spec", rs.getString("spec"));
 			    jsonObject.put("lot", rs.getString("lot"));
 			    jsonObject.put("stocktype", rs.getString("stocktype"));
