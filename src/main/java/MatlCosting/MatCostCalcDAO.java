@@ -1,5 +1,6 @@
 package MatlCosting;
 
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -77,11 +78,11 @@ public class MatCostCalcDAO {
 				GKRegPstmt.setString(4, ComCodeVal);
 				GKRegPstmt.executeUpdate();
 				
-				sql = "SELECT * FROM sumrawmamt WHERE closingMon = ? AND comcode = ?";
+				sql = "SELECT * FROM sumrawmamt WHERE closingMon = ? AND comcode = ?"; 
 				pstmt = conn.prepareStatement(sql);
 				pstmt.setString(1, PastVal);
 				pstmt.setString(2, ComCodeVal);
-				ResultSet rs = pstmt.executeQuery();
+				ResultSet rs = pstmt.executeQuery(); // 원자재원가테이블에 데이터 조회
 				
 				while(rs.next()) {
 				    SumTableBeginQty = 0.0; // SumTable 기초수량
@@ -116,6 +117,7 @@ public class MatCostCalcDAO {
 						    + "WHERE s.closingMon = ? "
 						    + "AND s.comcode = ? "
 						    + "AND s.matcode = ? "
+						    + "AND s.matdesc = ? "
 						    + "AND s.mattype = 'RAWM' "
 						    + "GROUP BY "
 						    + "s.closingMon, "
@@ -123,28 +125,31 @@ public class MatCostCalcDAO {
 						    + "s.matcode, "
 						    + "s.matdesc, "
 						    + "s.mattype, "
-						    + "s.spec";
+						    + "s.spec"; 
 					PreparedStatement MDSS_Pstmt = conn.prepareStatement(MatDataSearchSql);
 					MDSS_Pstmt.setString(1, CurrVal);
 					MDSS_Pstmt.setString(2, ComCodeVal);
 					MDSS_Pstmt.setString(3, rs.getString("matcode"));
+					MDSS_Pstmt.setString(4, rs.getString("matdesc"));
+					
 					ResultSet MSDD_Rs = MDSS_Pstmt.executeQuery();
 					if(MSDD_Rs.next()) {
-						SumTableBeginQty = MSDD_Rs.getDouble("beginStocqty_sum");
-						beginStocqty = rs.getDouble("EndStocQty");
-						BsAmt = rs.getDouble("EsAmt");
-						GrTransacQty = MSDD_Rs.getDouble("GrTransacQty_sum");
+						SumTableBeginQty = MSDD_Rs.getDouble("beginStocqty_sum"); // 수불수량합계테이블에서 가져온 결산하는 달의 기초 수량 202504
+						beginStocqty = rs.getDouble("EndStocQty");  // 원자재원가테이블에서 가져온 결산전 달의 기말 수량 202503  / 269.28
+						BsAmt = rs.getDouble("EsAmt");  // 1831104.00
+						GrTransacQty = MSDD_Rs.getDouble("GrTransacQty_sum"); // 0
 						// 입고금액 입력하는 부분
 						String PriceSql = "SELECT movetype, closingmon, matcode, matdesc, spec, lotnum, mattype, quantity, SUM(amount) as SumAmount "
-							+ "FROM InvenLogl WHERE closingmon = ? AND matcode = ? AND LEFT(movetype, 2) = ? AND mattype = ? AND comcode = ? "
+							+ "FROM InvenLogl WHERE closingmon = ? AND matcode = ? AND matdesc = ? AND LEFT(movetype, 2) = ? AND mattype = ? AND comcode = ? "
 							+ "GROUP BY matcode, matdesc "
 							+ "HAVING SUM(amount) > 0";
 						PreparedStatement Price_Pstmt = conn.prepareStatement(PriceSql);
 						Price_Pstmt.setString(1, CurrVal);
 						Price_Pstmt.setString(2, rs.getString("matcode"));
-						Price_Pstmt.setString(3, "GR");
-						Price_Pstmt.setString(4, "RAWM");
-						Price_Pstmt.setString(5, ComCodeVal);
+						Price_Pstmt.setString(3, rs.getString("matdesc"));
+						Price_Pstmt.setString(4, "GR");
+						Price_Pstmt.setString(5, "RAWM");
+						Price_Pstmt.setString(6, ComCodeVal);
 						ResultSet Price_Rs = Price_Pstmt.executeQuery();
 						if(Price_Rs.next()) {
 							GrPurAmt = Price_Rs.getDouble("SumAmount");
@@ -155,20 +160,22 @@ public class MatCostCalcDAO {
 						// 출고수량 계산하는 부분
 						String GiQuantity_Sql = "SELECT movetype, closingmon, matcode, matdesc, spec, lotnum, mattype, SUM(quantity) as SumQuantity "
 								+ "FROM InvenLogl "
-								+ "WHERE closingmon = ? AND matcode = ? AND LEFT(movetype, 2) = ? AND mattype = ? AND comcode = ? "
+								+ "WHERE closingmon = ? AND matcode = ? AND matdesc = ? AND LEFT(movetype, 2) = ? AND mattype = ? AND comcode = ? "
 								+ "GROUP BY matcode, matdesc";
 						PreparedStatement GiQuantity_Pstmt = conn.prepareStatement(GiQuantity_Sql);
 						GiQuantity_Pstmt.setString(1, CurrVal);
 						GiQuantity_Pstmt.setString(2, rs.getString("matcode"));
-						GiQuantity_Pstmt.setString(3, "GI");
-						GiQuantity_Pstmt.setString(4, "RAWM");
-						GiQuantity_Pstmt.setString(5, ComCodeVal);
+						GiQuantity_Pstmt.setString(3, rs.getString("matdesc"));
+						GiQuantity_Pstmt.setString(4, "GI");
+						GiQuantity_Pstmt.setString(5, "RAWM");
+						GiQuantity_Pstmt.setString(6, ComCodeVal);
 						ResultSet GiQuantity_Rs = GiQuantity_Pstmt.executeQuery();
 						if(GiQuantity_Rs.next()) {
 							GiTransacQty = GiQuantity_Rs.getDouble("SumQuantity");
 						}
 
 						EndStocQty = beginStocqty + GrTransacQty - GiTransacQty;
+						
 						double denominator = beginStocqty + GrTransacQty;
 						if (denominator != 0) {
 						    UnitPrice = (BsAmt + GrSumAmt) / denominator;
@@ -201,19 +208,18 @@ public class MatCostCalcDAO {
 						if(Double.compare(beginStocqty, SumTableBeginQty) == 0) { // 실수타입을 비교하는 코드 Double.compare(실수, 실수), '=='를 쓰면 같은 값이라도 오차가 발생할 수 있어 실수를 비교할 때 사용하면 안됨
 							Insert_Pstmt.setString(20, "X"); // -> 문제 없음
 						}else {
-							System.out.println("Bad");
+							System.out.println("자재코드 : " + rs.getString("matcode") + "(" + rs.getString("matdesc") + "), " + beginStocqty + ", " + SumTableBeginQty);
 							Insert_Pstmt.setString(20, "O"); // -> 문제 있음
 						}
 						Insert_Pstmt.executeUpdate();
-						
-					}	
+					}
 				}
-//				String GIUpdateResult = GICalcResult(CurrVal);
-//				if(GIUpdateResult.equals("Yes")) {
-//					result = "Yes";
-//				}else {
-//					result = "No";
-//				}
+				String GIUpdateResult = GICalcResult(CurrVal);
+				if(GIUpdateResult.equals("Yes")) {
+					result = "Yes";
+				}else {
+					result = "No";
+				}
 			}
 			
 		} catch (ParseException e) {
@@ -228,10 +234,11 @@ public class MatCostCalcDAO {
 	}
 	
 	public String GICalcResult(String MonthDate) {
+		System.out.println("시작");
 		String Result = "No";
 		String CurrDate = MonthDate; // 지금 날짜
 		String MatCode = null; // 원자재 코드
-		int MatPrice = 0; // SumRawmTalbe에 저장된 단가
+		double MatPrice = 0; // SumRawmTalbe에 저장된 단가
 		int TotalGiAmt = 0; // SumRawmTalbe에 저장된 최종 값
 		int TotalPrice = 0;
 		ResultSet rs = null;
@@ -242,7 +249,7 @@ public class MatCostCalcDAO {
 			rs = pstmt.executeQuery();
 			while(rs.next()) {
 				MatCode = rs.getString("matcode"); // 자재코드
-				MatPrice = (int)Math.round(rs.getDouble("UnitPrice")); // 단가
+				MatPrice = rs.getDouble("UnitPrice"); // 단가
 				TotalGiAmt = rs.getInt("GiAmt"); // SumRawmTalbe에 저장된 출고 값
 				
 				String LineGiSearchSql = "SELECT * FROM InvenLogl WHERE LEFT(movetype,2) = ? AND mattype = ? AND closingmon = ? AND matcode = ?";
@@ -254,13 +261,13 @@ public class MatCostCalcDAO {
 				ResultSet LineGISearchSql_Pstmt_Rs = LineGiSearchSql_Pstmt.executeQuery();
 				TotalPrice = 0;
 				while(LineGISearchSql_Pstmt_Rs.next()) {
-					Double GiQty = LineGISearchSql_Pstmt_Rs.getDouble("quantity");
+					double GiQty = LineGISearchSql_Pstmt_Rs.getDouble("quantity");
 					String GIKeyValue = LineGISearchSql_Pstmt_Rs.getString("keyvalue");
 					int GiAmount = (int)Math.round(GiQty * MatPrice); // SumRawmTalbe에 저장된 단가와 Line테이블에 있는 수량의 곱
 					
 					String LineGIUpdateSql = "UPDATE InvenLogl SET amount = ? WHERE closingmon = ? AND matcode = ? AND keyvalue = ?";
 					PreparedStatement LineGIUpdateSql_Pstmt = conn.prepareStatement(LineGIUpdateSql);
-					LineGIUpdateSql_Pstmt.setInt(1, GiAmount);
+					LineGIUpdateSql_Pstmt.setBigDecimal(1, new BigDecimal(GiAmount));
 					LineGIUpdateSql_Pstmt.setString(2, CurrDate);
 					LineGIUpdateSql_Pstmt.setString(3, MatCode);
 					LineGIUpdateSql_Pstmt.setString(4, GIKeyValue);
@@ -281,13 +288,13 @@ public class MatCostCalcDAO {
 					ResultSet RenewSearchSql_Pstmt_Rs = RenewSearchSql_Pstmt.executeQuery();
 					if(RenewSearchSql_Pstmt_Rs.next()) {
 						String UpdateTgtKeyValue = RenewSearchSql_Pstmt_Rs.getString("keyvalue");
-						int pdateTgtAmount = RenewSearchSql_Pstmt_Rs.getInt("amount");
+						double pdateTgtAmount = RenewSearchSql_Pstmt_Rs.getDouble("amount");
 						String RenewUpdateSql = "UPDATE InvenLogl SET amount = ? WHERE closingmon = ? AND matcode = ? AND keyvalue = ?";
 						PreparedStatement RenewUpdateSql_Pstmt = conn.prepareStatement(RenewUpdateSql);
 						if(Gap > 0) {
-							RenewUpdateSql_Pstmt.setInt(1, pdateTgtAmount + AbsGap);
+							RenewUpdateSql_Pstmt.setBigDecimal(1, new BigDecimal(pdateTgtAmount + AbsGap));
 						}else {
-							RenewUpdateSql_Pstmt.setInt(1, pdateTgtAmount - AbsGap);
+							RenewUpdateSql_Pstmt.setBigDecimal(1, new BigDecimal(pdateTgtAmount - AbsGap));
 						}
 						RenewUpdateSql_Pstmt.setString(2, CurrDate);
 						RenewUpdateSql_Pstmt.setString(3, MatCode);

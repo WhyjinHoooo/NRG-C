@@ -60,7 +60,7 @@ public class UploadDAO {
             for (int i = 0; i < csvData.size(); i++) {
                 String[] DataList = csvData.get(i);
                 for (int j = 0; j < DataList.length; j++) {
-                    pstmt.setString(j + 1, DataList[j].trim());
+                    pstmt.setString(j + 1, DataList[j].trim().replace("\"", ""));
                 }
                 pstmt.setString(21, "PUR" + DataList[1].trim() + ".txt");
                 pstmt.setString(22, "PUR" + DataList[1].trim() + String.format("%04d", i + 1));
@@ -88,7 +88,7 @@ public class UploadDAO {
             for (int i = 0; i < csvData.size(); i++) {
                 String[] DataList = csvData.get(i);
                 for (int j = 0; j < DataList.length; j++) {
-                    pstmt.setString(j + 1, DataList[j].trim());
+                    pstmt.setString(j + 1, DataList[j].trim().replace("\"", ""));
                 }
                 pstmt.setString(18, "BFG" + DataList[1].trim() + ".txt");
                 pstmt.setString(19, "BFG" + DataList[1].trim() + String.format("%04d", i + 1));
@@ -116,7 +116,7 @@ public class UploadDAO {
                 String[] DataList = csvData.get(i);
                 for (int j = 0; j < DataList.length; j++) {
                 	//System.out.println("DataList[" + j + "] : " + DataList[j].trim());
-                    pstmt.setString(j + 1, DataList[j].trim());
+                    pstmt.setString(j + 1, DataList[j].trim().replace("\"", ""));
                 }
                 pstmt.setString(16, "MGR" + DataList[1].trim() + ".txt");
                 pstmt.setString(17, "MGR" + DataList[1].trim() + String.format("%04d", i + 1));
@@ -144,7 +144,7 @@ public class UploadDAO {
             for (int i = 0; i < csvData.size(); i++) {
                 String[] DataList = csvData.get(i);
                 for (int j = 0; j < DataList.length; j++) {
-                    pstmt.setString(j + 1, DataList[j].trim());
+                    pstmt.setString(j + 1, DataList[j].trim().replace("\"", ""));
                 }
                 pstmt.setString(18, "SDG" + DataList[1].trim() + ".txt");
                 pstmt.setString(19, "SDG" + DataList[0].trim() + String.format("%04d", i + 1));
@@ -171,8 +171,7 @@ public class UploadDAO {
             for (int i = 0; i < csvData.size(); i++) {
                 String[] DataList = csvData.get(i);
                 for (int j = 0; j < DataList.length; j++) {
-                	//System.out.println(DataList[j].trim());
-                    pstmt.setString(j + 1, DataList[j].trim());
+                    pstmt.setString(j + 1, DataList[j].trim().replace("\"", ""));
                 }
                 pstmt.setString(23, file);
                 pstmt.setString(24, file.substring(0, 9) + String.format("%04d", i + 1));
@@ -200,7 +199,7 @@ public class UploadDAO {
             for (int i = 0; i < csvData.size(); i++) {
                 String[] DataList = csvData.get(i);
                 for (int j = 0; j < DataList.length; j++) {
-                    pstmt.setString(j + 1, DataList[j].trim());
+                    pstmt.setString(j + 1, DataList[j].trim().replace("\"", ""));
                 }
                 pstmt.setString(20, fileName);
                 pstmt.setString(21, fileName.substring(0, 9) + String.format("%04d", i + 1));

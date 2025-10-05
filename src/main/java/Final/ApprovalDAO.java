@@ -84,7 +84,7 @@ public class ApprovalDAO {
 	    			    "INSERT INTO InvenLogl (docnum, seq, movetype, closingmon, transactiondate, matcode, matdesc, spec, lotnum, mattype, quantity, amount, " +
 	    			    "storcode, stordesc, procuordnum, vendcode, vendDesc, DeleteYN, plant, comcode, keyvalue, RegistOX) " +
 	    			    "SELECT ?, ROW_NUMBER() OVER (ORDER BY (SELECT 1)), matstock.type, ?, matstock.delivery, matstock.Matcode, matstock.MatDesc, matstock.spec, matstock.lot, matstock.stocktype, " +
-	    			    "matstock.weight, matstock.amount, matstock.whcode, matstock.warehouse, matstock.pono, matstock.vendor, matstock.vendorname, ?, " +
+	    			    "matstock.weight, ROUND(matstock.amount, 2), matstock.whcode, matstock.warehouse, matstock.pono, matstock.vendor, matstock.vendorname, ?, " +
 	    			    "matstock.plant, matstock.company, CONCAT(?, LPAD(ROW_NUMBER() OVER (ORDER BY (SELECT 1)),4,'0')), ? " +
 	    			    "FROM matstock " +
 	    			    "WHERE document = ?";
@@ -157,7 +157,7 @@ public class ApprovalDAO {
 	    			    "INSERT INTO InvenLogl (docnum, seq, movetype, closingmon, transactiondate, matcode, matdesc, spec, lotnum, mattype, quantity, " +
 	    			    "storcode, stordesc, process, processDesc, workordnum, DeleteYN, plant, comcode, keyvalue, RegistOX, CostingLv) " +
 	    			    "SELECT ?, ROW_NUMBER() OVER (ORDER BY (SELECT 1)), matinput.type, ?, matinput.delivery, matinput.MatCode, matinput.MatCode, matinput.spec, matinput.lot, matinput.stocktype, " +
-	    			    "matinput.amount, matinput.whcode, matinput.warehouse, matinput.process, matinput.processdes, matinput.pono, ?, " +
+	    			    "ROUND(matinput.amount, 2), matinput.whcode, matinput.warehouse, matinput.process, matinput.processdes, matinput.pono, ?, " +
 	    			    "matinput.plant, matinput.company, CONCAT(?, LPAD(ROW_NUMBER() OVER (ORDER BY (SELECT 1)),4,'0')), ?, matinput.CostingLev " +
 	    			    "FROM matinput " +
 	    			    "WHERE document = ?";
