@@ -164,7 +164,8 @@ $(document).ready(function(){
 		    	}
 	    	});
 		}
-	});
+	}); // 검색 버튼을 클릭하면 시작되는 이벤트 함수의 끝
+	
 	$('.OkBtn').click(function(){
 		$('.AID').each(function(){
 		    var name = $(this).attr('name');

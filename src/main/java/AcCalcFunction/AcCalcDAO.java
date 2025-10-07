@@ -371,8 +371,8 @@ public class AcCalcDAO {
 		SelectSql = "SELECT * FROM processcosttable WHERE ClosingMon = ? AND ProcessCode = ? AND InOutType = ? ORDER BY CostingLev";
 		try {
 			PreparedStatement SelectPstmt = conn.prepareStatement(SelectSql);
-			SelectPstmt.setString(1, ClosingMon);
-			SelectPstmt.setString(2, "OP10");
+			SelectPstmt.setString(1, ClosingMon); // 결산하는 달 예: 202504
+			SelectPstmt.setString(2, "OP10"); // 교반공
 			SelectPstmt.setString(3, "OC");
 			ResultSet SelectRs = SelectPstmt.executeQuery();
 			while(SelectRs.next()) {

@@ -192,19 +192,29 @@ public class MatCostCalcDAO {
 						Insert_Pstmt.setString(4, rs.getString("matdesc"));
 						Insert_Pstmt.setString(5, "RAWM");
 						Insert_Pstmt.setString(6, rs.getString("spec"));
-						Insert_Pstmt.setDouble(7, beginStocqty);
-						Insert_Pstmt.setDouble(8, BsAmt);
-						Insert_Pstmt.setDouble(9, GrTransacQty);
-						Insert_Pstmt.setDouble(10, GrPurAmt);
-						Insert_Pstmt.setDouble(11, GrSubAmt);
-						Insert_Pstmt.setDouble(12, GrSumAmt);
-						Insert_Pstmt.setDouble(13, GrTransferQty);
-						Insert_Pstmt.setDouble(14, GiTransferQty);
-						Insert_Pstmt.setDouble(15, GiTransacQty);
-						Insert_Pstmt.setDouble(16, BsAmt + GrSumAmt - EsAmt);
-						Insert_Pstmt.setDouble(17, EndStocQty);
-						Insert_Pstmt.setDouble(18, EsAmt);
-						Insert_Pstmt.setDouble(19, UnitPrice);
+						Insert_Pstmt.setBigDecimal(7, new BigDecimal(beginStocqty));
+						Insert_Pstmt.setBigDecimal(8, new BigDecimal(BsAmt));
+						Insert_Pstmt.setBigDecimal(9, new BigDecimal(GrTransacQty));
+						Insert_Pstmt.setBigDecimal(10, new BigDecimal(GrPurAmt));
+						Insert_Pstmt.setBigDecimal(11, new BigDecimal(GrSubAmt));
+						Insert_Pstmt.setBigDecimal(12, new BigDecimal(GrSumAmt));
+						Insert_Pstmt.setBigDecimal(13, new BigDecimal(GrTransferQty));
+						Insert_Pstmt.setBigDecimal(14, new BigDecimal(GiTransferQty));
+						Insert_Pstmt.setBigDecimal(15, new BigDecimal(GiTransacQty));
+						
+						BigDecimal Bs = BigDecimal.valueOf(BsAmt);
+						BigDecimal Gr = BigDecimal.valueOf(GrSumAmt);
+						BigDecimal Es = BigDecimal.valueOf(EsAmt);
+						BigDecimal diff = Bs.add(Gr).subtract(Es);
+						
+						if (diff.compareTo(BigDecimal.ZERO) == 0) {
+						    Insert_Pstmt.setBigDecimal(16, Bs.add(Gr));
+						} else {
+						    Insert_Pstmt.setBigDecimal(16, diff);
+						}
+						Insert_Pstmt.setBigDecimal(17, new BigDecimal(EndStocQty));
+						Insert_Pstmt.setBigDecimal(18, new BigDecimal(EsAmt));
+						Insert_Pstmt.setBigDecimal(19, new BigDecimal(UnitPrice));
 						if(Double.compare(beginStocqty, SumTableBeginQty) == 0) { // 실수타입을 비교하는 코드 Double.compare(실수, 실수), '=='를 쓰면 같은 값이라도 오차가 발생할 수 있어 실수를 비교할 때 사용하면 안됨
 							Insert_Pstmt.setString(20, "X"); // -> 문제 없음
 						}else {

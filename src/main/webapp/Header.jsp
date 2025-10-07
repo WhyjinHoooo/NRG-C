@@ -114,7 +114,7 @@ $(document).ready(function(){
                		<li><a class="dropdown-item" href="#">미착부대비 정산등록</a></li>
                		<li><a class="dropdown-item" href="#">축로 및 재고 금액 생성</a></li>
               	</ul>
-              	<a class="dropdown-item dropdown-toggle" href="#">자재수불 보회</a>
+              	<a class="dropdown-item dropdown-toggle" href="#">자재수불 조회</a>
             	<ul class="dropdown-menu">
                		<li><a class="dropdown-item " href="${contextPath}/StockMScreen/MatInven.jsp">수량기준 원자재 수불표</a></li>
                		<li><a class="dropdown-item" href="#">입출고유형별 발생현황</a></li>
