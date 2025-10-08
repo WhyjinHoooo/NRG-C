@@ -138,7 +138,7 @@ $(document).ready(function(){
 			        }
 				},
 				error: function(jqXHR, textStatus, errorThrown){
-					alert('오류 발생: ' + textStatus + ', ' + errorThrown);
+					alert('조회 오류 발생: ' + textStatus + ', ' + errorThrown);
 		    	}
 	    	});
 		}
@@ -170,7 +170,7 @@ $(document).ready(function(){
 					console.log(data.result);
 				},
 				error: function(jqXHR, textStatus, errorThrown){
-					alert('오류 발생: ' + textStatus + ', ' + errorThrown);
+					alert('분배 오류 발생: ' + textStatus + ', ' + errorThrown);
 		    	}
 	    	});
 		}

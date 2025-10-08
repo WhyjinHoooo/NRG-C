@@ -4,15 +4,20 @@ import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.sql.DataSource;
 
+import org.apache.tomcat.jni.Local;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import com.mysql.cj.x.protobuf.MysqlxPrepare.Prepare;
+import com.mysql.cj.xdevapi.Result;
 
 public class GoodsCostAllDao {
 	private Connection conn;
@@ -29,6 +34,10 @@ public class GoodsCostAllDao {
             e.printStackTrace();
         }
     }
+	private String Cd; // 기업코드
+	private String Pd; // 공장코드
+	private String Cm; // 결산월
+	
 	public String DataLoading(JSONObject jsonObj) {
 		// TODO Auto-generated method stub
 		connDB();
@@ -39,6 +48,9 @@ public class GoodsCostAllDao {
 	        DataList[i] = jsonObj.has(keyOrder[i]) ? jsonObj.get(keyOrder[i]).toString() : "";
 	        System.out.println(DataList[i]);
 	    }
+		Cd = DataList[0].trim();
+		Pd = DataList[1].trim();
+		Cm = DataList[2].trim();
 		ResultSet rs = null;
 	    JSONArray jsonArray = new JSONArray();
 	    try {
@@ -46,9 +58,9 @@ public class GoodsCostAllDao {
 	    			+ "SUM(WipMatCost) as SumOfWMC, SUM(WipMnaufCost) as SumOfWMfC, SUM(FertMatCost) as SumOfFMC, SUM(FertManufCost) as SumOfFMfC "
 	    			+ "FROM processcosttable WHERE ComCode = ? AND PlantCode = ? AND ClosingMon = ? GROUP BY WorkOrd ORDER BY CostingLev ASC";
 	    	pstmt = conn.prepareStatement(SelectSql);
-	    	pstmt.setString(1, DataList[0].trim());
-	    	pstmt.setString(2, DataList[1].trim());
-	    	pstmt.setString(3, DataList[2].trim());
+	    	pstmt.setString(1, Cd);
+	    	pstmt.setString(2, Pd);
+	    	pstmt.setString(3, Cm);
 	    	rs = pstmt.executeQuery();
 	    	while(rs.next()) {
 	    		JSONObject jsonObject = new JSONObject();
@@ -85,489 +97,227 @@ public class GoodsCostAllDao {
 	        DataList[i] = jsonObj.has(keyOrder[i]) ? jsonObj.get(keyOrder[i]).toString() : "";
 	        System.out.println(DataList[i]);
 	    }
+		Cd = DataList[0].trim();
+		Pd = DataList[1].trim();
+		Cm = DataList[2].trim();
 		ResultSet rs = null;
-	    JSONArray jsonArray = new JSONArray();
 		try {
-			
-			String SelectSql = "SELECT ClosingMon, ComCode, PlantCode, WorkType, CostingLev, WorkOrd, "
-	    			+ "SUM(FertMatCost) as SumOfFMC, SUM(FertManufCost) as SumOfFMfC "
-	    			+ "FROM processcosttable WHERE ComCode = ? AND PlantCode = ? AND ClosingMon = ? GROUP BY WorkOrd ORDER BY CostingLev ASC";
-	    	pstmt = conn.prepareStatement(SelectSql);
-	    	pstmt.setString(1, DataList[0].trim());
-	    	pstmt.setString(2, DataList[1].trim());
-	    	pstmt.setString(3, DataList[2].trim());
-	    	ResultSet SelectRs = pstmt.executeQuery();
-	    	while(SelectRs.next()) {
-	    		int SumOfFMC = SelectRs.getInt("SumOfFMC"); // 공정원가테이블에 저장된 재공재료비
-	    		int SumOfFMfC = SelectRs.getInt("SumOfFMfC"); // 공정원가테이블에 저장된 재공가공비
-	    		String WorkOrd = SelectRs.getString("WorkOrd");
-	    		
-	    		String LineGrSearchSql = "SELECT * FROM invenlogl_backup WHERE workordnum = ? AND LEFT(movetype, 2) = ?";
-	    		PreparedStatement LineGrSearchPstmt = conn.prepareStatement(LineGrSearchSql);
-	    		LineGrSearchPstmt.setString(1, WorkOrd);
-	    		LineGrSearchPstmt.setString(2, "GR");
-	    		ResultSet LineGrSearchRs = LineGrSearchPstmt.executeQuery();
-	    		double SumOfAmount = 0.0;
-	    		while(LineGrSearchRs.next()) {
-	    			SumOfAmount += LineGrSearchRs.getDouble("quantity");
-	    		}
-	    		String CP_LineGrSearchSql = "SELECT * FROM invenlogl_backup WHERE workordnum = ? AND LEFT(movetype, 2) = ?";
-	    		PreparedStatement CP_LineGrSearchPstmt = conn.prepareStatement(CP_LineGrSearchSql);
-	    		CP_LineGrSearchPstmt.setString(1, WorkOrd);
-	    		CP_LineGrSearchPstmt.setString(2, "GR");
-	    		ResultSet CP_LineGrSearchRs = CP_LineGrSearchPstmt.executeQuery();
-	    		while(CP_LineGrSearchRs.next()) {
-	    			String keyValue = CP_LineGrSearchRs.getString("keyvalue");
-	    			double Qty = CP_LineGrSearchRs.getDouble("quantity");
-	    			int EachAmount = (int)Math.round(Qty * SumOfFMC / SumOfAmount);
-	    			int EachAmtOhc = (int)Math.round(Qty * SumOfFMfC / SumOfAmount);
-	    			
-	    			String LineUpdateSql = "UPDATE invenlogl_backup SET amount = ?, amtOhC = ? WHERE keyvalue = ?";
-	    			PreparedStatement LineUpPstmt = conn.prepareStatement(LineUpdateSql);
-	    			LineUpPstmt.setInt(1, EachAmount);
-	    			LineUpPstmt.setInt(2, EachAmtOhc);
-	    			LineUpPstmt.setString(3, keyValue);
-	    			LineUpPstmt.executeUpdate();
-	    		}
-	    		String LineGrSumChkSql = "SELECT SUM(amount) as SumAmount, sum(amtOhC) as SumAmtOhc FROM invenlogl_backup WHERE workordnum = ? AND LEFT(movetype, 2) = ?";
-	    		PreparedStatement LineGrSumChkPstmt = conn.prepareStatement(LineGrSumChkSql);
-	    		LineGrSumChkPstmt.setString(1, WorkOrd);
-	    		LineGrSumChkPstmt.setString(2, "GR");
-	    		ResultSet LineGrSumChkRs = LineGrSumChkPstmt.executeQuery();
-	    		if(LineGrSumChkRs.next()) {
-	    			int SumAmount = LineGrSumChkRs.getInt("SumAmount"); // 라인테이블에 저장된 재료비의 합계
-	    			int SumAmtOhc = LineGrSumChkRs.getInt("SumAmtOhc"); // 라인테이블에 저장된 가공비의 합계
-	    			
-	    			int SumAmtGap = SumAmount - SumOfFMC;
-	    			int SumAmtOhcGap = SumAmtOhc - SumOfFMfC;
-	    			
-	    			String LineItemFindSql = "SELECT * FROM invenlogl_backup WHERE workordnum = ? AND LEFT(movetype, 2) = ?";
-	    			PreparedStatement LineItemPstmt = conn.prepareStatement(LineItemFindSql);
-	    			LineItemPstmt.setString(1, WorkOrd);
-	    			LineItemPstmt.setString(2, "GR");
-	    			ResultSet LineItemRs = LineItemPstmt.executeQuery();
-	    			if(LineItemRs.next()) {
-	    				String KeyValue = LineItemRs.getString("keyvalue");
-	    				int ItemAmt = LineItemRs.getInt("amount");
-	    				int ItemAmtOhC = LineItemRs.getInt("amtOhC");
-	    				
-	    				ItemAmt -= SumAmtGap;
-	    				ItemAmtOhC -= SumAmtOhcGap;
-	    				
-	    				String LineItemUpSql = "UPDATE invenlogl_backup SET amount = ?, amtOhC = ? WHERE keyvalue = ?";
-	    				PreparedStatement LineItemUpPstmt = conn.prepareStatement(LineItemUpSql);
-	    				LineItemUpPstmt.setInt(1, ItemAmt);
-	    				LineItemUpPstmt.setInt(2, ItemAmtOhC);
-	    				LineItemUpPstmt.setString(3, KeyValue);
-	    				LineItemUpPstmt.executeUpdate();
-	    			}
-	    		}
-	    	} // 공정원가테이블에 저장된 데이터의 래벨(CostingLev) 당 지정된 workord에 따라 라인테이블에 재료비와 가공비에 배부 
-	    	
-	    	
-	    	System.out.println("끝");
-    		String PrimCostingGrSql = "INSERT INTO productcost (closingmon, comcode, plant, matcode, matdesc, spec, matType, GR_Qty, GR_MatC, GR_ExpC, KeyVal) "
-    				+ "SELECT closingmon, comcode, plant, matcode, matdesc, spec, mattype, "
-    				+ "SUM(quantity) as S_Qua, SUM(amount) as S_Amt, SUM(amtOhC) as S_AmtOhC, "
-    				+ "CONCAT(invenlogl_backup.closingmon, invenlogl_backup.matcode)"
-    				+ "FROM invenlogl_backup WHERE LEFT(movetype, 2) = ? AND closingmon = ? GROUP BY matcode";
-    		PreparedStatement PrimCostingGrPstmt = conn.prepareStatement(PrimCostingGrSql);
-    		PrimCostingGrPstmt.setString(1, "GR");
-    		PrimCostingGrPstmt.setString(2, DataList[2].trim());
-    		PrimCostingGrPstmt.executeUpdate();
-    		
-    		String PastPresentSumSql_01 = "SELECT * FROM productcost WHERE closingmon = ?";
-    		PreparedStatement PastPresentPstmt_01 = conn.prepareStatement(PastPresentSumSql_01);
-    		String PastClosingDate = null;
-    		int PresentClosingDate_Y = Integer.parseInt(DataList[2].trim().substring(0, 4));
-    		int PresentClosingDate_M = Integer.parseInt(DataList[2].trim().substring(4));
-    		if(PresentClosingDate_M == 1) {
-    			PresentClosingDate_M = 12;
-    			PresentClosingDate_Y -= 1;
-    		}else {
-    			PresentClosingDate_M -= 1;
-    		}
-			PastClosingDate = PresentClosingDate_Y + String.format("%02d", PresentClosingDate_M);
-			PastPresentPstmt_01.setString(1, PastClosingDate);
-			ResultSet PastRs = PastPresentPstmt_01.executeQuery();
-			while(PastRs.next()) {
-				String ItemCode = PastRs.getString("matcode");
-				double P_ES_Qty = PastRs.getDouble("ES_Qty");
-				int P_ES_MatC = PastRs.getInt("ES_MatC");
-				int P_ES_LabC = PastRs.getInt("ES_LabC");
-				int P_ES_ExpC = PastRs.getInt("ES_ExpC");
-				String PastPresentSumSql_02 = "SELECT * FROM productcost WHERE closingmon = ? AND matcode = ?";
-				PreparedStatement PastPresentPstmt_02 = conn.prepareStatement(PastPresentSumSql_02);
-				PastPresentPstmt_02.setString(1, DataList[2].trim());
-				PastPresentPstmt_02.setString(2, ItemCode);
-				ResultSet PresentRs = PastPresentPstmt_02.executeQuery();
-				String PresentUpSql = null;
-				PreparedStatement PresentUpPstmt = null;
-				if(PresentRs.next()) {
-					PresentUpSql = "UPDATE productcost SET BS_Qty = ?, BS_MatC = ?, BS_LabC = ?, BS_ExpC = ? WHERE closingmon = ? AND matcode = ?";
-					PresentUpPstmt = conn.prepareStatement(PresentUpSql);
-					PresentUpPstmt.setDouble(1, P_ES_Qty);
-					PresentUpPstmt.setInt(2, P_ES_MatC);
-					PresentUpPstmt.setInt(3, P_ES_LabC);
-					PresentUpPstmt.setInt(4, P_ES_ExpC);
-					PresentUpPstmt.setString(5, DataList[2].trim());
-					PresentUpPstmt.setString(6, ItemCode);
-					PresentUpPstmt.executeUpdate();
-				}else {
-					PresentUpSql = "INSERT INTO productcost (closingmon, comcode, plant, matcode, matdesc, spec, matType, BS_Qty, BS_MatC, BS_LabC, BS_ExpC, "
-							+ "ES_Qty, ES_MatC, ES_LabC, ES_ExpC, KeyVal) "
-							+ "SELECT ?, comcode, plant, matcode, matdesc, spec, matType, ES_Qty, ES_MatC, ES_LabC, ES_ExpC, "
-							+ "ES_Qty, ES_MatC, ES_LabC, ES_ExpC, CONCAT(?, matcode) "
-							+ "FROM productcost WHERE closingmon = ? AND matcode = ?";
-					PresentUpPstmt = conn.prepareStatement(PresentUpSql);
-					PresentUpPstmt.setString(1, DataList[2].trim());
-					PresentUpPstmt.setString(2, DataList[2].trim());
-					PresentUpPstmt.setString(3, PastClosingDate);
-					PresentUpPstmt.setString(4, ItemCode);
-					PresentUpPstmt.executeUpdate();
-				}
-			} // 원가라인테이블에서 제품(생산)원가라인테이블로 데이터를 저장할 때, 제품원가테이블에 저장된 전달 데이터와 비교해서 신규 데이터(자재)면 새로 저장 / 반대로 데이터(자제)가 존재하면 전달 데이터를 결산하는 데이터의 기초부분에 업데이트
-			
-
-    		String PrimCostingItemSearchSql = "SELECT * FROM productcost WHERE closingmon = ?";
-    		PreparedStatement PrimCostingItemSearchPstmt = conn.prepareStatement(PrimCostingItemSearchSql);
-    		PrimCostingItemSearchPstmt.setString(1, DataList[2].trim());
-    		ResultSet PrimCostingItemSearchRs = PrimCostingItemSearchPstmt.executeQuery();
-    		while(PrimCostingItemSearchRs.next()) {
-    			String ItemCode = PrimCostingItemSearchRs.getString("matcode");
-    			String KetValue = PrimCostingItemSearchRs.getString("KeyVal");
-
-    			String LinePrimCosItemSearchSql = "SELECT closingmon, comcode, plant, matcode, matdesc, spec, mattype, "
-    					+ "SUM(quantity) as S_Qua, SUM(amount) as S_Amt, SUM(amtOhC) as S_AmtOhC FROM invenlogl_backup "
-    					+ "WHERE LEFT(movetype, 2) = ? AND matcode = ? GROUP BY matcode";
-    			PreparedStatement LinePrimCosItemSearchPstmt = conn.prepareStatement(LinePrimCosItemSearchSql);
-    			LinePrimCosItemSearchPstmt.setString(1, "GI");
-    			LinePrimCosItemSearchPstmt.setString(2, ItemCode);
-    			ResultSet LinePrimCosItemSearchRs = LinePrimCosItemSearchPstmt.executeQuery();
-    			if(LinePrimCosItemSearchRs.next()) {
-    				double S_Qua = LinePrimCosItemSearchRs.getDouble("S_Qua");
-    				double S_Amt = LinePrimCosItemSearchRs.getDouble("S_Amt");
-    				double S_AmtOhC = LinePrimCosItemSearchRs.getDouble("S_AmtOhC");
-    				String PrimCostingGiUpSql = "UPDATE productcost SET Gi_Qty = ?, Gi_MatC = ?, Gi_ExpC = ? WHERE KeyVal = ?";
-    				PreparedStatement PrimCostingGiUpPstmt = conn.prepareStatement(PrimCostingGiUpSql);
-    				PrimCostingGiUpPstmt.setDouble(1, S_Qua);
-    				PrimCostingGiUpPstmt.setDouble(2, S_Amt);
-    				PrimCostingGiUpPstmt.setDouble(3, S_AmtOhC);
-    				PrimCostingGiUpPstmt.setString(4, KetValue);
-    				PrimCostingGiUpPstmt.executeUpdate();
-    			}
-    		} // 결산한 제품(생산)원가테이블에 저장된 데이터중 출고에 해당하는 데이터의 재료비합과 가공비합을 제품(생산)원가테이블의 출고파트에 저장
-    		
-    		String PrimCostingItemSearchSql_v2 = "SELECT * FROM productcost WHERE closingmon = ? AND matType != ?";
-    		PreparedStatement PrimCostingItemSearchPstmt_v2 = conn.prepareStatement(PrimCostingItemSearchSql_v2);
-    		PrimCostingItemSearchPstmt_v2.setString(1, DataList[2].trim());
-    		PrimCostingItemSearchPstmt_v2.setString(2, "RAWM");
-    		ResultSet PrimCostingItemSearchRs_v2 = PrimCostingItemSearchPstmt_v2.executeQuery();
-    		while(PrimCostingItemSearchRs_v2.next()) {
-    			String ItemCode = PrimCostingItemSearchRs_v2.getString("matcode");
-    			String KetValue = PrimCostingItemSearchRs_v2.getString("KeyVal");
-    			
-    			double MatUnitP = 0.0;
-    			double ExpUnitP = 0.0;
-    			
-    			double BS_Qty = PrimCostingItemSearchRs_v2.getInt("BS_Qty");
-    			int BS_MatC = PrimCostingItemSearchRs_v2.getInt("BS_MatC");
-    			int BS_ExpC = PrimCostingItemSearchRs_v2.getInt("BS_ExpC");
-
-    			double GR_Qty = PrimCostingItemSearchRs_v2.getInt("GR_Qty");
-    			int GR_MatC = PrimCostingItemSearchRs_v2.getInt("GR_MatC");
-    			int GR_ExpC = PrimCostingItemSearchRs_v2.getInt("GR_ExpC");
-    			
-    			double Gi_Qty = PrimCostingItemSearchRs_v2.getInt("Gi_Qty");
-    			int Gi_MatC = PrimCostingItemSearchRs_v2.getInt("Gi_MatC");	
-    			int Gi_ExpC = PrimCostingItemSearchRs_v2.getInt("Gi_ExpC");
-
-    			double ES_Qty = PrimCostingItemSearchRs_v2.getInt("ES_Qty");
-    			int ES_MatC = PrimCostingItemSearchRs_v2.getInt("ES_MatC");
-    			int ES_ExpC = PrimCostingItemSearchRs_v2.getInt("ES_ExpC");
-
-    			MatUnitP = (BS_MatC + GR_MatC) / (BS_Qty + GR_Qty);
-    			ExpUnitP  = (BS_ExpC + GR_ExpC) / (BS_Qty + GR_Qty);
-    			
-    			ES_Qty = BS_Qty + GR_Qty - Gi_Qty;
-    			ES_MatC = (int)Math.round(ES_Qty * MatUnitP);
-    			ES_ExpC = (int)Math.round(ES_Qty * ExpUnitP);
-    			
-    			Gi_MatC = BS_MatC + GR_MatC - ES_MatC;
-    			Gi_ExpC = BS_ExpC + GR_ExpC - ES_ExpC;
-
-    			String LineItemTotalUpdateSql = "UPDATE productcost SET Gi_MatC = ?, Gi_ExpC = ?, ES_Qty = ?, ES_MatC = ?, ES_ExpC = ? "
-    					+ "WHERE KeyVal = ?";
-    			PreparedStatement LineItemTotalUpdatePstmt = conn.prepareStatement(LineItemTotalUpdateSql);
-    			LineItemTotalUpdatePstmt.setInt(1, Gi_MatC);
-    			LineItemTotalUpdatePstmt.setInt(2, Gi_ExpC);
-    			LineItemTotalUpdatePstmt.setDouble(3, ES_Qty);
-    			LineItemTotalUpdatePstmt.setInt(4, ES_MatC);
-    			LineItemTotalUpdatePstmt.setInt(5, ES_ExpC);
-    			LineItemTotalUpdatePstmt.setString(6, KetValue);
-    			LineItemTotalUpdatePstmt.executeUpdate();
-    		} // 결산한 제품(생산)원가테이블에서 원자재를 제외한 재료에 대해 기초수량, 입고수량, 출고 수량을 총평균 단가를 적용하여 재고 수량, 재료비, 가공비를 계산하고 제품(생산)원가테이블에 업데이트한다.
-    		
-    		System.out.println("끝끝");
-    		String PrimCostingItemSearchSql_v3 = "SELECT * FROM productcost WHERE closingmon = ? AND matType != ?";
-    		PreparedStatement PrimCostingItemSearchPstmt_v3 = conn.prepareStatement(PrimCostingItemSearchSql_v3);
-    		PrimCostingItemSearchPstmt_v3.setString(1, DataList[2].trim());
-    		PrimCostingItemSearchPstmt_v3.setString(2, "RAWM");
-    		ResultSet PrimCostingItemSearchRs_v3 = PrimCostingItemSearchPstmt_v3.executeQuery();
-    		while(PrimCostingItemSearchRs_v3.next()) {
-    			String ItemCode = PrimCostingItemSearchRs_v3.getString("matcode");
-    			int Gi_MatC = PrimCostingItemSearchRs_v3.getInt("Gi_MatC");
-    			int Gi_ExpC = PrimCostingItemSearchRs_v3.getInt("Gi_ExpC");
-    			
-    			double BS_Qty = PrimCostingItemSearchRs_v3.getInt("BS_Qty");
-    			int BS_MatC = PrimCostingItemSearchRs_v3.getInt("BS_MatC");
-    			int BS_ExpC = PrimCostingItemSearchRs_v3.getInt("BS_ExpC");
-
-    			double GR_Qty = PrimCostingItemSearchRs_v3.getInt("GR_Qty");
-    			int GR_MatC = PrimCostingItemSearchRs_v3.getInt("GR_MatC");
-    			int GR_ExpC = PrimCostingItemSearchRs_v3.getInt("GR_ExpC");
-    			
-    			double MatUnitP = 0.0;
-    			double ExpUnitP = 0.0;
-    			MatUnitP = (BS_MatC + GR_MatC) / (BS_Qty + GR_Qty);
-    			ExpUnitP  = (BS_ExpC + GR_ExpC) / (BS_Qty + GR_Qty);
-
-    			int SumOfAmtAboutGi = 0;
-    			int SumOfAmtOhCAboutGi = 0;
-    			
-    			String LinePrimCosItemSearchSql = 
-						"SELECT * FROM invenlogl_backup "
-					+ 	"WHERE LEFT(movetype, 2) = ? AND matcode = ? AND closingmon = ? AND mattype != ?";
-    			PreparedStatement LinePrimCosItemSearchPstmt = conn.prepareStatement(LinePrimCosItemSearchSql);
-    			LinePrimCosItemSearchPstmt.setString(1, "GI");
-    			LinePrimCosItemSearchPstmt.setString(2, ItemCode);
-    			LinePrimCosItemSearchPstmt.setString(3, DataList[2].trim());
-    			LinePrimCosItemSearchPstmt.setString(4, "RAWM");
-    			ResultSet LinePrimCosItemSearchRs = LinePrimCosItemSearchPstmt.executeQuery();
-    			while(LinePrimCosItemSearchRs.next()) {
-    				String KeyVal = LinePrimCosItemSearchRs.getString("keyvalue"); 
-    				double Qty = LinePrimCosItemSearchRs.getDouble("quantity");
-    				int amt = (int)Math.round(Qty * MatUnitP);
-    				int amtOhC = (int)Math.round(Qty * ExpUnitP);
-    				String FFGDItemAmtUpSql = "UPDATE invenlogl_backup SET amount = ?, amtOhC = ? WHERE keyvalue = ?";
-    				PreparedStatement FFGDItemAmtUpPstmt = conn.prepareStatement(FFGDItemAmtUpSql);
-    				FFGDItemAmtUpPstmt.setBigDecimal(1, new BigDecimal(amt));
-    				FFGDItemAmtUpPstmt.setBigDecimal(2, new BigDecimal(amtOhC));
-    				FFGDItemAmtUpPstmt.setString(3, KeyVal);
-    				FFGDItemAmtUpPstmt.executeUpdate();
-    			}
-    			
-    			String LineGrSumChkSql = 
-						"SELECT SUM(amount) as SumAmount, sum(amtOhC) as SumAmtOhc "
-					+ 	"FROM invenlogl_backup WHERE "
-					+ 	"LEFT(movetype, 2) = ? AND matcode = ? AND closingmon = ? AND mattype != ?";
-	    		PreparedStatement LineGrSumChkPstmt = conn.prepareStatement(LineGrSumChkSql);
-	    		LineGrSumChkPstmt.setString(1, "GI");
-	    		LineGrSumChkPstmt.setString(2, ItemCode);
-	    		LineGrSumChkPstmt.setString(3, DataList[2].trim());
-	    		LineGrSumChkPstmt.setString(4, "RAWM");
-	    		ResultSet LineGrSumChkRs = LineGrSumChkPstmt.executeQuery();
-	    		if(LineGrSumChkRs.next()) {
-	    			int SumAmount = LineGrSumChkRs.getInt("SumAmount");
-	    			int SumAmtOhc = LineGrSumChkRs.getInt("SumAmtOhc");
-	    			
-	    			int SumAmtGap = SumAmount - Gi_MatC; 
-	    			int SumAmtOhcGap = SumAmtOhc - Gi_ExpC;
-	    			
-	    			String LineItemFindSql = "SELECT * FROM invenlogl_backup WHERE LEFT(movetype, 2) = ? AND matcode = ? AND closingmon = ? AND mattype != ?";
-	    			PreparedStatement LineItemPstmt = conn.prepareStatement(LineItemFindSql);
-	    			LineItemPstmt.setString(1, "GI");
-	    			LineItemPstmt.setString(2, ItemCode);
-	    			LineItemPstmt.setString(3, DataList[2].trim());
-	    			LineItemPstmt.setString(4, "RAWM");
-	    			ResultSet LineItemRs = LineItemPstmt.executeQuery();
-	    			if(LineItemRs.next()) {
-	    				String KeyValue = LineItemRs.getString("keyvalue");
-	    				int ItemAmt = LineItemRs.getInt("amount");
-	    				int ItemAmtOhC = LineItemRs.getInt("amtOhC");
-	    				
-	    				String MatType = LineItemRs.getString("mattype");
-	    				String WorkOrdNum = LineItemRs.getString("workordnum");
-	    				String MatProcess = LineItemRs.getString("process");
-	    				
-	    				ItemAmt -= SumAmtGap;
-	    				ItemAmtOhC -= SumAmtOhcGap; 
-	    				
-	    				String LineItemUpSql = "UPDATE invenlogl_backup SET amount = ?, amtOhC = ? WHERE keyvalue = ?";
-	    				PreparedStatement LineItemUpPstmt = conn.prepareStatement(LineItemUpSql);
-	    				LineItemUpPstmt.setBigDecimal(1, new BigDecimal(ItemAmt));
-	    				LineItemUpPstmt.setBigDecimal(2, new BigDecimal(ItemAmtOhC));
-	    				LineItemUpPstmt.setString(3, KeyValue);
-	    				LineItemUpPstmt.executeUpdate();
-	    			}
-	    		}
-    		} // 결산한 제품(생산)원가테이블에서 원자재를 제외한 재료(총평균 단가를 적용)의 출고 재료비와 가공비를 원가라인테이블에 저장된 재료의 출고 재료비와 가공비를 비교하여 단수차를 수정한다. 
-    		
-//    		String PrimCostingItemSearchSql_v4 = "SELECT * FROM productcost WHERE closingmon = ? AND matType NOT IN (?, ?)";
-//    		PreparedStatement PrimCostingItemSearchPstmt_v4 = conn.prepareStatement(PrimCostingItemSearchSql_v4);
-//    		PrimCostingItemSearchPstmt_v4.setString(1, DataList[2].trim());
-//    		PrimCostingItemSearchPstmt_v4.setString(2, "RAWM");
-//    		PrimCostingItemSearchPstmt_v4.setString(3, "TMGD");
-//    		ResultSet PrimCostingItemSearchRs_v4 = PrimCostingItemSearchPstmt_v4.executeQuery();
-//    		while(PrimCostingItemSearchRs_v4.next()){
-//    			String MatCode = PrimCostingItemSearchRs_v4.getString("matcode"); // 생산원가테이블에서 RAWM, TMGD가 아닌 자재코드
-//    			String GetItemsSql = "SELECT workordnum, process, SUM(amount) AS sum_amount, SUM(amtOhC) AS sum_amtOhC "
-//    					+ " FROM invenlogl_backup WHERE LEFT(movetype, 2) = ? AND matcode = ? AND closingmon = ? AND mattype NOT IN (?, ?) GROUP BY workordnum ORDER BY workordnum";
-//    			PreparedStatement GetItemsPstmt = conn.prepareStatement(GetItemsSql);
-//    			GetItemsPstmt.setString(1, "GI");
-//    			GetItemsPstmt.setString(2, MatCode);
-//    			GetItemsPstmt.setString(3, DataList[2].trim());
-//    			GetItemsPstmt.setString(4, "RAWM");
-//    			GetItemsPstmt.setString(5, "TMGD");
-//    			ResultSet GetItemsRs = GetItemsPstmt.executeQuery();
-//    			while(GetItemsRs.next()){
-//    				String ProCode = GetItemsRs.getString("process");
-//    				String WorkOrder = GetItemsRs.getString("workordnum");
-//    				int ItemAmt = GetItemsRs.getInt("sum_amount");
-//    				int ItemAmtOhC = GetItemsRs.getInt("sum_amtOhC");
-//    				
-//    				String Process_Cost_Table_Renew_Sql = "SELECT * FROM processcosttable_copy WHERE ProcessCode = ? AND WorkOrd = ?";
-//    				PreparedStatement Process_Cost_Table_Renew_Pstmt = conn.prepareStatement(Process_Cost_Table_Renew_Sql);
-//    				Process_Cost_Table_Renew_Pstmt.setString(1, ProCode);
-//    				Process_Cost_Table_Renew_Pstmt.setString(2, WorkOrder);
-//    				ResultSet Process_Cost_Table_Renew_Rs = Process_Cost_Table_Renew_Pstmt.executeQuery();
-//    				if(Process_Cost_Table_Renew_Rs.next()) {
-//    					double InputQty = Process_Cost_Table_Renew_Rs.getDouble("InputQty");
-//    					double WipQty = Process_Cost_Table_Renew_Rs.getDouble("WipQty");
-//    					
-//    					double RawMatCost = Process_Cost_Table_Renew_Rs.getDouble("RawMatCost");
-//    					double OthMatCost = Process_Cost_Table_Renew_Rs.getDouble("OthMatCost"); 
-//    			
-//    					double ManufCost = Process_Cost_Table_Renew_Rs.getDouble("ManufCost");
-//    					
-//    					double MatCostSum = 0;
-//    					double ManufCostSum = 0;
-//    					
-//    					int WipMatCost = 0;
-//    					int WipMnaufCost = 0;
-//    					
-//    					MatCostSum = RawMatCost + ItemAmt + OthMatCost;
-//    					ManufCostSum = ManufCost + ItemAmtOhC;
-//    					
-//    					WipMatCost = (int)Math.round(MatCostSum * WipQty / InputQty);
-//    					WipMnaufCost = (int)Math.round(ManufCostSum * WipQty / InputQty);
-//    							
-//    					String Process_Cost_Table_Update_Sql = "UPDATE processcosttable_copy SET HalbMatCost = ?, MatCostSum = ?, HalbManufCost = ?, ManufCostSum = ?, WipMatCost = ?, WipMnaufCost = ?, "
-//    							+ "FertMatCost = ?, FertManufCost = ? WHERE WorkOrd = ? AND ProcessCode = ?";
-//    					PreparedStatement Process_Cost_Table_Update_Pstmt = conn.prepareStatement(Process_Cost_Table_Update_Sql);
-//    					Process_Cost_Table_Update_Pstmt.setDouble(1, ItemAmt);
-//    					Process_Cost_Table_Update_Pstmt.setDouble(2, MatCostSum);
-//    					Process_Cost_Table_Update_Pstmt.setDouble(3, ItemAmtOhC);
-//    					Process_Cost_Table_Update_Pstmt.setDouble(4, ManufCostSum);
-//    					Process_Cost_Table_Update_Pstmt.setDouble(5, WipMatCost);
-//    					Process_Cost_Table_Update_Pstmt.setDouble(6, WipMnaufCost);
-//    					Process_Cost_Table_Update_Pstmt.setDouble(7, MatCostSum - WipMatCost);
-//    					Process_Cost_Table_Update_Pstmt.setDouble(8, ManufCostSum - WipMnaufCost);
-//    					Process_Cost_Table_Update_Pstmt.setString(9, WorkOrder);
-//    					Process_Cost_Table_Update_Pstmt.setString(10, ProCode);
-//    					Process_Cost_Table_Update_Pstmt.executeUpdate();
-//    				} // 공정원가계산 끝
-//    				
-//    				String HalbSql = "SELECT SUM(FertMatCost) as FertMatCost, SUM(FertManufCost) as FertManufCost FROM processcosttable_copy WHERE WorkOrd = ?";
-//    				PreparedStatement FertPstmt = conn.prepareStatement(HalbSql);
-//    				FertPstmt.setString(1, WorkOrder);
-//    				ResultSet FertRs = FertPstmt.executeQuery();
-//    				if(FertRs.next()) {
-//    					double FertMatAddCost = FertRs.getDouble("FertMatCost");
-//    					double FertManufAddCost = FertRs.getDouble("FertManufCost");
-//    					String LineLv2PriceSearchSql = "SELECT COUNT(*) as ItemCount, SUM(quantity) as QtySum FROM invenlogl_backup WHERE workordnum = ? AND movetype = ? AND mattype NOT IN ('RAWM', 'TMGD')";
-//    					PreparedStatement Lv2PricePstmt = conn.prepareStatement(LineLv2PriceSearchSql);
-//    					Lv2PricePstmt.setString(1, WorkOrder);
-//    					Lv2PricePstmt.setString(2, "GR11");
-//    					ResultSet Lv2Rs = Lv2PricePstmt.executeQuery();
-//    					if(Lv2Rs.next()) {
-//    						int ItemCount = Lv2Rs.getInt("ItemCount");
-//    						int QtySum = (int)Math.round(Lv2Rs.getDouble("QtySum"));
-//    						String LineLv2PriceEditSql = null;
-//    						PreparedStatement LineLv2PriceEditPstmt = null; 
-//    						if(ItemCount > 0) {
-//    							switch(ItemCount) {
-//    							case 1:
-////    	    			이 과정에서 RAWM , TMFD는 대상이 아니다.
-//    								System.out.println("1개-WorkOrdNum : " + WorkOrder);
-//    								LineLv2PriceEditSql = "UPDATE invenlogl_backup SET amount = ?, amtOhC = ? WHERE workordnum = ? AND movetype = ? AND mattype NOT IN ('RAWM', 'TMGD')";
-//    								LineLv2PriceEditPstmt = conn.prepareStatement(LineLv2PriceEditSql);
-//    								LineLv2PriceEditPstmt.setDouble(1, FertMatAddCost);
-//    								LineLv2PriceEditPstmt.setDouble(2, FertManufAddCost);
-//    								LineLv2PriceEditPstmt.setString(3, WorkOrder);
-//    								LineLv2PriceEditPstmt.setString(4, "GR11");
-//    								LineLv2PriceEditPstmt.executeUpdate();
-//    								break;
-//    							default:
-//    								System.out.println("1개이상-WorkOrdNum : " + WorkOrder);
-//    								String QtySql = "SELECT * FROM invenlogl_backup WHERE workordnum = ? AND movetype = ? AND mattype NOT IN ('RAWM', 'TMGD')";
-//    								PreparedStatement QtyPstmt = conn.prepareStatement(QtySql);
-//    								QtyPstmt.setString(1, WorkOrder);
-//    								QtyPstmt.setString(2, "GR11");
-//    								ResultSet QtyRs = QtyPstmt.executeQuery();
-//    								while(QtyRs.next()) {
-//    									int Qty = (int)Math.round(QtyRs.getDouble("quantity"));
-//    									String KeyData = QtyRs.getString("keyvalue");
-//    									
-//    									LineLv2PriceEditSql = "UPDATE invenlogl_backup SET amount = ?, amtOhC = ? WHERE workordnum = ? AND movetype = ? AND keyvalue = ? AND mattype NOT IN ('RAWM', 'TMGD')";
-//    									LineLv2PriceEditPstmt = conn.prepareStatement(LineLv2PriceEditSql);
-//    	    							LineLv2PriceEditPstmt.setDouble(1, Math.round(FertMatAddCost * Qty / QtySum));
-//    	    							LineLv2PriceEditPstmt.setDouble(2, Math.round(FertManufAddCost * Qty / QtySum));
-//    	    							LineLv2PriceEditPstmt.setString(3, WorkOrder);
-//    	    							LineLv2PriceEditPstmt.setString(4, "GR11");
-//    	    							LineLv2PriceEditPstmt.setString(5, KeyData);
-//    	    							LineLv2PriceEditPstmt.executeUpdate();
-//    								}
-//    								
-//    								String ForModySql = "SELECT SUM(amount) as SumAmount, SUM(amtOhC) as SumAmtOhc FROM invenlogl_backup WHERE workordnum = ? AND movetype = 'GR11' AND mattype NOT IN ('RAWM', 'TMGD')"; // 문제 부분
-//    								PreparedStatement ForModyPstmt = conn.prepareStatement(ForModySql);
-//    								ForModyPstmt.setString(1, WorkOrder);
-//    								ResultSet ForModyRs = ForModyPstmt.executeQuery();
-//    								if(ForModyRs.next()) {
-//    									int SumAmount = ForModyRs.getInt("SumAmount");
-//    									int SumAmtOhc = ForModyRs.getInt("SumAmtOhc");
-//    									
-//    									int AmtGap = 0;
-//    									int OhcGap = 0;
-//    									
-//    									AmtGap = (int) (SumAmount - FertMatAddCost);
-//    									OhcGap = (int) (SumAmtOhc - FertManufAddCost);
-//    									
-//    									String SearModiSql = "SELECT * FROM invenlogl_backup WHERE workordnum = ? AND movetype = 'GR11' AND mattype NOT IN ('RAWM', 'TMGD')";
-//    									PreparedStatement SearModiPstmt = conn.prepareStatement(SearModiSql);
-//    									SearModiPstmt.setString(1, WorkOrder);
-//    									ResultSet SearModiRs = SearModiPstmt.executeQuery();
-//    									if(SearModiRs.next()) {
-//    										int Amt = SearModiRs.getInt("amount");
-//    										int AmtOhc = SearModiRs.getInt("amtOhC");
-//    										String KeyValue = SearModiRs.getString("keyvalue");
-//    										
-//    										String ModiSql = "UPDATE invenlogl_backup SET amount = ?, amtOhC = ? WHERE keyvalue = ?";
-//    										PreparedStatement ModiPstmt = conn.prepareStatement(ModiSql);
-//    										ModiPstmt.setInt(1, Amt - AmtGap);
-//    										ModiPstmt.setInt(2, AmtOhc - OhcGap);
-//    										ModiPstmt.setString(3, KeyValue);
-//    										ModiPstmt.executeUpdate();
-//    									}
-//    								}
-//    								break;
-//    							}
-//    						}
-//    					}
-//    				}
-//    			}
-//    		}
-    		
-    		
-    		
-    		
-    		System.out.println("끝끝끝");
+			AProcess(Cd, Pd, Cm);
+			result = "Good";
 		}catch (Exception e) {
 			// TODO: handle exception
 			e.printStackTrace();
 		}
 		return result;
 	}
-	
-	
+
+	private void AProcess(String ComCode, String PlantCode, String CalcMon) {
+		connDB();
+		// TODO Auto-generated method stub
+		this.Cd = ComCode;
+		this.Pd = PlantCode;
+		this.Cm = CalcMon;
+		
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMM");
+		LocalDate date = LocalDate.parse(Cm + "01", DateTimeFormatter.ofPattern("yyyyMMdd")); // 20020401의 형태로 변경해준
+		
+		LocalDate PastDate = date.minusMonths(1); // 한 달을 감소 -> 20020301로 변경
+		String CalcPastMon = PastDate.format(formatter); // 200203의 형태로 변경
+		
+		String PastMonDataSearch = "SELECT * FROM processcosttable_Copy WHERE ComCode = ? AND PlantCode = ? AND ClosingMon = ?";
+		try {
+			PreparedStatement PastMonDataPstmt = conn.prepareStatement(PastMonDataSearch);
+			PastMonDataPstmt.setString(1, Cd);
+			PastMonDataPstmt.setString(2, Pd);
+			PastMonDataPstmt.setString(3, CalcPastMon);
+			ResultSet PastData = PastMonDataPstmt.executeQuery();
+			if(PastData.next()) {
+				String TransferData = "INSERT INTO processcosttable_Copy (ComCode, PlantCode, ClosingMon, WorkOrd, WorkType, ManufLot, ManufCode, "
+						+ "ManufDesc, CostingLev, WorkSeq, ProcessCode, ProcessDesc, InOutType, InputQty, ProdQty, WipQty, MixTime, PackStartMon, " 
+						+ "PackClosMon, RawMatCost, HalbMatCost, OthMatCost, MatCostSum, ManufCost, HalbManufCost, ManufCostSum, WipMatCost, WipMnaufCost, "
+						+ "FertMatCost, FertManufCost, KeyValue) "
+						+ "SELECT ?, ?, ?, P.WorkOrd, P.WorkType, P.ManufLot, P.ManufCode, " // 3개(1,2,3)
+						+ "P.ManufDesc, P.CostingLev, P.WorkSeq, P.ProcessCode, P.ProcessDesc, ?, P.WipQty, ?, ?, P.MixTime, P.PackStartMon, " // 3개(4,5,6)
+						+ "P.PackClosMon, P.WipMatCost, ?, ?, P.WipMatCost, P.WipMnaufCost, ?, P.WipMnaufCost, P.WipMatCost, P.WipMnaufCost, " // 3개
+						+ "P.WipMatCost, P.WipMnaufCost, CONCAT(?, P.WorkOrd, P.ProcessCode, ?) " // 2개
+						+ "FROM processcosttable_Copy AS P "
+						+ "WHERE ComCode = ? AND PlantCode = ? AND ClosingMon = ?";
+				PreparedStatement TransferPstmt = conn.prepareStatement(TransferData);
+				TransferPstmt.setString(1, Cd);
+				TransferPstmt.setString(2, Pd);
+				TransferPstmt.setString(3, Cm);
+				TransferPstmt.setString(4, "BW");
+				TransferPstmt.setBigDecimal(5, BigDecimal.ZERO);
+				TransferPstmt.setBigDecimal(6, BigDecimal.ZERO);
+				TransferPstmt.setBigDecimal(7, BigDecimal.ZERO);
+				TransferPstmt.setBigDecimal(8, BigDecimal.ZERO);
+				TransferPstmt.setBigDecimal(9, BigDecimal.ZERO);
+				TransferPstmt.setString(10, Cm);
+				TransferPstmt.setString(11, "BW");
+				TransferPstmt.setString(12, Cd);
+				TransferPstmt.setString(13, Pd);
+				TransferPstmt.setString(14, CalcPastMon);
+				TransferPstmt.executeUpdate();
+			} 
+		}catch (SQLException e) {
+			// TODO: handle exception
+			e.printStackTrace();
+		}// A01 ~ A02 process
+
+		String Line_ProductDataCalc = "SELECT "
+		        + "CASE "
+		        + "WHEN movetype LIKE 'GI%' THEN 'GI' "
+		        + "WHEN movetype LIKE 'GR%' THEN 'GR' "
+		        + "ELSE movetype "
+		        + "END AS movetype_group, "
+		        + "matcode, matdesc, spec, mattype, SUM(quantity) AS total_qty "
+		        + "FROM invenlogl_copy "
+		        + "WHERE mattype != 'RAWM' "
+		        + "AND (movetype LIKE 'GI%' OR movetype LIKE 'GR%') "
+		        + "GROUP BY matcode, mattype, movetype_group, matdesc, spec "
+		        + "ORDER BY matcode ASC";
+		
+		PreparedStatement Line_ProDataCalc_pstmt = null;
+		ResultSet Line_ProDataCalc_rs = null;
+		try {
+			Line_ProDataCalc_pstmt = conn.prepareStatement(Line_ProductDataCalc);
+			Line_ProDataCalc_rs = Line_ProDataCalc_pstmt.executeQuery();
+			
+			while(Line_ProDataCalc_rs.next()) {
+				 String movetypeGroup = Line_ProDataCalc_rs.getString("movetype_group");
+			     String matcode = Line_ProDataCalc_rs.getString("matcode");
+			     String mattype = Line_ProDataCalc_rs.getString("mattype");
+			     String matdesc = Line_ProDataCalc_rs.getString("matdesc");
+			     String spec = Line_ProDataCalc_rs.getString("spec");
+			     
+			     BigDecimal totalQty = Line_ProDataCalc_rs.getBigDecimal("total_qty");
+			     if(totalQty == null) totalQty = BigDecimal.ZERO;
+			     
+			     String KeyValue = Cm + matcode + mattype;
+			     
+			     PreparedStatement PDS = null;
+			     ResultSet PDS_Rs = null;
+			     PreparedStatement PDU = null;
+			     PreparedStatement PDI = null;
+			     try {
+			    	 String ProductDataSelect = "SELECT * FROM productcost WHERE KeyVal = ?";
+			    	 PDS = conn.prepareStatement(ProductDataSelect);
+			    	 PDS.setString(1, KeyValue);
+			    	 PDS_Rs = PDS.executeQuery();
+
+			    	 if(PDS_Rs.next()) {
+			    		 String updateCol = movetypeGroup.equals("GR") ? "GR_Qty" : "Gi_Qty";
+			    		 String ProductDataUpdate = "UPDATE productcost SET " + updateCol + " = ? WHERE KeyVal = ?";
+			    		 PDU = conn.prepareStatement(ProductDataUpdate);
+			    		 PDU.setBigDecimal(1, totalQty);
+			    		 PDU.setString(2, KeyValue);
+			    		 PDU.executeUpdate(); // 🔹 executeUpdate 추가
+			    	 } else {
+			    		 String insertCol = movetypeGroup.equals("GR") ? "GR_Qty" : "Gi_Qty";
+			             String ProductDataInsert = "INSERT INTO productcost (closingmon, comcode, plant, matcode, matdesc, spec, matType, "
+			            		 + insertCol + ", KeyVal) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+			             PDI = conn.prepareStatement(ProductDataInsert);
+			             PDI.setString(1, Cm);
+			             PDI.setString(2, Cd);
+			             PDI.setString(3, Pd);
+			             PDI.setString(4, matcode);
+			             PDI.setString(5, matdesc);
+			             PDI.setString(6, spec);
+			             PDI.setString(7, mattype);
+			             PDI.setBigDecimal(8, totalQty);
+			             PDI.setString(9, KeyValue);
+			             PDI.executeUpdate();
+			    	 }
+			     } catch(SQLException e) {
+			    	 e.printStackTrace();
+			    	 System.err.println("Error for matcode: " + matcode + ", movetype_group: " + movetypeGroup);
+			     } finally {
+			    	 if(PDS_Rs != null) try { PDS_Rs.close(); } catch(SQLException e) {}
+			    	 if(PDS != null) try { PDS.close(); } catch(SQLException e) {}
+			    	 if(PDU != null) try { PDU.close(); } catch(SQLException e) {}
+			    	 if(PDI != null) try { PDI.close(); } catch(SQLException e) {}
+			     }
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			if(Line_ProDataCalc_rs != null) try { Line_ProDataCalc_rs.close(); } catch(SQLException e) {}
+		    if(Line_ProDataCalc_pstmt != null) try { Line_ProDataCalc_pstmt.close(); } catch(SQLException e) {}
+		} // A03 프로세스 끝
+		
+		String DataMatchSql = "SELECT * FROM productcost WHERE closingmon = ? AND ES_Qty > 0";
+		PreparedStatement DataMatchPstmt = null;
+		ResultSet DataMatchRs = null;
+		try {
+			DataMatchPstmt = conn.prepareStatement(DataMatchSql);
+			DataMatchPstmt.setString(1, CalcPastMon);
+			DataMatchRs = DataMatchPstmt.executeQuery();
+			while(DataMatchRs.next()) {
+				String MatCode = DataMatchRs.getString("matcode");
+				String MatType = DataMatchRs.getString("matType");
+				String KeyValue = Cm + MatCode + MatType;
+				
+				BigDecimal EsQty = DataMatchRs.getBigDecimal("ES_Qty");
+				BigDecimal EsMatC = DataMatchRs.getBigDecimal("ES_MatC");
+				BigDecimal EsLabC = DataMatchRs.getBigDecimal("ES_LabC");
+				BigDecimal EsExpC = DataMatchRs.getBigDecimal("ES_ExpC");
+				
+				PreparedStatement SelectSqlPstmt = null;
+				ResultSet SelectSqlRs = null;
+				PreparedStatement UpdateBsPstmt = null;
+				PreparedStatement InsertBsPstmt = null;
+				try {
+					String SelectSql = "SELECT * FROM productcost WHERE KeyVal = ?";
+					SelectSqlPstmt = conn.prepareStatement(SelectSql);
+					SelectSqlPstmt.setString(1, KeyValue);
+					SelectSqlRs = SelectSqlPstmt.executeQuery();
+					if(SelectSqlRs.next()) {
+						BigDecimal Gr_Qty = SelectSqlRs.getBigDecimal("GR_Qty");
+						BigDecimal Gi_Qty = SelectSqlRs.getBigDecimal("Gi_Qty");
+						
+						String UpdataBs = "UPDATE productcost SET BS_Qty = ?, BS_MatC = ?, BS_LabC = ?, BS_ExpC = ?, ES_Qty = ?, ES_MatC = ?, ES_LabC = ?, ES_ExpC = ? WHERE KeyVal = ?";
+						UpdateBsPstmt = conn.prepareStatement(UpdataBs);
+						UpdateBsPstmt.setBigDecimal(1, EsQty);
+						UpdateBsPstmt.setBigDecimal(2, EsMatC);
+						UpdateBsPstmt.setBigDecimal(3, EsLabC);
+						UpdateBsPstmt.setBigDecimal(4, EsExpC);
+						UpdateBsPstmt.setBigDecimal(5, EsQty.add(Gr_Qty).subtract(Gi_Qty));
+						UpdateBsPstmt.setBigDecimal(6, EsMatC);
+						UpdateBsPstmt.setBigDecimal(7, EsLabC);
+						UpdateBsPstmt.setBigDecimal(8, EsExpC);
+						UpdateBsPstmt.setString(9, KeyValue);
+						UpdateBsPstmt.executeUpdate();
+					}else {
+						String InsertBs = "INSERT INTO productcost (closingmon, comcode, plant, matcode, matdesc, spec, matType, BS_Qty, BS_MatC, BS_LabC, BS_ExpC, "
+								+ "ES_Qty, ES_MatC, ES_LabC, ES_ExpC, KeyVal) "
+								+ "SELECT ?, ?, ?, PC.matcode, PC.matdesc, PC.spec, PC.matType, PC.ES_Qty, PC.ES_MatC, PC.ES_LabC, PC.ES_ExpC, "
+								+ "PC.ES_Qty, PC.ES_MatC, PC.ES_LabC, PC.ES_ExpC, CONCAT(?, PC.matcode, PC.matdesc) "
+								+ "FROM productcost AS PC "
+								+ "WHERE closingmon = ? AND matcode = ?";
+						InsertBsPstmt = conn.prepareStatement(InsertBs);
+						InsertBsPstmt.setString(1, Cm);
+						InsertBsPstmt.setString(2, Cd);
+						InsertBsPstmt.setString(3, Pd);
+						InsertBsPstmt.setString(4, Cm);
+						InsertBsPstmt.setString(5, CalcPastMon);
+						InsertBsPstmt.setString(6, MatCode);
+						InsertBsPstmt.executeUpdate();
+					}
+				}catch (SQLException e) {
+					e.printStackTrace();
+					System.err.println("Error processing matcode: " + MatCode);
+				}finally {
+					if(SelectSqlRs != null) try { SelectSqlRs.close(); } catch(SQLException e) {}
+		            if(SelectSqlPstmt != null) try { SelectSqlPstmt.close(); } catch(SQLException e) {}
+		            if(UpdateBsPstmt != null) try { UpdateBsPstmt.close(); } catch(SQLException e) {}
+		            if(InsertBsPstmt != null) try { InsertBsPstmt.close(); } catch(SQLException e) {}
+				}
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}finally {
+			if(DataMatchRs != null) try { DataMatchRs.close(); } catch(SQLException e) {}
+		    if(DataMatchPstmt != null) try { DataMatchPstmt.close(); } catch(SQLException e) {}
+		}
+	}
 }

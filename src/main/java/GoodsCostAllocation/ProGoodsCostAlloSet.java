@@ -62,48 +62,39 @@ public class ProGoodsCostAlloSet extends HttpServlet {
         }
         String jsonString = sb.toString();
         String ResultData = null;
-		
+		String StringData = null;
+        
         GoodsCostAllDao dao = new GoodsCostAllDao();
-        switch(action) {
-        case"/GoodsCostLoad.do":
-        	try {
-            	JSONObject jsonObj = new JSONObject(jsonString);
-                Iterator<String> keys = jsonObj.keys();
-                while(keys.hasNext()) {
-                    String key = keys.next();
-                    Object value = jsonObj.get(key);
-                }
-                ResultData = dao.DataLoading(jsonObj);
-                if(ResultData == null) {
-                	writer.print("{\"result\":\"fail\"}");
-                }else {
-                	writer.print("{\"result\":\"success\", \"List\":" + ResultData + "}");
-                }
-        	}catch(Exception e) {
-        		e.printStackTrace();
-        		writer.print("{\"result\":\"fail\", \"message\":\"" + e.getMessage().replace("\"","\\\"") + "\"}");
-        	}
-        	break;
-        case "/GoodsCostCalc.do":
-        	try {
-            	JSONObject jsonObj = new JSONObject(jsonString);
-                Iterator<String> keys = jsonObj.keys();
-                while(keys.hasNext()) {
-                    String key = keys.next();
-                    Object value = jsonObj.get(key);
-                }
-                ResultData = dao.GoodsCostCalc(jsonObj);
-                if(ResultData == null) {
-                	writer.print("{\"result\":\"fail\"}");
-                }else {
-                	writer.print("{\"result\":\"success\", \"List\":" + ResultData + "}");
-                }
-        	}catch(Exception e) {
-        		e.printStackTrace();
-        		writer.print("{\"result\":\"fail\", \"message\":\"" + e.getMessage().replace("\"","\\\"") + "\"}");
-        	}
-        	break;
-        }
+        try {
+        	JSONObject jsonObj = new JSONObject(jsonString);
+            Iterator<String> keys = jsonObj.keys();
+            while(keys.hasNext()) {
+                String key = keys.next();
+                Object value = jsonObj.get(key);
+            }
+            
+            switch(action) {
+            case"/GoodsCostLoad.do":
+                    ResultData = dao.DataLoading(jsonObj);
+            	break;
+            case "/GoodsCostCalc.do":
+                    StringData = dao.GoodsCostCalc(jsonObj);
+                    JSONObject jsonResult = new JSONObject();
+                    jsonResult.put("value", StringData);
+                    ResultData = jsonResult.toString();
+            	break;
+            }
+            
+            if(ResultData == null) {
+            	writer.print("{\"result\":\"fail\"}");
+            }else {
+            	writer.print("{\"result\":\"success\", \"List\":" + ResultData + "}");
+            }
+		} catch (Exception e) {
+			e.printStackTrace();
+		    writer.print("{\"result\":\"fail\", \"message\":\"" + e.getMessage().replace("\"","\\\"") + "\"}");
+		}
+        
         writer.flush();
 	}
 }
