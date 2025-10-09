@@ -156,7 +156,7 @@ public class ApprovalDAO {
 	    		String InsertsqlL =
 	    			    "INSERT INTO InvenLogl (docnum, seq, movetype, closingmon, transactiondate, matcode, matdesc, spec, lotnum, mattype, quantity, " +
 	    			    "storcode, stordesc, process, processDesc, workordnum, DeleteYN, plant, comcode, keyvalue, RegistOX, CostingLv) " +
-	    			    "SELECT ?, ROW_NUMBER() OVER (ORDER BY (SELECT 1)), matinput.type, ?, matinput.delivery, matinput.MatCode, matinput.MatCode, matinput.spec, matinput.lot, matinput.stocktype, " +
+	    			    "SELECT ?, ROW_NUMBER() OVER (ORDER BY (SELECT 1)), matinput.type, ?, matinput.delivery, matinput.MatCode, matinput.MatDesc, matinput.spec, matinput.lot, matinput.stocktype, " +
 	    			    "ROUND(matinput.amount, 2), matinput.whcode, matinput.warehouse, matinput.process, matinput.processdes, matinput.pono, ?, " +
 	    			    "matinput.plant, matinput.company, CONCAT(?, LPAD(ROW_NUMBER() OVER (ORDER BY (SELECT 1)),4,'0')), ?, matinput.CostingLev " +
 	    			    "FROM matinput " +
