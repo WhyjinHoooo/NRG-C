@@ -51,72 +51,91 @@ public class MaterialCostCalc extends HttpServlet {
 		MatCostCalcDAO Dao = new MatCostCalcDAO();
 		String DaoResult = null;
 		try {
-			switch(action) {
-			case "/RawmPriceCalc.do":
-				String Cocd = request.getParameter("ComCode");
-				String GetClDate = request.getParameter("IQData");
-				DaoResult = Dao.CostCalcFun(GetClDate, Cocd, ClDate);
-	    		System.out.println("업데이트 결과 : " + DaoResult);
-		    	if (DaoResult == null || DaoResult.equals("No")) {
-		    	    writer.print("{\"result\":\"fail\", \"message\":\"DaoResult null이거나 'No'입니다.\"}");
-		    	} else if(DaoResult == null || DaoResult.equals("Impossible")){
-		    		writer.print("{\"result\":\"fail\", \"message\":\"해당 결산월은 이미 결산되었습니다.\"}");
-		    	}
-		    	else{
-		    	    writer.print("{\"result\":\"success\", \"message\":\"정상적으로 처리되었습니다.\"}");
-		    	}
-				break;
-			case "/RawmDataLoading.do":
-				BufferedReader br = request.getReader();
-				StringBuilder sb = new StringBuilder();
-				String line;
-				while ((line = br.readLine()) != null) {
-				    sb.append(line);
-				}
-				String body = sb.toString();
-				System.out.println("body: " + body);
-				JSONObject json = new JSONObject(body);
-				String ComCode = json.getString("ComCode");
-				String IQData = json.getString("IQData");
-				DaoResult = Dao.DataLoadFun(IQData, ComCode);
-                if(DaoResult == null) {
-                	writer.print("{\"result\":\"fail\"}");
-                }else {
-                	writer.print("{\"result\":\"success\", \"List\":" + DaoResult + "}");
-                }
-				break;
-			case "/RawmLineDataLoading.do":
-				System.out.println("RawmLineDataLoading.do");
-				BufferedReader br1 = request.getReader();
-			    StringBuilder sb1 = new StringBuilder();
-			    String line1;
-			    while ((line1 = br1.readLine()) != null) {
-			        sb1.append(line1);
-			    }
-			    String jsonString = sb1.toString();
-			    try {
-			        JSONObject jsonObj = new JSONObject(jsonString);
-			        Iterator<String> keys = jsonObj.keys();
-			        while(keys.hasNext()) {
-			            String key = keys.next();
-			            Object value = jsonObj.get(key);
-			            System.out.println(key + " : " + value);
-			        }
-			        DaoResult = Dao.LineDataLoadFun(jsonObj);
-			        System.out.println("DaoResult : " + DaoResult);
-			        if(DaoResult == null) {
-	                	writer.print("{\"result\":\"fail\"}");
-	                }else {
-	                	writer.print("{\"result\":\"success\", \"List\":" + DaoResult + "}");
+	        switch(action) {
+	            case "/RawmPriceCalc.do":
+	                String Cocd = request.getParameter("ComCode");
+	                String GetClDate = request.getParameter("IQData");
+	                DaoResult = Dao.CostCalcFun(GetClDate, Cocd, ClDate);
+
+	                System.out.println("업데이트 결과 : " + DaoResult);
+
+	                // <<< 수정/추가: JSON 문자열을 변수에 만들어서 반환
+	                String jsonResponse;
+	                if (DaoResult == null || DaoResult.equals("No")) {
+	                    jsonResponse = "{\"result\":\"fail\", \"message\":\"DaoResult null이거나 'No'입니다.\"}";
+	                } else if(DaoResult.equals("Impossible")) { // <<< 수정: null 체크 중복 제거
+	                    jsonResponse = "{\"result\":\"fail\", \"message\":\"해당 결산월은 이미 결산되었습니다.\"}";
+	                } else {
+	                    jsonResponse = "{\"result\":\"success\", \"message\":\"정상적으로 처리되었습니다.\"}";
 	                }
-			    } catch(Exception e) {
-			        e.printStackTrace();
-			    }
-				break;
-			}
-			writer.flush();
-		}catch (Exception e) {
-			// TODO: handle exception
-		}
+	                writer.print(jsonResponse); // <<< 수정/추가: 변수로 출력
+	                break;
+
+	            case "/RawmDataLoading.do":
+	                BufferedReader br = request.getReader();
+	                StringBuilder sb = new StringBuilder();
+	                String line;
+	                while ((line = br.readLine()) != null) {
+	                    sb.append(line);
+	                }
+	                String body = sb.toString();
+	                System.out.println("body: " + body);
+
+	                JSONObject json = new JSONObject(body);
+	                String ComCode = json.getString("ComCode");
+	                String IQData = json.getString("IQData");
+
+	                DaoResult = Dao.DataLoadFun(IQData, ComCode);
+
+	                // <<< 수정/추가: JSON 문자열 변수로 만들어서 반환
+	                if(DaoResult == null || DaoResult.isEmpty()) {
+	                    writer.print("{\"result\":\"fail\", \"List\":[]}");
+	                } else {
+	                    writer.print("{\"result\":\"success\", \"List\":" + DaoResult + "}");
+	                }
+	                break;
+
+	            case "/RawmLineDataLoading.do":
+	                System.out.println("RawmLineDataLoading.do");
+	                BufferedReader br1 = request.getReader();
+	                StringBuilder sb1 = new StringBuilder();
+	                String line1;
+	                while ((line1 = br1.readLine()) != null) {
+	                    sb1.append(line1);
+	                }
+	                String jsonString = sb1.toString();
+
+	                try {
+	                    JSONObject jsonObj = new JSONObject(jsonString);
+	                    Iterator<String> keys = jsonObj.keys();
+	                    while(keys.hasNext()) {
+	                        String key = keys.next();
+	                        Object value = jsonObj.get(key);
+	                        System.out.println(key + " : " + value);
+	                    }
+
+	                    DaoResult = Dao.LineDataLoadFun(jsonObj);
+	                    System.out.println("DaoResult : " + DaoResult);
+
+	                    // <<< 수정/추가: JSON 문자열 변수로 만들어서 반환
+	                    if(DaoResult == null || DaoResult.isEmpty()) {
+	                        writer.print("{\"result\":\"fail\", \"List\":[]}");
+	                    } else {
+	                        writer.print("{\"result\":\"success\", \"List\":" + DaoResult + "}");
+	                    }
+	                } catch(Exception e) {
+	                    e.printStackTrace();
+	                    // <<< 추가: 오류 발생 시 JSON 반환
+	                    writer.print("{\"result\":\"fail\", \"message\":\"서버 처리 중 오류 발생\"}");
+	                }
+	                break;
+	        }
+	        writer.flush();
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	        // <<< 추가: 전체 try-catch에서 오류 발생 시 JSON 반환
+	        writer.print("{\"result\":\"fail\", \"message\":\"서버 처리 중 오류 발생\"}");
+	        writer.flush();
+	    }
 	}
 }

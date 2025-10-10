@@ -147,16 +147,17 @@ $(document).ready(function() {
 			dataType: 'json',
 			async: false,
 			success: function(data){
-				console.log(data.result);
+				console.log(data.message);
 				if(data.result === "success"){
-					alert('결산이 완료되었습니다.');
+					alert('결산이 완료되었습니다.' + MonthData);
 					if (!MonthData || MonthData.trim() === '') {
 					    // 필요하다면 사용자에게 안내 메시지도 추가 가능
 					    alert('월 데이터를 입력하세요!');
 					    return false;
 					}else{
+						console.log('MonthData : ' + MonthData);
 						$('.InfoTable-Body').empty();
-						$.ajax({
+ 						$.ajax({
 							url : '${contextPath}/CostCalc/RawmDataLoading.do',
 							type : 'POST',
 							data : JSON.stringify({ComCode : ComData, IQData : MonthData}),
@@ -204,7 +205,7 @@ $(document).ready(function() {
 				}
 			},
 			error: function(jqXHR, textStatus, errorThrown){
-				alert('오류 발생: ' + textStatus + ', ' + errorThrown);
+				alert('1.오류 발생: ' + textStatus + ', ' + errorThrown);
 	    	}
     	});
 	})

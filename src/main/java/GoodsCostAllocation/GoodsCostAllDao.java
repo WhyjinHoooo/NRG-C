@@ -69,7 +69,7 @@ public class GoodsCostAllDao {
 		    	jsonObject.put("PlantCode", rs.getString("PlantCode"));
 		    	jsonObject.put("WorkType", rs.getString("WorkType"));
 		    	jsonObject.put("CostingLev", rs.getString("CostingLev"));
-		    	jsonObject.put("WorkOrd", rs.getDouble("WorkOrd"));
+		    	jsonObject.put("WorkOrd", rs.getString("WorkOrd"));
 		    	jsonObject.put("SumOfWMC", rs.getString("SumOfWMC"));
 		    	jsonObject.put("SumOfWMfC", rs.getString("SumOfWMfC"));
 		    	jsonObject.put("SumOfFMC", rs.getString("SumOfFMC"));
