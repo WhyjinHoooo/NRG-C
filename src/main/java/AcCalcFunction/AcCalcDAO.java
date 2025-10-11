@@ -6,6 +6,7 @@ import java.math.RoundingMode;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -110,18 +111,20 @@ public class AcCalcDAO {
 	}
 	private String WipmatCost(String ClosingMonth) {
 		// TODO Auto-generated method stub
-		connDB();
 		String result = null;
 		String SelectSql = "SELECT * FROM processcosttable WHERE ClosingMon = ? AND InOutType = ? ORDER BY CostingLev, ProcessCode";
+		
+		PreparedStatement SelectPstmt = null;
+		ResultSet SelectRs = null;
 		
 		String WipUpSql = null;
 		PreparedStatement WipUpPstmt = null;
 		
 		try {
-			PreparedStatement SelectPstmt = conn.prepareStatement(SelectSql);
+			SelectPstmt = conn.prepareStatement(SelectSql);
 			SelectPstmt.setString(1, ClosingMonth);
 			SelectPstmt.setString(2, "OC");
-			ResultSet SelectRs = SelectPstmt.executeQuery();
+			SelectRs = SelectPstmt.executeQuery();
 			while(SelectRs.next()) {
 				String KeyValue = SelectRs.getString("KeyValue");
 				
@@ -168,6 +171,14 @@ public class AcCalcDAO {
 		}catch (Exception e) {
 			// TODO: handle exception
 			result = "No";
+			e.printStackTrace();
+		}finally {
+			try {
+				if (WipUpPstmt != null) WipUpPstmt.close();
+			} catch (SQLException e2) {
+				// TODO: handle exception
+				e2.printStackTrace();
+			}
 		}
 		 
 		return result;
@@ -175,14 +186,13 @@ public class AcCalcDAO {
 
 	private String StockVariance(String ClosingMonth, String MC, String IC, String PC, String CMC) {
 		// MC : 교반 가공비, IC : 검사 가공비, PC : 소분 가공비, CMC : 공통 재료비
-		connDB();
 		String ClosingMon = ClosingMonth;
-		int OP10 = Integer.parseInt(MC.replace(",", ""));
-		int OP20 = Integer.parseInt(IC.replace(",", ""));
-		int OP30 = Integer.parseInt(PC.replace(",", ""));
-		int OP40 = Integer.parseInt(CMC.replace(",", ""));
+		BigDecimal OP10 = new BigDecimal(MC.replace(",", ""));
+		BigDecimal OP20 = new BigDecimal(IC.replace(",", ""));
+		BigDecimal OP30 = new BigDecimal(PC.replace(",", ""));
+		BigDecimal OP40 = new BigDecimal(CMC.replace(",", ""));
 		String result = null;
-		int[] DataArray = {OP10, OP20, OP30, OP40};
+		BigDecimal[] DataArray = {OP10, OP20, OP30, OP40};
 		for(int i = 0 ; i < DataArray.length ; i++) {
 			System.out.println(DataArray[i]);
 			String SwSql = null;
@@ -205,9 +215,9 @@ public class AcCalcDAO {
 					SwPstmt.setString(3, "OC");
 					SwRs = SwPstmt.executeQuery();
 					if(SwRs.next()) {
-						int ManufCost = SwRs.getInt("SumOfManufCost");
+						BigDecimal ManufCost = SwRs.getBigDecimal("SumOfManufCost");
 						System.out.println("교반 가공비의 발생 가공비 OP10 : " + ManufCost);
-						int gap = DataArray[i] - ManufCost;
+						BigDecimal gap = DataArray[i].subtract(ManufCost);
 						Sw_SearchSql = "SELECT * FROM processcosttable WHERE ClosingMon = ? AND ProcessCode = ? AND InOutType = ? ORDER BY CostingLev";
 						Sw_SearchPstmt = conn.prepareStatement(Sw_SearchSql);
 						Sw_SearchPstmt.setString(1, ClosingMon);
@@ -216,16 +226,16 @@ public class AcCalcDAO {
 						Sw_SearchRs = Sw_SearchPstmt.executeQuery();
 						if(Sw_SearchRs.next()) {
 							String WorkOrdDoc = Sw_SearchRs.getString("WorkOrd");
-							int UpValue = Sw_SearchRs.getInt("ManufCost");
-							if(gap < 0) {
-								UpValue -= Math.abs(gap);
+							BigDecimal UpValue = Sw_SearchRs.getBigDecimal("ManufCost");
+							if(gap.compareTo(BigDecimal.ZERO) < 0) {
+								UpValue = UpValue.subtract(gap.abs());
 							}else {
-								UpValue += Math.abs(gap);
+								UpValue = UpValue.add(gap.abs());
 							}
 							Sw_UpSql = "UPDATE processcosttable SET ManufCost = ?, ManufCostSum = ? WHERE ClosingMon = ? AND ProcessCode = ? AND InOutType = ? AND WorkOrd = ?";
 							Sw_UpPstmt = conn.prepareStatement(Sw_UpSql);
-							Sw_UpPstmt.setInt(1, UpValue);
-							Sw_UpPstmt.setInt(2, UpValue);
+							Sw_UpPstmt.setBigDecimal(1, UpValue);
+							Sw_UpPstmt.setBigDecimal(2, UpValue);
 							Sw_UpPstmt.setString(3, ClosingMon);
 							Sw_UpPstmt.setString(4, "OP10");
 							Sw_UpPstmt.setString(5, "OC");
@@ -242,9 +252,9 @@ public class AcCalcDAO {
 					SwPstmt.setString(3, "OC");
 					SwRs = SwPstmt.executeQuery();
 					if(SwRs.next()) {
-						int ManufCost = SwRs.getInt("SumOfManufCost");
+						BigDecimal ManufCost = SwRs.getBigDecimal("SumOfManufCost");
 						System.out.println("검사 가공비의 발생 가공비 OP20 : " + ManufCost);
-						int gap = DataArray[i] - ManufCost;
+						BigDecimal gap = DataArray[i].subtract(ManufCost);
 						Sw_SearchSql = "SELECT * FROM processcosttable WHERE ClosingMon = ? AND ProcessCode = ? AND InOutType = ? ORDER BY CostingLev";
 						Sw_SearchPstmt = conn.prepareStatement(Sw_SearchSql);
 						Sw_SearchPstmt.setString(1, ClosingMon);
@@ -253,16 +263,16 @@ public class AcCalcDAO {
 						Sw_SearchRs = Sw_SearchPstmt.executeQuery();
 						if(Sw_SearchRs.next()) {
 							String WorkOrdDoc = Sw_SearchRs.getString("WorkOrd");
-							int UpValue = Sw_SearchRs.getInt("ManufCost");
-							if(gap < 0) {
-								UpValue -= Math.abs(gap);
+							BigDecimal UpValue = Sw_SearchRs.getBigDecimal("ManufCost");
+							if(gap.compareTo(BigDecimal.ZERO) < 0) {
+								UpValue = UpValue.subtract(gap.abs());
 							}else {
-								UpValue += Math.abs(gap);
+								UpValue = UpValue.add(gap.abs());
 							}
 							Sw_UpSql = "UPDATE processcosttable SET ManufCost = ?, ManufCostSum = ? WHERE ClosingMon = ? AND ProcessCode = ? AND InOutType = ? AND WorkOrd = ?";
 							Sw_UpPstmt = conn.prepareStatement(Sw_UpSql);
-							Sw_UpPstmt.setInt(1, UpValue);
-							Sw_UpPstmt.setInt(2, UpValue);
+							Sw_UpPstmt.setBigDecimal(1, UpValue);
+							Sw_UpPstmt.setBigDecimal(2, UpValue);
 							Sw_UpPstmt.setString(3, ClosingMon);
 							Sw_UpPstmt.setString(4, "OP20");
 							Sw_UpPstmt.setString(5, "OC");
@@ -279,9 +289,9 @@ public class AcCalcDAO {
 					SwPstmt.setString(3, "OC");
 					SwRs = SwPstmt.executeQuery();
 					if(SwRs.next()) {
-						int ManufCost = SwRs.getInt("SumOfManufCost");
+						BigDecimal ManufCost = SwRs.getBigDecimal("SumOfManufCost");
 						System.out.println("소분 가공비의 발생 가공비 OP30 : " + ManufCost);
-						int gap = DataArray[i] - ManufCost;
+						BigDecimal gap = DataArray[i].subtract(ManufCost);
 						Sw_SearchSql = "SELECT * FROM processcosttable WHERE ClosingMon = ? AND ProcessCode = ? AND InOutType = ? ORDER BY CostingLev";
 						Sw_SearchPstmt = conn.prepareStatement(Sw_SearchSql);
 						Sw_SearchPstmt.setString(1, ClosingMon);
@@ -290,16 +300,16 @@ public class AcCalcDAO {
 						Sw_SearchRs = Sw_SearchPstmt.executeQuery();
 						if(Sw_SearchRs.next()) {
 							String WorkOrdDoc = Sw_SearchRs.getString("WorkOrd");
-							int UpValue = Sw_SearchRs.getInt("ManufCost");
-							if(gap < 0) {
-								UpValue -= Math.abs(gap);
+							BigDecimal UpValue = Sw_SearchRs.getBigDecimal("ManufCost");
+							if(gap.compareTo(BigDecimal.ZERO) < 0) {
+								UpValue = UpValue.subtract(gap.abs());
 							}else {
-								UpValue += Math.abs(gap);
+								UpValue = UpValue.add(gap.abs());
 							}
 							Sw_UpSql = "UPDATE processcosttable SET ManufCost = ?, ManufCostSum = ? WHERE ClosingMon = ? AND ProcessCode = ? AND InOutType = ? AND WorkOrd = ?";
 							Sw_UpPstmt = conn.prepareStatement(Sw_UpSql);
-							Sw_UpPstmt.setInt(1, UpValue);
-							Sw_UpPstmt.setInt(2, UpValue);
+							Sw_UpPstmt.setBigDecimal(1, UpValue);
+							Sw_UpPstmt.setBigDecimal(2, UpValue);
 							Sw_UpPstmt.setString(3, ClosingMon);
 							Sw_UpPstmt.setString(4, "OP30");
 							Sw_UpPstmt.setString(5, "OC");
@@ -316,9 +326,9 @@ public class AcCalcDAO {
 					SwPstmt.setString(3, "OC");
 					SwRs = SwPstmt.executeQuery();
 					if(SwRs.next()) {
-						int ManufCost = SwRs.getInt("SumOfOthMatCost");
+						BigDecimal ManufCost = SwRs.getBigDecimal("SumOfOthMatCost");
 						System.out.println("재료비 OP40 : " + ManufCost);
-						int gap = DataArray[i] - ManufCost;
+						BigDecimal gap = DataArray[i].subtract(ManufCost);
 						Sw_SearchSql = "SELECT * FROM processcosttable WHERE ClosingMon = ? AND ProcessCode = ? AND InOutType = ? ORDER BY CostingLev";
 						Sw_SearchPstmt = conn.prepareStatement(Sw_SearchSql);
 						Sw_SearchPstmt.setString(1, ClosingMon);
@@ -327,20 +337,20 @@ public class AcCalcDAO {
 						Sw_SearchRs = Sw_SearchPstmt.executeQuery();
 						if(Sw_SearchRs.next()) {
 							String WorkOrdDoc = Sw_SearchRs.getString("WorkOrd");
-							int UpValue = Sw_SearchRs.getInt("OthMatCost");
-							int UpMatCostSum = Sw_SearchRs.getInt("MatCostSum");
-							if(gap < 0) {
-								UpValue -= Math.abs(gap);
-								UpMatCostSum -= Math.abs(gap);
+							BigDecimal UpValue = Sw_SearchRs.getBigDecimal("OthMatCost");
+							BigDecimal UpMatCostSum = Sw_SearchRs.getBigDecimal("MatCostSum");
+							if(gap.compareTo(BigDecimal.ZERO) < 0) {
+								UpValue = UpValue.subtract(gap.abs());
+								UpMatCostSum = UpMatCostSum.subtract(gap.abs());
 							}else {
-								UpValue += Math.abs(gap);
-								UpMatCostSum += Math.abs(gap);
+								UpValue = UpValue.add(gap.abs());
+								UpMatCostSum = UpMatCostSum.add(gap.abs());
 							}
 							
 							Sw_UpSql = "UPDATE processcosttable SET OthMatCost = ?, MatCostSum = ? WHERE ClosingMon = ? AND ProcessCode = ? AND InOutType = ? AND WorkOrd = ?";
 							Sw_UpPstmt = conn.prepareStatement(Sw_UpSql);
-							Sw_UpPstmt.setInt(1, UpValue);
-							Sw_UpPstmt.setInt(2, UpMatCostSum);
+							Sw_UpPstmt.setBigDecimal(1, UpValue);
+							Sw_UpPstmt.setBigDecimal(2, UpMatCostSum);
 							Sw_UpPstmt.setString(3, ClosingMon);
 							Sw_UpPstmt.setString(4, "OP10");
 							Sw_UpPstmt.setString(5, "OC");
@@ -353,43 +363,82 @@ public class AcCalcDAO {
 				result = "Yes";
 			}catch (Exception e) {
 				// TODO: handle exception
+				e.printStackTrace();
 				result = "No";
+			}finally {
+				try {
+					if (SwPstmt != null) SwPstmt.close();
+		            if (SwRs != null) SwRs.close();
+		            if (Sw_SearchPstmt != null) Sw_SearchPstmt.close();
+		            if (Sw_SearchRs != null) Sw_SearchRs.close();
+		            if (Sw_UpPstmt != null) Sw_UpPstmt.close();
+				}catch(SQLException e2) {
+					e2.printStackTrace();
+				}
 			}
 		}
 		return result;
 	}
-	
+
 	public String FirstProcess(String ClosingMonth, String MC, String IC, String PC, String CMC) {
 		// MC : 교반 가공비, IC : 검사 가공비, PC : 소분 가공비, CMC : 공통 재료비
 		String ClosingMon = ClosingMonth;
-		int OP10 = Integer.parseInt(MC.replace(",", ""));
-		int OP20 = Integer.parseInt(IC.replace(",", ""));
-		int OP30 = Integer.parseInt(PC.replace(",", ""));
-		int OP40 = Integer.parseInt(CMC.replace(",", ""));
-		int RawMatCost = 0;
+		BigDecimal OP10 = new BigDecimal(MC.replace(",", ""));
+		BigDecimal OP20 = new BigDecimal(IC.replace(",", ""));
+		BigDecimal OP30 = new BigDecimal(PC.replace(",", ""));
+		BigDecimal OP40 = new BigDecimal(CMC.replace(",", ""));
 		String OK = null;
+		
+
+		String B012 = SetRawmAmt_OutAmt(ClosingMon, OP40, OK);
+		if(B012.equals("Yes")) {
+			String B03 = SetProcessAmt(ClosingMon, OP10, OP20, OP30, B012);
+			OK = B03;
+		}
+		
+		
+		return OK;
+	}
+	private String SetRawmAmt_OutAmt(String ClosingMon, BigDecimal OP40, String Chk) {
+		// TODO Auto-generated method stub
+
+		BigDecimal RawMatCost = BigDecimal.ZERO;
+		
 		SelectSql = "SELECT * FROM processcosttable WHERE ClosingMon = ? AND ProcessCode = ? AND InOutType = ? ORDER BY CostingLev";
+		PreparedStatement SelectPstmt = null;
+		ResultSet SelectRs = null;
+		
+		PreparedStatement LineSearchPstmt = null;
+		ResultSet LineSearchRs = null;
+		
+		PreparedStatement PriceCalcPstmt = null;
+		ResultSet PriceCalcRs = null;
+		
+		PreparedStatement ItemSearchPstmt = null;
+		ResultSet ItemSearchRs = null;
+		
+		PreparedStatement MatCostUpdatePstmt = null;
 		try {
-			PreparedStatement SelectPstmt = conn.prepareStatement(SelectSql);
+			SelectPstmt = conn.prepareStatement(SelectSql);
 			SelectPstmt.setString(1, ClosingMon); // 결산하는 달 예: 202504
 			SelectPstmt.setString(2, "OP10"); // 교반공
 			SelectPstmt.setString(3, "OC");
-			ResultSet SelectRs = SelectPstmt.executeQuery();
+			SelectRs = SelectPstmt.executeQuery();
 			while(SelectRs.next()) {
 				String ManufLot =  SelectRs.getString("WorkOrd");
-				String LineSearchSql = "SELECT * FROM InvenLogl WHERE workordnum = ? AND process = ? AND mattype = ?";
-				PreparedStatement LineSearchPstmt = conn.prepareStatement(LineSearchSql);
+				String LineSearchSql = "SELECT SUM(amount) as SumAmt FROM InvenLogl WHERE workordnum = ? AND process = ? AND mattype = ?";
+				LineSearchPstmt = conn.prepareStatement(LineSearchSql);
 				LineSearchPstmt.setString(1, ManufLot);
 				LineSearchPstmt.setString(2, "OP10");
 				LineSearchPstmt.setString(3, "RAWM");
-				ResultSet LineSearchRs = LineSearchPstmt.executeQuery();
-				RawMatCost = 0;
+				LineSearchRs = LineSearchPstmt.executeQuery();
+				RawMatCost = BigDecimal.ZERO;
 				while(LineSearchRs.next()) {
-					RawMatCost += LineSearchRs.getInt("amount");
+					RawMatCost = RawMatCost.add(LineSearchRs.getBigDecimal("SumAmt"));
 				}
 				String RawMatCoUpdateSql = "UPDATE processcosttable SET RawMatCost = ? WHERE WorkOrd = ? AND ProcessCode = ? AND InOutType = ?";
 				PreparedStatement RawMatCoUpdatePstmt = conn.prepareStatement(RawMatCoUpdateSql);
-				RawMatCoUpdatePstmt.setInt(1, RawMatCost);
+				RawMatCoUpdatePstmt.setBigDecimal(1, RawMatCost);
 				RawMatCoUpdatePstmt.setString(2, ManufLot);
 				RawMatCoUpdatePstmt.setString(3, "OP10");
 				RawMatCoUpdatePstmt.setString(4, "OC");
@@ -397,33 +446,29 @@ public class AcCalcDAO {
 			}
 			
 			String PriceCalcSql = "SELECT SUM(RawMatCost) as SumOfRawMatCost FROM processcosttable WHERE ClosingMon = ? AND ProcessCode = ? AND InOutType = ?";
-			PreparedStatement PriceCalcPstmt = conn.prepareStatement(PriceCalcSql);
+			PriceCalcPstmt = conn.prepareStatement(PriceCalcSql);
 			PriceCalcPstmt.setString(1, ClosingMon);
 			PriceCalcPstmt.setString(2, "OP10");
 			PriceCalcPstmt.setString(3, "OC");
-			ResultSet PriceCalcRs = PriceCalcPstmt.executeQuery();
+			PriceCalcRs = PriceCalcPstmt.executeQuery();
 			if(PriceCalcRs.next()) {
-				BigDecimal TotalCost = new BigDecimal(PriceCalcRs.getString("SumOfRawMatCost"));
+				BigDecimal TotalCost = PriceCalcRs.getBigDecimal("SumOfRawMatCost");
 				String ItemSearchSql = "SELECT * FROM processcosttable WHERE ClosingMon = ? AND ProcessCode = ? AND InOutType = ?";
-				PreparedStatement ItemSearchPstmt = conn.prepareStatement(ItemSearchSql);
+				ItemSearchPstmt = conn.prepareStatement(ItemSearchSql);
 				ItemSearchPstmt.setString(1, ClosingMon);
 				ItemSearchPstmt.setString(2, "OP10");
 				ItemSearchPstmt.setString(3, "OC");
-				ResultSet ItemSearchRs = ItemSearchPstmt.executeQuery();
+				ItemSearchRs = ItemSearchPstmt.executeQuery();
 				while(ItemSearchRs.next()) {
 					String ManufItemCode = ItemSearchRs.getString("WorkOrd");
-					BigDecimal RawmatCost = new BigDecimal(ItemSearchRs.getString("RawMatCost"));
-					BigDecimal NewNeoOP40 = new BigDecimal(OP40);
-					BigInteger OthMatCost = NewNeoOP40
-						    .multiply(RawmatCost.divide(TotalCost, 10, RoundingMode.HALF_UP))
-						    .setScale(0, RoundingMode.HALF_UP)
-						    .toBigInteger();
-					BigInteger MatCostSum = RawmatCost.toBigInteger().add(OthMatCost);
+					BigDecimal RawmatCost = ItemSearchRs.getBigDecimal("RawMatCost");
+					BigDecimal OthMatCost = OP40.multiply(RawmatCost.divide(TotalCost, 2, RoundingMode.HALF_UP)).setScale(0, RoundingMode.HALF_UP);
+					BigDecimal MatCostSum = RawmatCost.add(OthMatCost);
 					String MatCostUpdateSql = "UPDATE processcosttable SET OthMatCost = ?, MatCostSum = ? WHERE "
 							+ "ClosingMon = ? AND ProcessCode = ? AND InOutType = ? AND WorkOrd = ?";
-					PreparedStatement MatCostUpdatePstmt = conn.prepareStatement(MatCostUpdateSql);
-					MatCostUpdatePstmt.setDouble(1, OthMatCost.doubleValue());
-					MatCostUpdatePstmt.setDouble(2, MatCostSum.doubleValue());
+					MatCostUpdatePstmt = conn.prepareStatement(MatCostUpdateSql);
+					MatCostUpdatePstmt.setBigDecimal(1, OthMatCost);
+					MatCostUpdatePstmt.setBigDecimal(2, MatCostSum);
 					MatCostUpdatePstmt.setString(3, ClosingMon);
 					MatCostUpdatePstmt.setString(4, "OP10");
 					MatCostUpdatePstmt.setString(5, "OC");
@@ -431,31 +476,55 @@ public class AcCalcDAO {
 					MatCostUpdatePstmt.executeUpdate();
 				}
 			}
-			
-			String ManufCalcSql = "SELECT * FROM processcosttable WHERE ClosingMon = ? AND InOutType = ? ORDER BY ProcessCode";
-			PreparedStatement ManufCalcPstmt = conn.prepareStatement(ManufCalcSql);
+			Chk = "Yes";
+		}catch (SQLException e) {
+			e.printStackTrace();
+			Chk = "No";
+		}finally {
+			try {
+				if (LineSearchPstmt != null) LineSearchPstmt.close();
+	            if (LineSearchRs != null) LineSearchRs.close();
+	            if (PriceCalcPstmt != null) PriceCalcPstmt.close();
+	            if (PriceCalcRs != null) PriceCalcRs.close();
+	            if (ItemSearchPstmt != null) ItemSearchPstmt.close();
+	            if (ItemSearchRs != null) ItemSearchRs.close();
+	            if (MatCostUpdatePstmt != null) MatCostUpdatePstmt.close();
+			} catch (SQLException e2) {
+				e2.printStackTrace();
+			}
+		}
+		return Chk;
+	}
+	private String SetProcessAmt(String ClosingMon, BigDecimal OP10, BigDecimal OP20, BigDecimal OP30, String Chk) {
+		// TODO Auto-generated method stub
+		String ManufCalcSql = "SELECT * FROM processcosttable WHERE ClosingMon = ? AND InOutType = ? ORDER BY ProcessCode";
+		
+		PreparedStatement ManufCalcPstmt = null;
+		ResultSet MaunfCalcRs = null;
+		
+		String SwitchSql = null;
+		PreparedStatement SwitecPstmt = null;
+		ResultSet SwitchRs = null;
+		
+		String SwSearSql = null;
+		PreparedStatement SwSearPstmt = null;
+		ResultSet SwSearRs = null;
+		
+		String SwUpSql = null;
+		PreparedStatement SwUpPstmt = null;
+		ResultSet SwUpRs = null;
+		try {	
+			ManufCalcPstmt = conn.prepareStatement(ManufCalcSql);
 			ManufCalcPstmt.setString(1, ClosingMon);
 			ManufCalcPstmt.setString(2, "OC");
-			ResultSet MaunfCalcRs = ManufCalcPstmt.executeQuery();
+			MaunfCalcRs = ManufCalcPstmt.executeQuery();
 			while(MaunfCalcRs.next()) {
 				String ProcessType = MaunfCalcRs.getString("ProcessCode");
-				String SwitchSql = null;
-				PreparedStatement SwitecPstmt = null;
-				ResultSet SwitchRs = null;
-				
-				String SwSearSql = null;
-				PreparedStatement SwSearPstmt = null;
-				ResultSet SwSearRs = null;
-				
-				String SwUpSql = null;
-				PreparedStatement SwUpPstmt = null;
-				ResultSet SwUpRs = null;
-				
-				int SumOption = 0;
+				BigDecimal SumOption = BigDecimal.ZERO;
 				String ManufItem = null;
 				switch(ProcessType) {
 				case"OP10":
-					SumOption = 0;
+					SumOption = BigDecimal.ZERO;
 					SwitchSql = "SELECT SUM(MixTime) AS SumTime FROM processcosttable WHERE ClosingMon = ? AND InOutType = ? AND ProcessCode = ?";
 					SwitecPstmt = conn.prepareStatement(SwitchSql);
 					SwitecPstmt.setString(1, ClosingMon);
@@ -463,7 +532,7 @@ public class AcCalcDAO {
 					SwitecPstmt.setString(3, ProcessType);
 					SwitchRs = SwitecPstmt.executeQuery();
 					if(SwitchRs.next()) {
-						SumOption = SwitchRs.getInt("SumTime");
+						SumOption = SumOption.add(SwitchRs.getBigDecimal("SumTime"));
 					}
 					SwSearSql = "SELECT * FROM processcosttable WHERE ClosingMon = ? AND InOutType = ? AND ProcessCode = ?";
 					SwSearPstmt = conn.prepareStatement(SwSearSql);
@@ -473,13 +542,13 @@ public class AcCalcDAO {
 					SwSearRs = SwSearPstmt.executeQuery();
 					while(SwSearRs.next()) {
 						ManufItem = SwSearRs.getString("WorkOrd");
-						int MixTime = SwSearRs.getInt("MixTime");
-						int ManufCost = (int) Math.round((double)OP10 * MixTime / SumOption);
+						BigDecimal MixTime = SwSearRs.getBigDecimal("MixTime");
+						BigDecimal ManufCost = OP10.multiply(MixTime.divide(SumOption, 2, RoundingMode.HALF_UP)).setScale(0, RoundingMode.HALF_UP);
 						
 						SwUpSql = "UPDATE processcosttable SET ManufCost = ?, ManufCostSum = ? WHERE ClosingMon = ? AND InOutType = ? AND ProcessCode = ? AND WorkOrd = ?";
 						SwUpPstmt = conn.prepareStatement(SwUpSql);
-						SwUpPstmt.setInt(1, ManufCost);
-						SwUpPstmt.setInt(2, ManufCost);
+						SwUpPstmt.setBigDecimal(1, ManufCost);
+						SwUpPstmt.setBigDecimal(2, ManufCost);
 						SwUpPstmt.setString(3, ClosingMon);
 						SwUpPstmt.setString(4, "OC");
 						SwUpPstmt.setString(5, ProcessType);
@@ -488,7 +557,7 @@ public class AcCalcDAO {
 					}
 					break;
 				case"OP20":
-					SumOption = 0;
+					SumOption = BigDecimal.ZERO;
 					SwitchSql = "SELECT COUNT(*) AS SumCount FROM processcosttable WHERE ClosingMon = ? AND InOutType = ? AND ProcessCode = ?";
 					SwitecPstmt = conn.prepareStatement(SwitchSql);
 					SwitecPstmt.setString(1, ClosingMon);
@@ -496,7 +565,7 @@ public class AcCalcDAO {
 					SwitecPstmt.setString(3, ProcessType);
 					SwitchRs = SwitecPstmt.executeQuery();
 					if(SwitchRs.next()) {
-						SumOption = SwitchRs.getInt("SumCount");
+						SumOption = SumOption.add(SwitchRs.getBigDecimal("SumCount"));  
 					}
 					SwSearSql = "SELECT * FROM processcosttable WHERE ClosingMon = ? AND InOutType = ? AND ProcessCode = ?";
 					SwSearPstmt = conn.prepareStatement(SwSearSql);
@@ -506,12 +575,12 @@ public class AcCalcDAO {
 					SwSearRs = SwSearPstmt.executeQuery();
 					while(SwSearRs.next()) {
 						ManufItem = SwSearRs.getString("WorkOrd");
-						int ManufCost = (int) Math.round((double)OP20 * 1 / SumOption);
+						BigDecimal ManufCost = OP20.divide(SumOption, 0, RoundingMode.HALF_UP); //(int) Math.round((double)OP20 * 1 / SumOption);
 						
 						SwUpSql = "UPDATE processcosttable SET ManufCost = ?, ManufCostSum = ? WHERE ClosingMon = ? AND InOutType = ? AND ProcessCode = ? AND WorkOrd = ?";
 						SwUpPstmt = conn.prepareStatement(SwUpSql);
-						SwUpPstmt.setInt(1, ManufCost);
-						SwUpPstmt.setInt(2, ManufCost);
+						SwUpPstmt.setBigDecimal(1, ManufCost);
+						SwUpPstmt.setBigDecimal(2, ManufCost);
 						SwUpPstmt.setString(3, ClosingMon);
 						SwUpPstmt.setString(4, "OC");
 						SwUpPstmt.setString(5, ProcessType);
@@ -520,7 +589,7 @@ public class AcCalcDAO {
 					}
 					break;
 				case"OP30":
-					SumOption = 0;
+					SumOption = BigDecimal.ZERO;
 					SwitchSql = "SELECT SUM(InputQty) AS SumQty FROM processcosttable WHERE ClosingMon = ? AND InOutType = ? AND ProcessCode = ?";
 					SwitecPstmt = conn.prepareStatement(SwitchSql);
 					SwitecPstmt.setString(1, ClosingMon);
@@ -528,7 +597,7 @@ public class AcCalcDAO {
 					SwitecPstmt.setString(3, ProcessType);
 					SwitchRs = SwitecPstmt.executeQuery();
 					if(SwitchRs.next()) {
-						SumOption = SwitchRs.getInt("SumQty");
+						SumOption = SumOption.add(SwitchRs.getBigDecimal("SumQty"));
 					}
 					SwSearSql = "SELECT * FROM processcosttable WHERE ClosingMon = ? AND InOutType = ? AND ProcessCode = ?";
 					SwSearPstmt = conn.prepareStatement(SwSearSql);
@@ -538,12 +607,12 @@ public class AcCalcDAO {
 					SwSearRs = SwSearPstmt.executeQuery();
 					while(SwSearRs.next()) {
 						ManufItem = SwSearRs.getString("WorkOrd");
-						int InputQty = SwSearRs.getInt("InputQty");
-						int ManufCost = (int) Math.round((double)OP30 * InputQty / SumOption);
+						BigDecimal InputQty = SwSearRs.getBigDecimal("InputQty");
+						BigDecimal ManufCost = OP30.multiply(InputQty.divide(SumOption, 2, RoundingMode.HALF_UP)).setScale(0, RoundingMode.HALF_UP);//(int) Math.round((double)OP30 * InputQty / SumOption);
 						SwUpSql = "UPDATE processcosttable SET ManufCost = ?, ManufCostSum = ? WHERE ClosingMon = ? AND InOutType = ? AND ProcessCode = ? AND WorkOrd = ?";
 						SwUpPstmt = conn.prepareStatement(SwUpSql);
-						SwUpPstmt.setInt(1, ManufCost);
-						SwUpPstmt.setInt(2, ManufCost);
+						SwUpPstmt.setBigDecimal(1, ManufCost);
+						SwUpPstmt.setBigDecimal(2, ManufCost);
 						SwUpPstmt.setString(3, ClosingMon);
 						SwUpPstmt.setString(4, "OC");
 						SwUpPstmt.setString(5, ProcessType);
@@ -553,15 +622,12 @@ public class AcCalcDAO {
 					break;
 				}
 			}
-			
-			OK = "Yes";
+			Chk = "Yes";
 		}catch (Exception e) {
 			// TODO: handle exception
 			e.printStackTrace();
-			OK = "No";
+			Chk = "No";
 		}
-		
-		return OK;
-	}
-	
+		return Chk;
+	}	
 }
