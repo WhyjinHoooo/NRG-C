@@ -190,11 +190,11 @@ public class MatCostCalcDAO {
 				EndStocQty = BsQty.add(GrTransacQty).subtract(GiTransacQty);
 				BigDecimal denominator = BsQty.add(GrTransacQty);
 				if (denominator.compareTo(BigDecimal.ZERO) > 0) {
-					UnitPrice = BsAmt.add(GrSumAmt).divide(denominator, 2, RoundingMode.HALF_UP);
+					UnitPrice = BsAmt.add(GrSumAmt).divide(denominator, 0, RoundingMode.HALF_UP);
 				} else {
 				    UnitPrice = BigDecimal.ZERO;
 				}
-				EsAmt = EndStocQty.multiply(UnitPrice).setScale(2, RoundingMode.HALF_UP);
+				EsAmt = EndStocQty.multiply(UnitPrice).setScale(0, RoundingMode.HALF_UP);
 				
 				String InsertSql = "INSERT INTO sumrawmamt VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 				Insert_Pstmt = conn.prepareStatement(InsertSql);
@@ -222,7 +222,11 @@ public class MatCostCalcDAO {
 						Insert_Pstmt.setBigDecimal(16, BigDecimal.ZERO);
 					}
 				} else {
-				    Insert_Pstmt.setBigDecimal(16, diff);
+					if(GiTransacQty.compareTo(BigDecimal.ZERO) > 0) {
+						Insert_Pstmt.setBigDecimal(16, diff);
+					}else {
+						Insert_Pstmt.setBigDecimal(16, BigDecimal.ZERO);
+					}
 				}
 				Insert_Pstmt.setBigDecimal(17, EndStocQty);
 				Insert_Pstmt.setBigDecimal(18, EsAmt);
@@ -332,7 +336,7 @@ public class MatCostCalcDAO {
 				while(LineGISearchSql_Pstmt_Rs.next()) {
 					BigDecimal GiQty = LineGISearchSql_Pstmt_Rs.getBigDecimal("quantity");
 					String GIKeyValue = LineGISearchSql_Pstmt_Rs.getString("keyvalue");
-					BigDecimal GiAmount = GiQty.multiply(MatPrice); // SumRawmTalbe에 저장된 단가와 Line테이블에 있는 수량의 곱
+					BigDecimal GiAmount = GiQty.multiply(MatPrice).setScale(0, RoundingMode.HALF_UP); // SumRawmTalbe에 저장된 단가와 Line테이블에 있는 수량의 곱
 					
 					String LineGIUpdateSql = "UPDATE InvenLogl SET amount = ? WHERE closingmon = ? AND matcode = ? AND keyvalue = ?";
 					LineGIUpdateSql_Pstmt = conn.prepareStatement(LineGIUpdateSql);
@@ -364,9 +368,9 @@ public class MatCostCalcDAO {
 						String RenewUpdateSql = "UPDATE InvenLogl SET amount = ? WHERE closingmon = ? AND matcode = ? AND keyvalue = ?";
 						RenewUpdateSql_Pstmt = conn.prepareStatement(RenewUpdateSql);
 						if(Gap.signum() > 0) {
-							RenewUpdateSql_Pstmt.setBigDecimal(1, pdateTgtAmount.add(AbsGap));
+							RenewUpdateSql_Pstmt.setBigDecimal(1, pdateTgtAmount.add(AbsGap).setScale(0, RoundingMode.HALF_UP));
 						}else {
-							RenewUpdateSql_Pstmt.setBigDecimal(1, pdateTgtAmount.subtract(AbsGap));
+							RenewUpdateSql_Pstmt.setBigDecimal(1, pdateTgtAmount.subtract(AbsGap).setScale(0, RoundingMode.HALF_UP));
 						}
 						RenewUpdateSql_Pstmt.setString(2, CurrDate);
 						RenewUpdateSql_Pstmt.setString(3, MatCode);
