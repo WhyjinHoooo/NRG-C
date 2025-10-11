@@ -104,7 +104,6 @@ public class GoodsCostAllDao {
 		try {
 			String FirstProcess = AProcess(Cd, Pd, Cm);
 			if(FirstProcess.equals("success")) {
-				String SecondProcess = BProcess(Cd, Pd, Cm);
 			}else {
 				
 			}
@@ -114,88 +113,6 @@ public class GoodsCostAllDao {
 			e.printStackTrace();
 		}
 		return result;
-	}
-
-	private String BProcess(String ComCode, String PlantCode, String CalcMon) {
-		connDB();
-		this.Cd = ComCode;
-		this.Pd = PlantCode;
-		this.Cm = CalcMon;
-		
-		String BWDataSearch = "SELECT * FROM processcosttable_Copy WHERE ClosingMon = ? AND KeyValue LIKE '%BW%'";
-		PreparedStatement BWDataPstmt = null;
-		ResultSet BWDataRs = null;
-		
-		PreparedStatement FindProdQtyPstmt = null;
-		ResultSet FindProdQtyRs = null;
-		
-		PreparedStatement Updatepstmt = null;
-		try {
-			BWDataPstmt = conn.prepareStatement(BWDataSearch);
-			BWDataPstmt.setString(1, Cm);
-			BWDataRs = BWDataPstmt.executeQuery();
-			while(BWDataRs.next()) {
-				String BW_WorkOrd = BWDataRs.getString("WorkOrd"); // Order Number
-				BigDecimal InputQty = BWDataRs.getBigDecimal("InputQty");
-				String ClosingMon = BWDataRs.getString("ClosingMon");
-				String PackClosMon = BWDataRs.getString("PackClosMon");
-				
-				String FindProdQty = "SELECT * FROM processcosttable_Copy WHERE ClosingMon = ? AND WorkOrd = ? AND ProcessCode = ?";
-				FindProdQtyPstmt = conn.prepareStatement(FindProdQty);
-				FindProdQtyPstmt.setString(1, Cm);
-				FindProdQtyPstmt.setString(2, BW_WorkOrd);
-				FindProdQtyPstmt.setString(3, "OP30");
-				FindProdQtyRs = FindProdQtyPstmt.executeQuery();
-				if(FindProdQtyRs.next()) {
-					BigDecimal ProdQty = FindProdQtyRs.getBigDecimal("InputQty");
-					LocalDate date = LocalDate.parse(ClosingMon + "01", DateTimeFormatter.ofPattern("yyyyMMdd"));
-					int getMonthData = date.getMonthValue();
-					String UpdateSql = "UPDATE processcosttable_Copy SET ProdQty = ?, WipQty = ? WHERE ClosingMon = ? AND WorkOrd = ? AND KeyValue LIKE '%BW%'";
-					Updatepstmt = conn.prepareStatement(UpdateSql);
-					if (String.valueOf(getMonthData).equals(PackClosMon)) {
-	                    Updatepstmt.setBigDecimal(1, ProdQty);
-	                    Updatepstmt.setBigDecimal(2, BigDecimal.ZERO);
-	                } else if (Integer.parseInt(PackClosMon) > getMonthData) {
-	                    Updatepstmt.setBigDecimal(1, ProdQty);
-	                    Updatepstmt.setBigDecimal(2, InputQty.subtract(ProdQty));
-	                } else {
-	                    continue; // ✅ 조건에 맞지 않으면 UPDATE 실행 안 함
-	                }
-
-	                Updatepstmt.setString(3, Cm);
-	                Updatepstmt.setString(4, BW_WorkOrd);
-	                Updatepstmt.executeUpdate();
-				}
-			}
-		} catch (SQLException e) {
-	        e.printStackTrace();
-	        System.err.println("❌ BProcess SQL 오류: " + e.getMessage());
-	    } finally {
-	        // ✅ 자원 정리 (사용한 객체만 닫기)
-	        try { if (BWDataRs != null) BWDataRs.close(); } catch (SQLException e) { e.printStackTrace(); }
-	        try { if (FindProdQtyRs != null) FindProdQtyRs.close(); } catch (SQLException e) { e.printStackTrace(); }
-	        try { if (BWDataPstmt != null) BWDataPstmt.close(); } catch (SQLException e) { e.printStackTrace(); }
-	        try { if (FindProdQtyPstmt != null) FindProdQtyPstmt.close(); } catch (SQLException e) { e.printStackTrace(); }
-	        try { if (Updatepstmt != null) Updatepstmt.close(); } catch (SQLException e) { e.printStackTrace(); }
-	        // 필요 시 conn.close(); (트랜잭션 단위에 따라 다름)
-	    }
-		
-		String B01Sql_Search = "SELECT workordnum, SUM(amount) as SumOfAmt FROM invenlogl_copy WHERE mattype = 'RAWM' AND movetype = 'GI10' GROUP BY workordnum ORDER BY workordnum ASC";
-		
-		PreparedStatement B01Pstmt = null;
-		ResultSet B01Rs = null;
-		try {
-			B01Pstmt = conn.prepareStatement(B01Sql_Search);
-			B01Rs = B01Pstmt.executeQuery();
-			while(B01Rs.next()) {
-				String WkOrdNum = B01Rs.getString("workordnum");
-				BigDecimal SumOfAmt =  B01Rs.getBigDecimal("SumOfAmt");
-			}
-		} catch (Exception e) {
-			// TODO: handle exception
-		}
-		
-		return "Good";
 	}
 
 	private String AProcess(String ComCode, String PlantCode, String CalcMon) {
@@ -233,7 +150,7 @@ public class GoodsCostAllDao {
 				TransferPstmt.setString(1, Cd);
 				TransferPstmt.setString(2, Pd);
 				TransferPstmt.setString(3, Cm);
-				TransferPstmt.setString(4, "BW");
+				TransferPstmt.setString(4, "BW"); // 13
 				TransferPstmt.setBigDecimal(5, BigDecimal.ZERO);
 				TransferPstmt.setBigDecimal(6, BigDecimal.ZERO);
 				TransferPstmt.setBigDecimal(7, BigDecimal.ZERO);
