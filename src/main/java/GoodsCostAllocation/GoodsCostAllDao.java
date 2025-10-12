@@ -103,10 +103,7 @@ public class GoodsCostAllDao {
 		ResultSet rs = null;
 		try {
 			String FirstProcess = AProcess(Cd, Pd, Cm);
-			if(FirstProcess.equals("success")) {
-			}else {
-				
-			}
+
 			result = "Good";
 		}catch (Exception e) {
 			// TODO: handle exception
@@ -122,19 +119,36 @@ public class GoodsCostAllDao {
 		this.Pd = PlantCode;
 		this.Cm = CalcMon;
 		
+		BigDecimal OP30InputQty = BigDecimal.ZERO;
+		BigDecimal InputQty = BigDecimal.ZERO;
+		int Month = 0;
+		
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMM");
 		LocalDate date = LocalDate.parse(Cm + "01", DateTimeFormatter.ofPattern("yyyyMMdd")); // 20020401의 형태로 변경해준
 		
+		Month = date.getMonthValue();
 		LocalDate PastDate = date.minusMonths(1); // 한 달을 감소 -> 20020301로 변경
 		String CalcPastMon = PastDate.format(formatter); // 200203의 형태로 변경
 		
 		String PastMonDataSearch = "SELECT * FROM processcosttable_Copy WHERE ComCode = ? AND PlantCode = ? AND ClosingMon = ?";
+		PreparedStatement PastMonDataPstmt = null;
+		ResultSet PastData = null;
+		
+		PreparedStatement TransferPstmt = null;
+		
+		PreparedStatement RenewPstmt = null;
+		ResultSet RenewRs = null;
+		
+		PreparedStatement FindOP30Pstmt = null;
+		ResultSet findOP30Rs = null;
+		
+		PreparedStatement UpdatePstmt = null;
 		try {
-			PreparedStatement PastMonDataPstmt = conn.prepareStatement(PastMonDataSearch);
+			PastMonDataPstmt = conn.prepareStatement(PastMonDataSearch);
 			PastMonDataPstmt.setString(1, Cd);
 			PastMonDataPstmt.setString(2, Pd);
 			PastMonDataPstmt.setString(3, CalcPastMon);
-			ResultSet PastData = PastMonDataPstmt.executeQuery();
+			PastData = PastMonDataPstmt.executeQuery();
 			if(PastData.next()) {
 				String TransferData = "INSERT INTO processcosttable_Copy (ComCode, PlantCode, ClosingMon, WorkOrd, WorkType, ManufLot, ManufCode, "
 						+ "ManufDesc, CostingLev, WorkSeq, ProcessCode, ProcessDesc, InOutType, InputQty, ProdQty, WipQty, MixTime, PackStartMon, " 
@@ -146,7 +160,7 @@ public class GoodsCostAllDao {
 						+ "P.WipMatCost, P.WipMnaufCost, CONCAT(?, P.WorkOrd, P.ProcessCode, ?) " // 2개
 						+ "FROM processcosttable_Copy AS P "
 						+ "WHERE ComCode = ? AND PlantCode = ? AND ClosingMon = ?";
-				PreparedStatement TransferPstmt = conn.prepareStatement(TransferData);
+				TransferPstmt = conn.prepareStatement(TransferData);
 				TransferPstmt.setString(1, Cd);
 				TransferPstmt.setString(2, Pd);
 				TransferPstmt.setString(3, Cm);
@@ -162,7 +176,47 @@ public class GoodsCostAllDao {
 				TransferPstmt.setString(13, Pd);
 				TransferPstmt.setString(14, CalcPastMon);
 				TransferPstmt.executeUpdate();
-			} 
+			}
+			String RenewSql = "SELECT * FROM processcosttable_Copy WHERE ClosingMon = ? AND InOutType = ? AND ProcessCode <> ?";
+			/*
+			 * | 단일 값 제외 |`<>` | SQL 표준, 가장 안전 | 
+			 * | 여러 값 제외 | `NOT IN (?, ?, ?)` | 여러 코드 제외 가능 | 
+			 * |`NULL`도 포함해서 제외 | `(ProcessCode IS NULL OR ProcessCode <> ?)` | `NULL` 안전 |
+			 */
+			RenewPstmt = conn.prepareStatement(RenewSql);
+			RenewPstmt.setString(1, Cm);
+			RenewPstmt.setString(2, "BW");
+			RenewPstmt.setString(3, "OP30");
+			RenewRs = RenewPstmt.executeQuery();
+			while(RenewRs.next()) {
+				String WorkOrd = RenewRs.getString("WorkOrd");
+				InputQty = RenewRs.getBigDecimal("InputQty");
+				String KeyValue = RenewRs.getString("KeyValue");
+
+				
+				String FindOP30 = "SELECT * FROM processcosttable_Copy WHERE ClosingMon = ? AND InOutType = ? AND ProcessCode = ? AND WorkOrd = ?";
+				FindOP30Pstmt = conn.prepareStatement(FindOP30);
+				FindOP30Pstmt.setString(1, Cm);
+				FindOP30Pstmt.setString(2, "OC");
+				FindOP30Pstmt.setString(3, "OP30");
+				FindOP30Pstmt.setString(4, WorkOrd);
+				findOP30Rs = FindOP30Pstmt.executeQuery();
+				if(findOP30Rs.next()) {
+					OP30InputQty = findOP30Rs.getBigDecimal("InputQty");
+				}
+				String UpdateSql = "UPDATE processcosttable_Copy SET ProdQty = ?, WipQty = ? WHERE KeyValue = ?";
+				UpdatePstmt = conn.prepareStatement(UpdateSql);
+				UpdatePstmt.setBigDecimal(1, OP30InputQty);
+				if(RenewRs.getInt("PackClosMon") == Month) {
+					UpdatePstmt.setBigDecimal(2, BigDecimal.ZERO);
+				}else if(RenewRs.getInt("PackClosMon") > Month){
+					UpdatePstmt.setBigDecimal(2, InputQty.subtract(OP30InputQty));
+				}else {
+					UpdatePstmt.setBigDecimal(2, BigDecimal.ZERO);
+				}
+				UpdatePstmt.setString(3, KeyValue);
+				UpdatePstmt.executeUpdate();
+			}
 		}catch (SQLException e) {
 			// TODO: handle exception
 			e.printStackTrace();
@@ -297,7 +351,7 @@ public class GoodsCostAllDao {
 						String InsertBs = "INSERT INTO productcost (closingmon, comcode, plant, matcode, matdesc, spec, matType, BS_Qty, BS_MatC, BS_LabC, BS_ExpC, "
 								+ "ES_Qty, ES_MatC, ES_LabC, ES_ExpC, KeyVal) "
 								+ "SELECT ?, ?, ?, PC.matcode, PC.matdesc, PC.spec, PC.matType, PC.ES_Qty, PC.ES_MatC, PC.ES_LabC, PC.ES_ExpC, "
-								+ "PC.ES_Qty, PC.ES_MatC, PC.ES_LabC, PC.ES_ExpC, CONCAT(?, PC.matcode, PC.matdesc) "
+								+ "PC.ES_Qty, PC.ES_MatC, PC.ES_LabC, PC.ES_ExpC, CONCAT(?, PC.matcode, PC.matType) "
 								+ "FROM productcost AS PC "
 								+ "WHERE closingmon = ? AND matcode = ?";
 						InsertBsPstmt = conn.prepareStatement(InsertBs);

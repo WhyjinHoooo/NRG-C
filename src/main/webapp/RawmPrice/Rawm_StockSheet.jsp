@@ -184,11 +184,10 @@ $(document).ready(function() {
 											'<td>' + ((data.List[i].GrTransferQty ?? 0.0).toLocaleString()) + '</td>' +
 											'<td>' + ((data.List[i].GiTransferQty ?? 0.0).toLocaleString()) + '</td>' +
 											'<td>' + ((data.List[i].GiTransacQty ?? 0.0).toLocaleString()) + '</td>' +
-											'<td>' + ((data.List[i].GiAmt ?? 0.0.toLocaleString()) + '</td>' +
+											'<td>' + ((data.List[i].GiAmt ?? 0.0).toLocaleString()) + '</td>' +
 											'<td>' + ((data.List[i].EndStocQty ?? 0.0).toLocaleString()) + '</td>' +
 											'<td>' + ((data.List[i].EsAmt ?? 0.0).toLocaleString()) + '</td>' +
-											'<td>' + ((data.List[i].UnitPrice ?? 0.0).toLocaleString()) + '</td>';
-
+											'<td>' + ((data.List[i].UnitPrice ?? 0.0).toLocaleString()) + '</td>' +
 					    			        '<td>' + (data.List[i].ErrorOX ?? 'N/A') + '</td>' +
 						    			    '</tr>';
 				     			        $('.InfoTable-Body').append(row);
