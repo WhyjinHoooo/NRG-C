@@ -265,10 +265,11 @@ public class GoodsCostAllDao {
 			    	 PDS_Rs = PDS.executeQuery();
 
 			    	 if(PDS_Rs.next()) {
+			    		 BigDecimal SavedQty = movetypeGroup.equals("GR") ? PDS_Rs.getBigDecimal("GR_Qty") : PDS_Rs.getBigDecimal("Gi_Qty");
 			    		 String updateCol = movetypeGroup.equals("GR") ? "GR_Qty" : "Gi_Qty";
 			    		 String ProductDataUpdate = "UPDATE productcost SET " + updateCol + " = ? WHERE KeyVal = ?";
 			    		 PDU = conn.prepareStatement(ProductDataUpdate);
-			    		 PDU.setBigDecimal(1, totalQty);
+			    		 PDU.setBigDecimal(1, totalQty.add(SavedQty));
 			    		 PDU.setString(2, KeyValue);
 			    		 PDU.executeUpdate(); // 🔹 executeUpdate 추가
 			    	 } else {
