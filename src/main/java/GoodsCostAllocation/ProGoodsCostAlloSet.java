@@ -85,7 +85,7 @@ public class ProGoodsCostAlloSet extends HttpServlet {
             	break;
             }
             
-            if(ResultData == null) {
+            if(ResultData == null || ResultData.equals("fail")) {
             	writer.print("{\"result\":\"fail\"}");
             }else {
             	writer.print("{\"result\":\"success\", \"List\":" + ResultData + "}");

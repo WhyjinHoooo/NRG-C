@@ -1,6 +1,7 @@
 package GoodsCostAllocation;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -103,13 +104,244 @@ public class GoodsCostAllDao {
 		ResultSet rs = null;
 		try {
 			String FirstProcess = AProcess(Cd, Pd, Cm);
-
+			if(FirstProcess.equals("success")) {
+				String Lv1Procedd = CProcess(Cm, 1);
+			}else {
+				result = FirstProcess;
+			}
 			result = "Good";
 		}catch (Exception e) {
 			// TODO: handle exception
 			e.printStackTrace();
 		}
 		return result;
+	}
+
+	private String CProcess(String CalcMon, int Lv) {
+		// TODO Auto-generated method stub
+		this.Cm = CalcMon;
+		int CalcLevel = Lv;
+		String FindLv1Data = "SELECT * FROM processcosttable_Copy WHERE ClosingMon = ? AND CostingLev = ? ORDER BY ProcessCode ASC";
+		PreparedStatement FindLv1Pstmt = null;
+		ResultSet FindLv1Rs = null;
+		
+		PreparedStatement Lv1UpdatePstmt = null;
+		try {
+			FindLv1Pstmt = conn.prepareStatement(FindLv1Data);
+			FindLv1Pstmt.setString(1, Cm);
+			FindLv1Pstmt.setInt(2, CalcLevel);
+			FindLv1Rs = FindLv1Pstmt.executeQuery();
+			
+			BigDecimal MatCostSum = BigDecimal.ZERO;
+			BigDecimal ManufCostSum = BigDecimal.ZERO;
+			
+			BigDecimal WipQty = BigDecimal.ZERO;
+			BigDecimal ProdQty = BigDecimal.ZERO;
+			
+			BigDecimal WipMatCost = BigDecimal.ZERO;
+			BigDecimal WipMnaufCost = BigDecimal.ZERO;
+			
+			String KeyValue = null;
+			
+			while(FindLv1Rs.next()) {
+				MatCostSum = FindLv1Rs.getBigDecimal("MatCostSum");
+				if(MatCostSum == null) MatCostSum = BigDecimal.ZERO;
+				ManufCostSum = FindLv1Rs.getBigDecimal("ManufCostSum");
+				if(ManufCostSum == null) ManufCostSum = BigDecimal.ZERO;
+				
+				WipQty = FindLv1Rs.getBigDecimal("WipQty");
+				KeyValue = FindLv1Rs.getString("KeyValue");
+				String Lv1UpdateSql = null;
+				if(WipQty.compareTo(BigDecimal.ZERO) == 0) {
+					Lv1UpdateSql = "UPDATE processcosttable_Copy SET FertMatCost = ?, FertManufCost = ? WHERE KeyValue = ?";
+					Lv1UpdatePstmt = conn.prepareStatement(Lv1UpdateSql);
+					
+					Lv1UpdatePstmt.setBigDecimal(1, MatCostSum);
+					Lv1UpdatePstmt.setBigDecimal(2, ManufCostSum);
+					Lv1UpdatePstmt.setString(3, KeyValue);
+				}else if(WipQty.compareTo(BigDecimal.ZERO) > 0) {
+					ProdQty = FindLv1Rs.getBigDecimal("ProdQty");
+					Lv1UpdateSql = "UPDATE processcosttable_Copy SET FertMatCost = ?, FertManufCost = ?, WipMatCost = ?, WipMnaufCost = ? WHERE KeyValue = ?";
+					Lv1UpdatePstmt = conn.prepareStatement(Lv1UpdateSql);
+					
+					WipMatCost = MatCostSum.multiply(WipQty.divide(WipQty.add(ProdQty), 10, RoundingMode.HALF_UP)).setScale(0, RoundingMode.HALF_UP);
+					WipMnaufCost = ManufCostSum.multiply(WipQty.divide(WipQty.add(ProdQty), 10, RoundingMode.HALF_UP)).setScale(0, RoundingMode.HALF_UP);
+					
+					Lv1UpdatePstmt.setBigDecimal(1, MatCostSum.subtract(WipMatCost));
+					Lv1UpdatePstmt.setBigDecimal(2, ManufCostSum.subtract(WipMnaufCost));
+					Lv1UpdatePstmt.setBigDecimal(3, WipMatCost);
+					Lv1UpdatePstmt.setBigDecimal(4, WipMnaufCost);
+					Lv1UpdatePstmt.setString(5, KeyValue);
+				}
+				Lv1UpdatePstmt.executeUpdate();
+			}
+		} catch (SQLException e) {
+			// TODO: handle exception
+			e.printStackTrace();
+			System.err.println("❌ CProcess 첫 번쨰 SQL 오류: " + e.getMessage());
+			return "fail";
+		} finally {
+			if(FindLv1Rs != null) try { FindLv1Rs.close(); } catch(SQLException e) {}
+			if(FindLv1Pstmt != null) try { FindLv1Pstmt.close(); } catch(SQLException e) {}
+			if(Lv1UpdatePstmt != null) try { Lv1UpdatePstmt.close(); } catch(SQLException e) {}
+		}
+		
+		
+		PreparedStatement FindLinePstmt = null;
+		ResultSet FindLineRs = null;
+		
+		PreparedStatement LineUpdatePstmt = null;
+		
+		PreparedStatement SumQrtPstmt = null;
+		ResultSet SumQtyRs = null;
+		
+		PreparedStatement CalcAmtPstmt = null;
+		ResultSet CalcAmtRs = null;
+		
+		PreparedStatement AmtUpdatePstmt = null;
+		
+		ResultSet ChkSumRs = null;
+		PreparedStatement ChkSumPstmt = null;
+		
+		PreparedStatement EditLineAmtPstmt = null;
+		
+		PreparedStatement EditLineAmtOhcPstmt = null;
+		try {
+			FindLv1Pstmt = conn.prepareStatement(FindLv1Data);
+			FindLv1Pstmt.setString(1, Cm);
+			FindLv1Pstmt.setInt(2, CalcLevel);
+			FindLv1Rs = FindLv1Pstmt.executeQuery();
+			
+			BigDecimal FertMatCost = BigDecimal.ZERO;
+			BigDecimal FertManufCost = BigDecimal.ZERO;
+			String WoOrd = null;
+			while(FindLv1Rs.next()) {
+				FertMatCost = FindLv1Rs.getBigDecimal("FertMatCost");
+				FertManufCost = FindLv1Rs.getBigDecimal("FertManufCost");
+				WoOrd = FindLv1Rs.getString("WorkOrd");
+				int Ct = 0;
+				BigDecimal SumQty = BigDecimal.ZERO;
+				BigDecimal Qty = BigDecimal.ZERO;
+				
+				BigDecimal EditedAmt = BigDecimal.ZERO;
+				BigDecimal EditedAmtOhc = BigDecimal.ZERO;
+				
+				BigDecimal ChkSumAmt = BigDecimal.ZERO;
+				BigDecimal ChkSumAmtOhc = BigDecimal.ZERO;
+				
+				BigDecimal gapAmt = BigDecimal.ZERO;
+				BigDecimal gapAmtOhc = BigDecimal.ZERO;
+				
+				String FindLineItem = "SELECT COUNT(*) as OrdCount FROM InvenLogl_Copy WHERE workordnum = ? AND movetype = ?";
+				FindLinePstmt = conn.prepareStatement(FindLineItem);
+				FindLinePstmt.setString(1, WoOrd);
+				FindLinePstmt.setString(2, "GR11");
+				FindLineRs = FindLinePstmt.executeQuery();
+				if(FindLineRs.next()) {
+					Ct = FindLineRs.getInt("OrdCount");
+					if(Ct == 1) {
+						String LineUpdate = "UPDATE InvenLogl_Copy SET amount = ?, amtOhC = ? WHERE workordnum = ?";
+						LineUpdatePstmt = conn.prepareStatement(LineUpdate);
+						LineUpdatePstmt.setBigDecimal(1, FertMatCost);
+						LineUpdatePstmt.setBigDecimal(2, FertManufCost);
+						LineUpdatePstmt.setString(3, WoOrd);
+						LineUpdatePstmt.executeUpdate();
+					}else {
+						String SumQtySql = "SELECT SUM(quantity) as SumOfQty FROM invenlogl_copy WHERE movetype = ? AND workordnum = ?";
+						SumQrtPstmt = conn.prepareStatement(SumQtySql);
+						SumQrtPstmt.setString(1, "GR11");
+						SumQrtPstmt.setString(2, WoOrd);
+						SumQtyRs = SumQrtPstmt.executeQuery();
+						if(SumQtyRs.next()) {
+							SumQty = SumQtyRs.getBigDecimal("SumOfQty");
+						}
+						System.out.println(WoOrd + " : " + SumQty);
+						String CalcAmt = "SELECT * FROM invenlogl_copy WHERE movetype = ? AND workordnum = ?";
+						CalcAmtPstmt = conn.prepareStatement(CalcAmt);
+						CalcAmtPstmt.setString(1, "GR11");
+						CalcAmtPstmt.setString(2, WoOrd);
+						CalcAmtRs = CalcAmtPstmt.executeQuery();
+						while(CalcAmtRs.next()) {
+							String KeyVal = CalcAmtRs.getString("keyvalue");
+							Qty = CalcAmtRs.getBigDecimal("quantity");
+							EditedAmt = FertMatCost.multiply(Qty.divide(SumQty, 10, RoundingMode.HALF_UP)).setScale(0, RoundingMode.HALF_UP);
+							EditedAmtOhc = FertManufCost.multiply(Qty.divide(SumQty, 10, RoundingMode.HALF_UP)).setScale(0, RoundingMode.HALF_UP);
+							
+							String AmtUpdate = "UPDATE invenlogl_copy SET amount = ?, amtOhC = ? WHERE keyvalue = ?";
+							AmtUpdatePstmt = conn.prepareStatement(AmtUpdate);
+							AmtUpdatePstmt.setBigDecimal(1, EditedAmt);
+							AmtUpdatePstmt.setBigDecimal(2, EditedAmtOhc);
+							AmtUpdatePstmt.setString(3, KeyVal);
+							AmtUpdatePstmt.executeUpdate();
+						} // 내일 위의 코드 실행해서 문제점 찾고 수정 후 아래 수정
+						
+//						String ChkSumSql = "SELECT SUM(amount) AS SUMAMT, SUM(amtOhC) AS SUMAMTOHC FROM invenlogl_copy WHERE movetype = ? AND workordnum = ?";
+//						ChkSumPstmt = conn.prepareStatement(ChkSumSql);
+//						ChkSumPstmt.setString(1, "GR11");
+//						ChkSumPstmt.setString(2, WoOrd);
+//						ChkSumRs = ChkSumPstmt.executeQuery();
+//						if(ChkSumRs.next()) {
+//							ChkSumAmt = ChkSumRs.getBigDecimal("SUMAMT");
+//							if (ChkSumAmt == null) ChkSumAmt = BigDecimal.ZERO;
+//							ChkSumAmtOhc = ChkSumRs.getBigDecimal("SUMAMTOHC");
+//							if (ChkSumAmtOhc == null) ChkSumAmtOhc = BigDecimal.ZERO;
+//						}
+//						gapAmt = FertMatCost.subtract(ChkSumAmt);
+//						
+//						gapAmtOhc = FertManufCost.subtract(ChkSumAmtOhc);
+//						
+//						int gapAmtState = gapAmt.compareTo(BigDecimal.ZERO);
+//						int gapAmtOhcState = gapAmtOhc.compareTo(BigDecimal.ZERO);
+//						
+//						String EditLineItemAmt = null;
+//						String EditLineItemAmtOhc = null;
+//						
+//						if(gapAmtState > 0) {
+//							EditLineItemAmt = "UPDATE invenlogl_copy SET amount = (amount + ?) WHERE movetype = ? AND workordnum = ?";
+//							EditLineAmtPstmt = conn.prepareStatement(EditLineItemAmt);
+//						}else {
+//							EditLineItemAmt = "UPDATE invenlogl_copy SET amount = (amount - ?) WHERE movetype = ? AND workordnum = ?";
+//							EditLineAmtPstmt = conn.prepareStatement(EditLineItemAmt);
+//						}
+//						EditLineAmtPstmt.setBigDecimal(1, gapAmt.abs());
+//						EditLineAmtPstmt.setString(2, "GR11");
+//						EditLineAmtPstmt.setString(3, WoOrd);
+//						EditLineAmtPstmt.executeUpdate();
+//						if(gapAmtState > 0) {
+//							EditLineItemAmtOhc = "UPDATE invenlogl_copy SET amtOhC = (amtOhC + ?) WHERE movetype = ? AND workordnum = ?";
+//							EditLineAmtOhcPstmt = conn.prepareStatement(EditLineItemAmtOhc);
+//						}else {
+//							EditLineItemAmtOhc = "UPDATE invenlogl_copy SET amtOhC = (amtOhC - ?) WHERE movetype = ? AND workordnum = ?";
+//							EditLineAmtOhcPstmt = conn.prepareStatement(EditLineItemAmtOhc);
+//						}
+//						EditLineAmtOhcPstmt.setBigDecimal(1, gapAmtOhc.abs());
+//						EditLineAmtOhcPstmt.setString(2, "GR11");
+//						EditLineAmtOhcPstmt.setString(3, WoOrd);
+//						EditLineAmtOhcPstmt.executeUpdate();
+					}
+				}
+			}
+		}catch (SQLException e) {
+			// TODO: handle exception
+			e.printStackTrace();
+			System.err.println("❌ CProcess 두 번째 SQL 오류: " + e.getMessage());
+			return "fail";
+		}finally {
+			if(FindLineRs != null) try { FindLineRs.close(); } catch(SQLException e) {}
+			if(FindLinePstmt != null) try { FindLinePstmt.close(); } catch(SQLException e) {}
+			if(LineUpdatePstmt != null) try { LineUpdatePstmt.close(); } catch(SQLException e) {}
+			if(SumQtyRs != null) try { SumQtyRs.close(); } catch(SQLException e) {}
+			if(SumQrtPstmt != null) try { SumQrtPstmt.close(); } catch(SQLException e) {}
+			if(CalcAmtRs != null) try { CalcAmtRs.close(); } catch(SQLException e) {}
+			if(CalcAmtPstmt != null) try { CalcAmtPstmt.close(); } catch(SQLException e) {}
+			if(AmtUpdatePstmt != null) try { AmtUpdatePstmt.close(); } catch(SQLException e) {}
+			
+			if(ChkSumRs != null) try { ChkSumRs.close(); } catch(SQLException e) {}
+			if(ChkSumPstmt != null) try { ChkSumPstmt.close(); } catch(SQLException e) {}
+			if(EditLineAmtPstmt != null) try { EditLineAmtPstmt.close(); } catch(SQLException e) {}
+			if(EditLineAmtOhcPstmt != null) try { EditLineAmtOhcPstmt.close(); } catch(SQLException e) {}
+		}
+		return "success";
 	}
 
 	private String AProcess(String ComCode, String PlantCode, String CalcMon) {
@@ -156,7 +388,7 @@ public class GoodsCostAllDao {
 						+ "FertMatCost, FertManufCost, KeyValue) "
 						+ "SELECT ?, ?, ?, P.WorkOrd, P.WorkType, P.ManufLot, P.ManufCode, " // 3개(1,2,3)
 						+ "P.ManufDesc, P.CostingLev, P.WorkSeq, P.ProcessCode, P.ProcessDesc, ?, P.WipQty, ?, ?, P.MixTime, P.PackStartMon, " // 3개(4,5,6)
-						+ "P.PackClosMon, P.WipMatCost, ?, ?, P.WipMatCost, P.WipMnaufCost, ?, P.WipMnaufCost, P.WipMatCost, P.WipMnaufCost, " // 3개
+						+ "P.PackClosMon, P.WipMatCost, ?, ?, P.WipMatCost, P.WipMnaufCost, ?, P.WipMnaufCost, ?, ?, " // 3개
 						+ "P.WipMatCost, P.WipMnaufCost, CONCAT(?, P.WorkOrd, P.ProcessCode, ?) " // 2개
 						+ "FROM processcosttable_Copy AS P "
 						+ "WHERE ComCode = ? AND PlantCode = ? AND ClosingMon = ?";
@@ -170,11 +402,13 @@ public class GoodsCostAllDao {
 				TransferPstmt.setBigDecimal(7, BigDecimal.ZERO);
 				TransferPstmt.setBigDecimal(8, BigDecimal.ZERO);
 				TransferPstmt.setBigDecimal(9, BigDecimal.ZERO);
-				TransferPstmt.setString(10, Cm);
-				TransferPstmt.setString(11, "BW");
-				TransferPstmt.setString(12, Cd);
-				TransferPstmt.setString(13, Pd);
-				TransferPstmt.setString(14, CalcPastMon);
+				TransferPstmt.setBigDecimal(10, BigDecimal.ZERO);
+				TransferPstmt.setBigDecimal(11, BigDecimal.ZERO);
+				TransferPstmt.setString(12, Cm);
+				TransferPstmt.setString(13, "BW");
+				TransferPstmt.setString(14, Cd);
+				TransferPstmt.setString(15, Pd);
+				TransferPstmt.setString(16, CalcPastMon);
 				TransferPstmt.executeUpdate();
 			}
 			String RenewSql = "SELECT * FROM processcosttable_Copy WHERE ClosingMon = ? AND InOutType = ? AND ProcessCode <> ?";
