@@ -168,6 +168,7 @@ $(document).ready(function(){
 				async: false,
 				success : function(data){
 					console.log(data.result);
+					alert('분배가 정상적으로 진행됐습니다.');
 				},
 				error: function(jqXHR, textStatus, errorThrown){
 					alert('분배 오류 발생: ' + textStatus + ', ' + errorThrown);

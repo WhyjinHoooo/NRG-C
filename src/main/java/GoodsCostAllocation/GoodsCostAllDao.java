@@ -180,12 +180,22 @@ public class GoodsCostAllDao {
 			e.printStackTrace();
 			System.err.println("❌ CProcess 첫 번쨰 SQL 오류: " + e.getMessage());
 			return "fail";
+		}catch (NullPointerException e) {
+		    e.printStackTrace();
+		    System.err.println("❌ NullPointer 오류: PreparedStatement 미생성 등 확인 필요");
+		    return "fail";
+		} catch (Exception e) {
+		    e.printStackTrace();
+		    System.err.println("❌ 알 수 없는 오류: " + e.getMessage());
+		    return "fail";
 		} finally {
 			if(FindLv1Rs != null) try { FindLv1Rs.close(); } catch(SQLException e) {}
 			if(FindLv1Pstmt != null) try { FindLv1Pstmt.close(); } catch(SQLException e) {}
 			if(Lv1UpdatePstmt != null) try { Lv1UpdatePstmt.close(); } catch(SQLException e) {}
 		}
 		
+		FindLv1Data = "SELECT WorkOrd, SUM(FertMatCost) as FertSumMCost, SUM(FertManufCost) as FertSumMfCost FROM processcosttable_Copy "
+				+ "WHERE ClosingMon = ? AND CostingLev = ? GROUP BY WorkOrd";
 		
 		PreparedStatement FindLinePstmt = null;
 		ResultSet FindLineRs = null;
@@ -216,9 +226,9 @@ public class GoodsCostAllDao {
 			BigDecimal FertManufCost = BigDecimal.ZERO;
 			String WoOrd = null;
 			while(FindLv1Rs.next()) {
-				FertMatCost = FindLv1Rs.getBigDecimal("FertMatCost");
-				FertManufCost = FindLv1Rs.getBigDecimal("FertManufCost");
 				WoOrd = FindLv1Rs.getString("WorkOrd");
+				FertMatCost = FindLv1Rs.getBigDecimal("FertSumMCost");
+				FertManufCost = FindLv1Rs.getBigDecimal("FertSumMfCost");
 				int Ct = 0;
 				BigDecimal SumQty = BigDecimal.ZERO;
 				BigDecimal Qty = BigDecimal.ZERO;
@@ -228,6 +238,7 @@ public class GoodsCostAllDao {
 				
 				BigDecimal ChkSumAmt = BigDecimal.ZERO;
 				BigDecimal ChkSumAmtOhc = BigDecimal.ZERO;
+				String EditKeyvalue = null;
 				
 				BigDecimal gapAmt = BigDecimal.ZERO;
 				BigDecimal gapAmtOhc = BigDecimal.ZERO;
@@ -255,7 +266,6 @@ public class GoodsCostAllDao {
 						if(SumQtyRs.next()) {
 							SumQty = SumQtyRs.getBigDecimal("SumOfQty");
 						}
-						System.out.println(WoOrd + " : " + SumQty);
 						String CalcAmt = "SELECT * FROM invenlogl_copy WHERE movetype = ? AND workordnum = ?";
 						CalcAmtPstmt = conn.prepareStatement(CalcAmt);
 						CalcAmtPstmt.setString(1, "GR11");
@@ -275,49 +285,50 @@ public class GoodsCostAllDao {
 							AmtUpdatePstmt.executeUpdate();
 						} // 내일 위의 코드 실행해서 문제점 찾고 수정 후 아래 수정
 						
-//						String ChkSumSql = "SELECT SUM(amount) AS SUMAMT, SUM(amtOhC) AS SUMAMTOHC FROM invenlogl_copy WHERE movetype = ? AND workordnum = ?";
-//						ChkSumPstmt = conn.prepareStatement(ChkSumSql);
-//						ChkSumPstmt.setString(1, "GR11");
-//						ChkSumPstmt.setString(2, WoOrd);
-//						ChkSumRs = ChkSumPstmt.executeQuery();
-//						if(ChkSumRs.next()) {
-//							ChkSumAmt = ChkSumRs.getBigDecimal("SUMAMT");
-//							if (ChkSumAmt == null) ChkSumAmt = BigDecimal.ZERO;
-//							ChkSumAmtOhc = ChkSumRs.getBigDecimal("SUMAMTOHC");
-//							if (ChkSumAmtOhc == null) ChkSumAmtOhc = BigDecimal.ZERO;
-//						}
-//						gapAmt = FertMatCost.subtract(ChkSumAmt);
-//						
-//						gapAmtOhc = FertManufCost.subtract(ChkSumAmtOhc);
-//						
-//						int gapAmtState = gapAmt.compareTo(BigDecimal.ZERO);
-//						int gapAmtOhcState = gapAmtOhc.compareTo(BigDecimal.ZERO);
-//						
-//						String EditLineItemAmt = null;
-//						String EditLineItemAmtOhc = null;
-//						
-//						if(gapAmtState > 0) {
-//							EditLineItemAmt = "UPDATE invenlogl_copy SET amount = (amount + ?) WHERE movetype = ? AND workordnum = ?";
-//							EditLineAmtPstmt = conn.prepareStatement(EditLineItemAmt);
-//						}else {
-//							EditLineItemAmt = "UPDATE invenlogl_copy SET amount = (amount - ?) WHERE movetype = ? AND workordnum = ?";
-//							EditLineAmtPstmt = conn.prepareStatement(EditLineItemAmt);
-//						}
-//						EditLineAmtPstmt.setBigDecimal(1, gapAmt.abs());
-//						EditLineAmtPstmt.setString(2, "GR11");
-//						EditLineAmtPstmt.setString(3, WoOrd);
-//						EditLineAmtPstmt.executeUpdate();
-//						if(gapAmtState > 0) {
-//							EditLineItemAmtOhc = "UPDATE invenlogl_copy SET amtOhC = (amtOhC + ?) WHERE movetype = ? AND workordnum = ?";
-//							EditLineAmtOhcPstmt = conn.prepareStatement(EditLineItemAmtOhc);
-//						}else {
-//							EditLineItemAmtOhc = "UPDATE invenlogl_copy SET amtOhC = (amtOhC - ?) WHERE movetype = ? AND workordnum = ?";
-//							EditLineAmtOhcPstmt = conn.prepareStatement(EditLineItemAmtOhc);
-//						}
-//						EditLineAmtOhcPstmt.setBigDecimal(1, gapAmtOhc.abs());
-//						EditLineAmtOhcPstmt.setString(2, "GR11");
-//						EditLineAmtOhcPstmt.setString(3, WoOrd);
-//						EditLineAmtOhcPstmt.executeUpdate();
+						String ChkSumSql = "SELECT SUM(amount) AS SUMAMT, SUM(amtOhC) AS SUMAMTOHC, keyvalue FROM invenlogl_copy WHERE movetype = ? AND workordnum = ?";
+						ChkSumPstmt = conn.prepareStatement(ChkSumSql);
+						ChkSumPstmt.setString(1, "GR11");
+						ChkSumPstmt.setString(2, WoOrd);
+						ChkSumRs = ChkSumPstmt.executeQuery();
+						if(ChkSumRs.next()) {
+							ChkSumAmt = ChkSumRs.getBigDecimal("SUMAMT");
+							if (ChkSumAmt == null) ChkSumAmt = BigDecimal.ZERO;
+							ChkSumAmtOhc = ChkSumRs.getBigDecimal("SUMAMTOHC");
+							if (ChkSumAmtOhc == null) ChkSumAmtOhc = BigDecimal.ZERO;
+							EditKeyvalue = ChkSumRs.getString("keyvalue");
+						}
+						gapAmt = FertMatCost.subtract(ChkSumAmt);
+						
+						gapAmtOhc = FertManufCost.subtract(ChkSumAmtOhc);
+						
+						int gapAmtState = gapAmt.compareTo(BigDecimal.ZERO);
+						int gapAmtOhcState = gapAmtOhc.compareTo(BigDecimal.ZERO);
+						
+						String EditLineItemAmt = null;
+						String EditLineItemAmtOhc = null;
+						
+						if(gapAmtState > 0) {
+							EditLineItemAmt = "UPDATE invenlogl_copy SET amount = (amount + ?) WHERE movetype = ? AND keyvalue = ?";
+							EditLineAmtPstmt = conn.prepareStatement(EditLineItemAmt);
+						}else {
+							EditLineItemAmt = "UPDATE invenlogl_copy SET amount = (amount - ?) WHERE movetype = ? AND keyvalue = ?";
+							EditLineAmtPstmt = conn.prepareStatement(EditLineItemAmt);
+						}
+						EditLineAmtPstmt.setBigDecimal(1, gapAmt.abs());
+						EditLineAmtPstmt.setString(2, "GR11");
+						EditLineAmtPstmt.setString(3, EditKeyvalue);
+						EditLineAmtPstmt.executeUpdate();
+						if(gapAmtOhcState > 0) {
+							EditLineItemAmtOhc = "UPDATE invenlogl_copy SET amtOhC = (amtOhC + ?) WHERE movetype = ? AND keyvalue = ?";
+							EditLineAmtOhcPstmt = conn.prepareStatement(EditLineItemAmtOhc);
+						}else {
+							EditLineItemAmtOhc = "UPDATE invenlogl_copy SET amtOhC = (amtOhC - ?) WHERE movetype = ? AND keyvalue = ?";
+							EditLineAmtOhcPstmt = conn.prepareStatement(EditLineItemAmtOhc);
+						}
+						EditLineAmtOhcPstmt.setBigDecimal(1, gapAmtOhc.abs());
+						EditLineAmtOhcPstmt.setString(2, "GR11");
+						EditLineAmtOhcPstmt.setString(3, EditKeyvalue);
+						EditLineAmtOhcPstmt.executeUpdate();
 					}
 				}
 			}
@@ -326,6 +337,14 @@ public class GoodsCostAllDao {
 			e.printStackTrace();
 			System.err.println("❌ CProcess 두 번째 SQL 오류: " + e.getMessage());
 			return "fail";
+		}catch (NullPointerException e) {
+		    e.printStackTrace();
+		    System.err.println("❌ NullPointer 오류: PreparedStatement 미생성 등 확인 필요");
+		    return "fail";
+		} catch (Exception e) {
+		    e.printStackTrace();
+		    System.err.println("❌ 알 수 없는 오류: " + e.getMessage());
+		    return "fail";
 		}finally {
 			if(FindLineRs != null) try { FindLineRs.close(); } catch(SQLException e) {}
 			if(FindLinePstmt != null) try { FindLinePstmt.close(); } catch(SQLException e) {}
@@ -340,6 +359,99 @@ public class GoodsCostAllDao {
 			if(ChkSumPstmt != null) try { ChkSumPstmt.close(); } catch(SQLException e) {}
 			if(EditLineAmtPstmt != null) try { EditLineAmtPstmt.close(); } catch(SQLException e) {}
 			if(EditLineAmtOhcPstmt != null) try { EditLineAmtOhcPstmt.close(); } catch(SQLException e) {}
+		}
+		
+		String FindGr11Item = "SELECT matcode, SUM(amount) as SumOfAmt, sum(amtOhc) as SumOfAmtOhc "
+				+ "FROM invenlogl_copy WHERE closingmon = ? AND movetype = ? GROUP BY matcode";
+		
+		PreparedStatement FindGr11Pstmt = null;
+		ResultSet FindGr11Rs = null;
+		
+		PreparedStatement FindMatPstmt = null;
+		ResultSet FindMatRs = null;
+		
+		PreparedStatement UpdateMatPstmt = null;
+	
+		BigDecimal SumOfAmt = BigDecimal.ZERO;
+		BigDecimal SumOfAmtOhc = BigDecimal.ZERO;
+		String MatCode = null;
+		
+		BigDecimal BsQty = BigDecimal.ZERO;
+		BigDecimal BSMatC = BigDecimal.ZERO;
+		BigDecimal BSExpC = BigDecimal.ZERO;
+		BigDecimal GRQty = BigDecimal.ZERO;
+		BigDecimal GiQty = BigDecimal.ZERO;
+		BigDecimal GiMatC = BigDecimal.ZERO;
+		BigDecimal GiExpC = BigDecimal.ZERO;
+		BigDecimal ESQty = BigDecimal.ZERO;
+		BigDecimal ESMatC = BigDecimal.ZERO;
+		BigDecimal ESExpC = BigDecimal.ZERO;
+		BigDecimal UnitMatPrice = BigDecimal.ZERO;
+		BigDecimal UnitManPrice = BigDecimal.ZERO;
+		try {
+			FindGr11Pstmt = conn.prepareStatement(FindGr11Item);
+			FindGr11Pstmt.setString(1, Cm);
+			FindGr11Pstmt.setString(2, "GR11");
+			FindGr11Rs = FindGr11Pstmt.executeQuery();
+			while(FindGr11Rs.next()) {
+				MatCode = FindGr11Rs.getString("matcode");
+				SumOfAmt = FindGr11Rs.getBigDecimal("SumOfAmt");
+				SumOfAmtOhc = FindGr11Rs.getBigDecimal("SumOfAmtOhc");
+				
+				String FindMatData = "SELECT * FROM productcost WHERE closingmon = ? AND matcode = ?";
+				FindMatPstmt = conn.prepareStatement(FindMatData);
+				FindMatPstmt.setString(1, Cm);
+				FindMatPstmt.setString(2, MatCode);
+				FindMatRs = FindMatPstmt.executeQuery();
+				while(FindMatRs.next()) {
+					BsQty = FindMatRs.getBigDecimal("BS_Qty");
+					BSMatC = FindMatRs.getBigDecimal("BS_MatC");
+					BSExpC = FindMatRs.getBigDecimal("BS_ExpC");
+					GRQty = FindMatRs.getBigDecimal("GR_Qty");
+					GiQty = FindMatRs.getBigDecimal("Gi_Qty");
+					ESQty = FindMatRs.getBigDecimal("ES_Qty");
+					
+					UnitMatPrice = (BSMatC.add(SumOfAmt)).divide(BsQty.add(GRQty), 10, RoundingMode.HALF_UP).setScale(0, RoundingMode.HALF_UP); // 기말재고단가 재료비
+					UnitManPrice = (BSExpC.add(SumOfAmtOhc)).divide(BsQty.add(GRQty), 10, RoundingMode.HALF_UP).setScale(0, RoundingMode.HALF_UP); // 기말재고단가 경비
+					
+					ESMatC = ESQty.multiply(UnitMatPrice).setScale(0, RoundingMode.HALF_UP); // 기말재고 재료비
+					ESExpC = ESQty.multiply(UnitManPrice).setScale(0, RoundingMode.HALF_UP); // 기말재고 경비
+					
+					GiMatC = BSMatC.add(SumOfAmt).subtract(ESMatC); // 출고 재료비
+					GiExpC = BSExpC.add(SumOfAmtOhc).subtract(ESExpC); // 출고 경비
+					
+					String UpdateMatItem = "UPDATE productcost SET GR_MatC = ?, GR_ExpC = ?, Gi_MatC = ?, Gi_ExpC = ?, ES_MatC = ?, ES_ExpC = ? WHERE "
+							+ "closingmon = ? AND matcode = ?";
+					UpdateMatPstmt = conn.prepareStatement(UpdateMatItem);
+					UpdateMatPstmt.setBigDecimal(1, SumOfAmt);
+					UpdateMatPstmt.setBigDecimal(2, SumOfAmtOhc);
+					UpdateMatPstmt.setBigDecimal(3, GiMatC);
+					UpdateMatPstmt.setBigDecimal(4, GiExpC);
+					UpdateMatPstmt.setBigDecimal(5, ESMatC);
+					UpdateMatPstmt.setBigDecimal(6, ESExpC);
+					UpdateMatPstmt.setString(7, Cm);
+					UpdateMatPstmt.setString(8, MatCode);
+					UpdateMatPstmt.executeUpdate();
+				}
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+			System.err.println("❌ CProcess 세 번째 SQL 오류: " + e.getMessage());
+			return "fail";
+		}catch (NullPointerException e) {
+		    e.printStackTrace();
+		    System.err.println("❌ NullPointer 오류: PreparedStatement 미생성 등 확인 필요");
+		    return "fail";
+		} catch (Exception e) {
+		    e.printStackTrace();
+		    System.err.println("❌ 알 수 없는 오류: " + e.getMessage());
+		    return "fail";
+		}finally {
+			if(FindGr11Rs != null) try { FindGr11Rs.close(); } catch(SQLException e) {}
+			if(FindGr11Pstmt != null) try { FindGr11Pstmt.close(); } catch(SQLException e) {}
+			if(FindMatRs != null) try { FindMatRs.close(); } catch(SQLException e) {}
+			if(FindMatPstmt != null) try { FindMatPstmt.close(); } catch(SQLException e) {}
+			if(UpdateMatPstmt != null) try { UpdateMatPstmt.close(); } catch(SQLException e) {}
 		}
 		return "success";
 	}
