@@ -361,11 +361,10 @@ public class GoodsCostAllDao {
 			if(EditLineAmtOhcPstmt != null) try { EditLineAmtOhcPstmt.close(); } catch(SQLException e) {}
 		}
 		
-		String FindGr11Item = "SELECT matcode, SUM(amount) as SumOfAmt, sum(amtOhc) as SumOfAmtOhc "
-				+ "FROM invenlogl_copy WHERE closingmon = ? AND movetype = ? GROUP BY matcode";
+		String FindItem = "SELECT * FROM productcost WHERE closingmon = ?";
 		
-		PreparedStatement FindGr11Pstmt = null;
-		ResultSet FindGr11Rs = null;
+		PreparedStatement FindPstmt = null;
+		ResultSet FindRs = null;
 		
 		PreparedStatement FindMatPstmt = null;
 		ResultSet FindMatRs = null;
@@ -375,7 +374,8 @@ public class GoodsCostAllDao {
 		BigDecimal SumOfAmt = BigDecimal.ZERO;
 		BigDecimal SumOfAmtOhc = BigDecimal.ZERO;
 		String MatCode = null;
-		
+		String MvType = null;
+		int ItemLv = 0;
 		BigDecimal BsQty = BigDecimal.ZERO;
 		BigDecimal BSMatC = BigDecimal.ZERO;
 		BigDecimal BSExpC = BigDecimal.ZERO;
@@ -389,30 +389,71 @@ public class GoodsCostAllDao {
 		BigDecimal UnitMatPrice = BigDecimal.ZERO;
 		BigDecimal UnitManPrice = BigDecimal.ZERO;
 		try {
-			FindGr11Pstmt = conn.prepareStatement(FindGr11Item);
-			FindGr11Pstmt.setString(1, Cm);
-			FindGr11Pstmt.setString(2, "GR11");
-			FindGr11Rs = FindGr11Pstmt.executeQuery();
-			while(FindGr11Rs.next()) {
-				MatCode = FindGr11Rs.getString("matcode");
-				SumOfAmt = FindGr11Rs.getBigDecimal("SumOfAmt");
-				SumOfAmtOhc = FindGr11Rs.getBigDecimal("SumOfAmtOhc");
+			FindPstmt = conn.prepareStatement(FindItem);
+			FindPstmt.setString(1, Cm);
+			FindRs = FindPstmt.executeQuery();
+			while(FindRs.next()) {
+				SumOfAmt = BigDecimal.ZERO;
+				SumOfAmtOhc = BigDecimal.ZERO;
+				MatCode = null;
+				MvType = null;
+				ItemLv = 0;
+				BsQty = BigDecimal.ZERO;
+				BSMatC = BigDecimal.ZERO;
+				BSExpC = BigDecimal.ZERO;
+				GRQty = BigDecimal.ZERO;
+				GiQty = BigDecimal.ZERO;
+				GiMatC = BigDecimal.ZERO;
+				GiExpC = BigDecimal.ZERO;
+				ESQty = BigDecimal.ZERO;
+				ESMatC = BigDecimal.ZERO;
+				ESExpC = BigDecimal.ZERO;
+				UnitMatPrice = BigDecimal.ZERO;
+				UnitManPrice = BigDecimal.ZERO;
 				
-				String FindMatData = "SELECT * FROM productcost WHERE closingmon = ? AND matcode = ?";
+				MatCode = FindRs.getString("matcode");
+				
+				String FindMatData = "SELECT "
+						+ "CASE "
+						+ "WHEN movetype LIKE 'GI%' THEN 'GI' "
+						+ "WHEN movetype LIKE 'GR%' THEN 'GR' "
+						+ "ELSE movetype "
+						+ "END AS movetype_group, "
+						+ "matcode, "
+						+ "CostingLv, "
+						+ "matdesc, "
+						+ "SUM(quantity) AS SumOQty, "
+						+ "SUM(amount) AS SumOfAmt, "
+						+ "SUM(amtOhc) AS SumOfAmtOhc "
+						+ "FROM invenlogl_copy "
+						+ "WHERE mattype <> 'RAWM' AND matcode = ? "
+						+ "AND (movetype LIKE 'GI%' OR movetype LIKE 'GR%') "
+						+ "GROUP BY movetype_group, matcode "
+						+ "ORDER BY movetype_group DESC";
 				FindMatPstmt = conn.prepareStatement(FindMatData);
-				FindMatPstmt.setString(1, Cm);
-				FindMatPstmt.setString(2, MatCode);
+				FindMatPstmt.setString(1, MatCode);
 				FindMatRs = FindMatPstmt.executeQuery();
-				while(FindMatRs.next()) {
-					BsQty = FindMatRs.getBigDecimal("BS_Qty");
-					BSMatC = FindMatRs.getBigDecimal("BS_MatC");
-					BSExpC = FindMatRs.getBigDecimal("BS_ExpC");
-					GRQty = FindMatRs.getBigDecimal("GR_Qty");
-					GiQty = FindMatRs.getBigDecimal("Gi_Qty");
-					ESQty = FindMatRs.getBigDecimal("ES_Qty");
+				if(FindMatRs.next()) {
+					MvType = FindMatRs.getString("movetype_group");
+					ItemLv = FindMatRs.getInt("CostingLv");
+					BsQty = FindRs.getBigDecimal("BS_Qty");
+					BSMatC = FindRs.getBigDecimal("BS_MatC");
+					BSExpC = FindRs.getBigDecimal("BS_ExpC");
+					if(MvType.equals("GR") && ItemLv == 1) {
+						SumOfAmt = FindMatRs.getBigDecimal("SumOfAmt");
+						SumOfAmtOhc = FindMatRs.getBigDecimal("SumOfAmtOhc");
+					}else if(MvType.equals("GI") && ItemLv == 1) {
+						SumOfAmt = BigDecimal.ZERO;
+						SumOfAmtOhc = BigDecimal.ZERO;
+					}if(ItemLv >= 2) {
+						continue;
+					}
+					GRQty = FindRs.getBigDecimal("GR_Qty");
+					GiQty = FindRs.getBigDecimal("Gi_Qty");
+					ESQty = FindRs.getBigDecimal("ES_Qty");
 					
-					UnitMatPrice = (BSMatC.add(SumOfAmt)).divide(BsQty.add(GRQty), 10, RoundingMode.HALF_UP).setScale(0, RoundingMode.HALF_UP); // 기말재고단가 재료비
-					UnitManPrice = (BSExpC.add(SumOfAmtOhc)).divide(BsQty.add(GRQty), 10, RoundingMode.HALF_UP).setScale(0, RoundingMode.HALF_UP); // 기말재고단가 경비
+					UnitMatPrice = (BSMatC.add(SumOfAmt)).divide(BsQty.add(GRQty), 10, RoundingMode.HALF_UP); // 기말재고단가 재료비
+					UnitManPrice = (BSExpC.add(SumOfAmtOhc)).divide(BsQty.add(GRQty), 10, RoundingMode.HALF_UP); // 기말재고단가 경비
 					
 					ESMatC = ESQty.multiply(UnitMatPrice).setScale(0, RoundingMode.HALF_UP); // 기말재고 재료비
 					ESExpC = ESQty.multiply(UnitManPrice).setScale(0, RoundingMode.HALF_UP); // 기말재고 경비
@@ -432,6 +473,32 @@ public class GoodsCostAllDao {
 					UpdateMatPstmt.setString(7, Cm);
 					UpdateMatPstmt.setString(8, MatCode);
 					UpdateMatPstmt.executeUpdate();
+				}else {
+					BsQty = FindRs.getBigDecimal("BS_Qty");
+					BSMatC = FindRs.getBigDecimal("BS_MatC");
+					BSExpC = FindRs.getBigDecimal("BS_ExpC");
+					ESQty = FindRs.getBigDecimal("ES_Qty");
+					
+					UnitMatPrice = BSMatC.divide(BsQty, 10, RoundingMode.HALF_UP); // 기말재고단가 재료비
+					UnitManPrice = BSExpC.divide(BsQty, 10, RoundingMode.HALF_UP); // 기말재고단가 경비
+					
+					ESMatC = ESQty.multiply(UnitMatPrice).setScale(0, RoundingMode.HALF_UP); // 기말재고 재료비
+					ESExpC = ESQty.multiply(UnitManPrice).setScale(0, RoundingMode.HALF_UP); // 기말재고 경비
+					
+					String UpdateMatItem = "UPDATE productcost SET GR_MatC = ?, GR_ExpC = ?, Gi_MatC = ?, Gi_ExpC = ?, ES_MatC = ?, ES_ExpC = ? WHERE "
+							+ "closingmon = ? AND matcode = ?";
+					UpdateMatPstmt = conn.prepareStatement(UpdateMatItem);
+					UpdateMatPstmt.setBigDecimal(1, BigDecimal.ZERO);
+					UpdateMatPstmt.setBigDecimal(2, BigDecimal.ZERO);
+					UpdateMatPstmt.setBigDecimal(3, BigDecimal.ZERO);
+					UpdateMatPstmt.setBigDecimal(4, BigDecimal.ZERO);
+					UpdateMatPstmt.setBigDecimal(5, ESMatC);
+					UpdateMatPstmt.setBigDecimal(6, ESExpC);
+					UpdateMatPstmt.setString(7, Cm);
+					UpdateMatPstmt.setString(8, MatCode);
+					UpdateMatPstmt.executeUpdate();
+					System.out.println("2 : " + MatCode + " : " + UnitMatPrice + " : " + UnitManPrice);
+					System.out.println("2 : " + MatCode + " : " + ESMatC + " : " + ESExpC);
 				}
 			}
 		} catch (SQLException e) {
@@ -447,8 +514,8 @@ public class GoodsCostAllDao {
 		    System.err.println("❌ 알 수 없는 오류: " + e.getMessage());
 		    return "fail";
 		}finally {
-			if(FindGr11Rs != null) try { FindGr11Rs.close(); } catch(SQLException e) {}
-			if(FindGr11Pstmt != null) try { FindGr11Pstmt.close(); } catch(SQLException e) {}
+			if(FindRs != null) try { FindRs.close(); } catch(SQLException e) {}
+			if(FindPstmt != null) try { FindPstmt.close(); } catch(SQLException e) {}
 			if(FindMatRs != null) try { FindMatRs.close(); } catch(SQLException e) {}
 			if(FindMatPstmt != null) try { FindMatPstmt.close(); } catch(SQLException e) {}
 			if(UpdateMatPstmt != null) try { UpdateMatPstmt.close(); } catch(SQLException e) {}
@@ -567,6 +634,22 @@ public class GoodsCostAllDao {
 			// TODO: handle exception
 			e.printStackTrace();
 			 return "error_A01";
+		}catch (NullPointerException e) {
+		    e.printStackTrace();
+		    System.err.println("❌ NullPointer 오류: PreparedStatement 미생성 등 확인 필요");
+		    return "fail";
+		} catch (Exception e) {
+		    e.printStackTrace();
+		    System.err.println("❌ 알 수 없는 오류: " + e.getMessage());
+		    return "fail";
+		}finally{
+			if(PastData != null) try { PastData.close(); } catch(SQLException e) {}
+			if(PastMonDataPstmt != null) try { PastMonDataPstmt.close(); } catch(SQLException e) {}
+			if(RenewRs != null) try { RenewRs.close(); } catch(SQLException e) {}
+			if(RenewPstmt != null) try { RenewPstmt.close(); } catch(SQLException e) {}
+			if(findOP30Rs != null) try { findOP30Rs.close(); } catch(SQLException e) {}
+			if(FindOP30Pstmt != null) try { FindOP30Pstmt.close(); } catch(SQLException e) {}
+			if(UpdatePstmt != null) try { UpdatePstmt.close(); } catch(SQLException e) {}
 		}// A01 ~ A02 process
 
 		String Line_ProductDataCalc = "SELECT "
@@ -637,7 +720,15 @@ public class GoodsCostAllDao {
 			     } catch(SQLException e) {
 			    	 e.printStackTrace();
 			    	 System.err.println("Error for matcode: " + matcode + ", movetype_group: " + movetypeGroup);
-			     } finally {
+			     }catch (NullPointerException e) {
+					    e.printStackTrace();
+					    System.err.println("❌ NullPointer 오류: PreparedStatement 미생성 등 확인 필요");
+					    return "fail";
+			     } catch (Exception e) {
+					    e.printStackTrace();
+					    System.err.println("❌ 알 수 없는 오류: " + e.getMessage());
+					    return "fail";
+			     }finally {
 			    	 if(PDS_Rs != null) try { PDS_Rs.close(); } catch(SQLException e) {}
 			    	 if(PDS != null) try { PDS.close(); } catch(SQLException e) {}
 			    	 if(PDU != null) try { PDU.close(); } catch(SQLException e) {}
@@ -647,6 +738,14 @@ public class GoodsCostAllDao {
 		} catch (SQLException e) {
 			e.printStackTrace();
 			return "error_A02";
+		} catch (NullPointerException e) {
+		    e.printStackTrace();
+		    System.err.println("❌ NullPointer 오류: PreparedStatement 미생성 등 확인 필요");
+		    return "fail";
+		} catch (Exception e) {
+		    e.printStackTrace();
+		    System.err.println("❌ 알 수 없는 오류: " + e.getMessage());
+		    return "fail";
 		} finally {
 			if(Line_ProDataCalc_rs != null) try { Line_ProDataCalc_rs.close(); } catch(SQLException e) {}
 		    if(Line_ProDataCalc_pstmt != null) try { Line_ProDataCalc_pstmt.close(); } catch(SQLException e) {}
@@ -682,23 +781,20 @@ public class GoodsCostAllDao {
 						BigDecimal Gr_Qty = SelectSqlRs.getBigDecimal("GR_Qty");
 						BigDecimal Gi_Qty = SelectSqlRs.getBigDecimal("Gi_Qty");
 						
-						String UpdataBs = "UPDATE productcost SET BS_Qty = ?, BS_MatC = ?, BS_LabC = ?, BS_ExpC = ?, ES_Qty = ?, ES_MatC = ?, ES_LabC = ?, ES_ExpC = ? WHERE KeyVal = ?";
+						String UpdataBs = "UPDATE productcost SET BS_Qty = ?, BS_MatC = ?, BS_LabC = ?, BS_ExpC = ?, ES_Qty = ? WHERE KeyVal = ?";
 						UpdateBsPstmt = conn.prepareStatement(UpdataBs);
 						UpdateBsPstmt.setBigDecimal(1, EsQty);
 						UpdateBsPstmt.setBigDecimal(2, EsMatC);
 						UpdateBsPstmt.setBigDecimal(3, EsLabC);
 						UpdateBsPstmt.setBigDecimal(4, EsExpC);
 						UpdateBsPstmt.setBigDecimal(5, EsQty.add(Gr_Qty).subtract(Gi_Qty));
-						UpdateBsPstmt.setBigDecimal(6, EsMatC);
-						UpdateBsPstmt.setBigDecimal(7, EsLabC);
-						UpdateBsPstmt.setBigDecimal(8, EsExpC);
-						UpdateBsPstmt.setString(9, KeyValue);
+						UpdateBsPstmt.setString(6, KeyValue);
 						UpdateBsPstmt.executeUpdate();
 					}else {
 						String InsertBs = "INSERT INTO productcost (closingmon, comcode, plant, matcode, matdesc, spec, matType, BS_Qty, BS_MatC, BS_LabC, BS_ExpC, "
-								+ "ES_Qty, ES_MatC, ES_LabC, ES_ExpC, KeyVal) "
+								+ "ES_Qty, KeyVal) "
 								+ "SELECT ?, ?, ?, PC.matcode, PC.matdesc, PC.spec, PC.matType, PC.ES_Qty, PC.ES_MatC, PC.ES_LabC, PC.ES_ExpC, "
-								+ "PC.ES_Qty, PC.ES_MatC, PC.ES_LabC, PC.ES_ExpC, CONCAT(?, PC.matcode, PC.matType) "
+								+ "PC.ES_Qty, CONCAT(?, PC.matcode, PC.matType) "
 								+ "FROM productcost AS PC "
 								+ "WHERE closingmon = ? AND matcode = ?";
 						InsertBsPstmt = conn.prepareStatement(InsertBs);
