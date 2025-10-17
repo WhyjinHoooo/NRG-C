@@ -106,15 +106,24 @@ public class GoodsCostAllDao {
 			String FirstProcess = AProcess(Cd, Pd, Cm);
 			if(FirstProcess.equals("success")) {
 				String Lv1Procedd = CProcess(Cm, 1);
+				if(Lv1Procedd.equals("success")) {
+					String Lv2PRocess = DProcess(Cm, 2);
+				}else {
+					result = FirstProcess;
+				}
 			}else {
 				result = FirstProcess;
 			}
-			result = "Good";
 		}catch (Exception e) {
 			// TODO: handle exception
 			e.printStackTrace();
 		}
 		return result;
+	}
+
+	private String DProcess(String CalcMon, int Lv) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	private String CProcess(String CalcMon, int Lv) {
@@ -199,22 +208,16 @@ public class GoodsCostAllDao {
 		
 		PreparedStatement FindLinePstmt = null;
 		ResultSet FindLineRs = null;
-		
+
 		PreparedStatement LineUpdatePstmt = null;
-		
 		PreparedStatement SumQrtPstmt = null;
 		ResultSet SumQtyRs = null;
-		
 		PreparedStatement CalcAmtPstmt = null;
 		ResultSet CalcAmtRs = null;
-		
 		PreparedStatement AmtUpdatePstmt = null;
-		
 		ResultSet ChkSumRs = null;
 		PreparedStatement ChkSumPstmt = null;
-		
 		PreparedStatement EditLineAmtPstmt = null;
-		
 		PreparedStatement EditLineAmtOhcPstmt = null;
 		try {
 			FindLv1Pstmt = conn.prepareStatement(FindLv1Data);
@@ -519,6 +522,169 @@ public class GoodsCostAllDao {
 			if(FindMatRs != null) try { FindMatRs.close(); } catch(SQLException e) {}
 			if(FindMatPstmt != null) try { FindMatPstmt.close(); } catch(SQLException e) {}
 			if(UpdateMatPstmt != null) try { UpdateMatPstmt.close(); } catch(SQLException e) {}
+		}
+		
+		String SetUnitPrice = "SELECT matcode, mattype FROM invenlogl_copy WHERE CostingLv = ? GROUP BY matcode";
+		PreparedStatement SetUnitPstmt = null;
+		ResultSet SetUnitPRs = null;
+		PreparedStatement GetGIPricePstmt = null;
+		ResultSet GetGIPriceRs = null;
+		PreparedStatement FindGIItemPstmt = null;
+		ResultSet FindGIItemRs = null;
+		PreparedStatement GIAmtUpatePstmt = null;
+		PreparedStatement BeforeGIItemPstmt = null;
+		ResultSet BeforGIIemRs = null;
+		PreparedStatement EditGIItemAmtPstmt = null;
+		PreparedStatement EditGIItemAmtfPstmt = null;
+		
+		String SetMatCode = null;
+		String SetMatType = null;
+		String MatKeyCode = null;
+		String LineKeyCode = null;
+		BigDecimal BS_Qty = BigDecimal.ZERO;
+		BigDecimal BS_MatC = BigDecimal.ZERO;
+		BigDecimal BS_ExpC = BigDecimal.ZERO;
+		BigDecimal GR_Qty = BigDecimal.ZERO;
+		BigDecimal GR_MatC = BigDecimal.ZERO;
+		BigDecimal GR_ExpC = BigDecimal.ZERO;
+		BigDecimal GI_MatC = BigDecimal.ZERO;
+		BigDecimal GI_ExpC = BigDecimal.ZERO;
+		BigDecimal UnitMPrice= BigDecimal.ZERO;
+		BigDecimal UnitMFPrice = BigDecimal.ZERO;
+		BigDecimal LineQty = BigDecimal.ZERO;
+		
+		BigDecimal BeforeSumAmt = BigDecimal.ZERO;
+		BigDecimal BeforeSumAmtf = BigDecimal.ZERO;
+		BigDecimal AmtGap = BigDecimal.ZERO;
+		BigDecimal AmtfGap = BigDecimal.ZERO;
+		try {
+			SetUnitPstmt = conn.prepareStatement(SetUnitPrice);
+			SetUnitPstmt.setInt(1, CalcLevel);
+			SetUnitPRs = SetUnitPstmt.executeQuery();
+			while(SetUnitPRs.next()) {
+				MatKeyCode = null;
+				SetMatCode = null;
+				SetMatType = null;
+				
+				SetMatCode = SetUnitPRs.getString("matcode");
+				SetMatType = SetUnitPRs.getString("mattype");
+				MatKeyCode = Cm + SetMatCode + SetMatType;
+				
+				String GetGIPrice = "SELECT * FROM productcost WHERE KeyVal = ?";
+				GetGIPricePstmt = conn.prepareStatement(GetGIPrice);
+				GetGIPricePstmt.setString(1, MatKeyCode);
+				GetGIPriceRs = GetGIPricePstmt.executeQuery();
+				if(GetGIPriceRs.next()) {
+					BS_Qty = BigDecimal.ZERO;
+					BS_MatC = BigDecimal.ZERO;
+					BS_ExpC = BigDecimal.ZERO;
+					GR_Qty = BigDecimal.ZERO;
+					GR_MatC = BigDecimal.ZERO;
+					GR_ExpC = BigDecimal.ZERO;
+					GI_MatC = BigDecimal.ZERO;
+					GI_ExpC = BigDecimal.ZERO;
+					UnitMPrice= BigDecimal.ZERO;
+					UnitMFPrice = BigDecimal.ZERO;
+
+					BS_Qty = GetGIPriceRs.getBigDecimal("BS_Qty");
+					BS_MatC = GetGIPriceRs.getBigDecimal("BS_MatC");
+					BS_ExpC = GetGIPriceRs.getBigDecimal("BS_ExpC");
+					
+					GR_Qty = GetGIPriceRs.getBigDecimal("GR_Qty");
+					GR_MatC = GetGIPriceRs.getBigDecimal("GR_MatC");
+					GR_ExpC = GetGIPriceRs.getBigDecimal("GR_ExpC");
+					
+					GI_MatC = GetGIPriceRs.getBigDecimal("GI_MatC");
+					GI_ExpC = GetGIPriceRs.getBigDecimal("GI_ExpC");
+					
+					UnitMPrice = (BS_MatC.add(GR_MatC)).divide((BS_Qty.add(GR_Qty)), 10, RoundingMode.HALF_UP);
+					UnitMFPrice = (BS_ExpC.add(GR_ExpC)).divide((BS_Qty.add(GR_Qty)), 10, RoundingMode.HALF_UP);
+				}
+				BeforeSumAmt = BigDecimal.ZERO;
+				BeforeSumAmtf = BigDecimal.ZERO;
+				AmtGap = BigDecimal.ZERO;
+				AmtfGap = BigDecimal.ZERO;
+				
+				String FindGIItem = "SELECT * FROM invenlogl_copy WHERE matcode = ? AND movetype LIKE 'GI%'";
+				FindGIItemPstmt = conn.prepareStatement(FindGIItem);
+				FindGIItemPstmt.setString(1, SetMatCode);
+				FindGIItemRs = FindGIItemPstmt.executeQuery(); 
+				while(FindGIItemRs.next()) {
+					LineKeyCode = null;
+					LineQty = BigDecimal.ZERO;
+					LineKeyCode = FindGIItemRs.getString("keyvalue");
+					LineQty = FindGIItemRs.getBigDecimal("quantity");
+					
+					String GIAmtUpdateSql = "UPDATE invenlogl_copy SET amount = ?, amtOhC = ? WHERE keyvalue = ?";
+					GIAmtUpatePstmt = conn.prepareStatement(GIAmtUpdateSql);
+					GIAmtUpatePstmt.setBigDecimal(1, LineQty.multiply(UnitMPrice).setScale(0, RoundingMode.HALF_UP));
+					GIAmtUpatePstmt.setBigDecimal(2, LineQty.multiply(UnitMFPrice).setScale(0, RoundingMode.HALF_UP));
+					GIAmtUpatePstmt.setString(3, LineKeyCode);
+					GIAmtUpatePstmt.executeUpdate();
+					
+					BeforeSumAmt = BeforeSumAmt.add(LineQty.multiply(UnitMPrice).setScale(0, RoundingMode.HALF_UP));
+					BeforeSumAmtf = BeforeSumAmtf.add(LineQty.multiply(UnitMFPrice).setScale(0, RoundingMode.HALF_UP));
+				}
+				AmtGap = GI_MatC.subtract(BeforeSumAmt);
+				AmtfGap = GI_ExpC.subtract(BeforeSumAmtf);
+				
+				String BeforeFindGIItem = "SELECT * FROM invenlogl_copy WHERE matcode = ? AND movetype LIKE 'GI%'";
+				BeforeGIItemPstmt = conn.prepareStatement(BeforeFindGIItem);
+				BeforeGIItemPstmt.setString(1, SetMatCode);
+				BeforGIIemRs = BeforeGIItemPstmt.executeQuery();
+				if(BeforGIIemRs.next()) {
+					LineKeyCode = null;
+					LineKeyCode = BeforGIIemRs.getString("keyvalue");
+					String EditGIItemAmt = null;
+					String EditGIItemAmtf = null;
+					if(AmtGap.compareTo(BigDecimal.ZERO) > 0) {
+						EditGIItemAmt = "UPDATE invenlogl_copy SET amount = (amount + ? ) WHERE keyvalue = ?";
+						EditGIItemAmtPstmt = conn.prepareStatement(EditGIItemAmt);
+						EditGIItemAmtPstmt.setBigDecimal(1, AmtGap.abs());
+					}else {
+						EditGIItemAmt = "UPDATE invenlogl_copy SET amount = (amount - ? ) WHERE keyvalue = ?";
+						EditGIItemAmtPstmt = conn.prepareStatement(EditGIItemAmt);
+						EditGIItemAmtPstmt.setBigDecimal(1, AmtGap.abs());
+					}
+					if(AmtfGap.compareTo(BigDecimal.ZERO) > 0) {
+						EditGIItemAmtf = "UPDATE invenlogl_copy SET amtOhC = (amtOhC + ? ) WHERE keyvalue = ?";
+						EditGIItemAmtfPstmt = conn.prepareStatement(EditGIItemAmtf);
+						EditGIItemAmtfPstmt.setBigDecimal(1, AmtfGap.abs());
+					}else {
+						EditGIItemAmtf = "UPDATE invenlogl_copy SET amtOhC = (amtOhC - ? ) WHERE keyvalue = ?";
+						EditGIItemAmtfPstmt = conn.prepareStatement(EditGIItemAmtf);
+						EditGIItemAmtfPstmt.setBigDecimal(1, AmtfGap.abs());
+					}
+					EditGIItemAmtPstmt.setString(2, LineKeyCode);
+					EditGIItemAmtfPstmt.setString(2, LineKeyCode);
+					EditGIItemAmtPstmt.executeUpdate();
+					EditGIItemAmtfPstmt.executeUpdate();
+				}
+			}
+		}catch(SQLException e01) {
+			e01.printStackTrace();
+			System.err.println("❌ CProcess 네 번째 SQL 오류: " + e01.getMessage());
+			return "fail";
+		}catch (NullPointerException e) {
+		    e.printStackTrace();
+		    System.err.println("❌ NullPointer 오류: PreparedStatement 미생성 등 확인 필요");
+		    return "fail";
+		} catch (Exception e) {
+		    e.printStackTrace();
+		    System.err.println("❌ 알 수 없는 오류: " + e.getMessage());
+		    return "fail";
+		}finally {
+			if(SetUnitPRs != null) try { SetUnitPRs.close(); } catch(SQLException e) {}
+			if(SetUnitPstmt != null) try { SetUnitPstmt.close(); } catch(SQLException e) {}
+			if(GetGIPriceRs != null) try { GetGIPriceRs.close(); } catch(SQLException e) {}
+			if(GetGIPricePstmt != null) try { GetGIPricePstmt.close(); } catch(SQLException e) {}
+			if(FindGIItemRs != null) try { FindGIItemRs.close(); } catch(SQLException e) {}
+			if(FindGIItemPstmt != null) try { FindGIItemPstmt.close(); } catch(SQLException e) {}
+			if(GIAmtUpatePstmt != null) try { GIAmtUpatePstmt.close(); } catch(SQLException e) {}
+			if(BeforGIIemRs != null) try { BeforGIIemRs.close(); } catch(SQLException e) {}
+			if(BeforeGIItemPstmt != null) try { BeforeGIItemPstmt.close(); } catch(SQLException e) {}
+			if(EditGIItemAmtPstmt != null) try { EditGIItemAmtPstmt.close(); } catch(SQLException e) {}
+			if(EditGIItemAmtfPstmt != null) try { EditGIItemAmtfPstmt.close(); } catch(SQLException e) {}
 		}
 		return "success";
 	}
