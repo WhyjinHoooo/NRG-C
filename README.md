@@ -44,7 +44,7 @@
 | **기타 재료비** | 교반공정 투입비율에 따른 작지ID별 배부 |
 | **재공품/제품 원가 구분** | 소분완료 비율에 따라 제품원가 vs 재공품원가 구분 |
 
-➡️ <img width="587" height="99" alt="image" src="https://github.com/user-attachments/assets/d96417a5-a9c2-4702-8718-4359e5c99fdb" />
+<img width="587" height="99" alt="image" src="https://github.com/user-attachments/assets/d96417a5-a9c2-4702-8718-4359e5c99fdb" />
 
 
 ---
@@ -63,7 +63,7 @@
    - 원가담당자가 결과를 검토 후 전표 입력 →  
      재고자산 및 매출원가 자동 확정  
 
-➡️ <img width="610" height="450" alt="image" src="https://github.com/user-attachments/assets/72b53dd0-4cb7-4886-8c41-2e287017ae3b" />
+<img width="610" height="450" alt="image" src="https://github.com/user-attachments/assets/72b53dd0-4cb7-4886-8c41-2e287017ae3b" />
 
 
 ---
@@ -76,7 +76,7 @@
 - **프론트엔드:** JSP, jQuery, HTML5, CSS3, JavaScript  
 - **개발 도구:** Eclipse, Git
 
-➡️ <img width="1605" height="428" alt="image" src="https://github.com/user-attachments/assets/09bdb51f-4977-4d63-bcba-e6a3ab4bb9b0" />
+<img width="1605" height="428" alt="image" src="https://github.com/user-attachments/assets/09bdb51f-4977-4d63-bcba-e6a3ab4bb9b0" />
 
 ---
 
