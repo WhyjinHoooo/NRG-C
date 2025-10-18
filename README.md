@@ -76,7 +76,7 @@
 - **프론트엔드:** JSP, jQuery, HTML5, CSS3, JavaScript  
 - **개발 도구:** Eclipse, Git
 
-<img width="1605" height="428" alt="image" src="https://github.com/user-attachments/assets/09bdb51f-4977-4d63-bcba-e6a3ab4bb9b0" />
+<img width="769" height="114" alt="image" src="https://github.com/user-attachments/assets/cebcb914-533d-44fd-950e-57508e1f7317" />
 
 ---
 
