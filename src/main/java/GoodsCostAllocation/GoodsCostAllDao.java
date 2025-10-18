@@ -20,6 +20,8 @@ import org.json.JSONObject;
 import com.mysql.cj.x.protobuf.MysqlxPrepare.Prepare;
 import com.mysql.cj.xdevapi.Result;
 
+
+
 public class GoodsCostAllDao {
 	private Connection conn;
 	private PreparedStatement pstmt;
@@ -35,6 +37,12 @@ public class GoodsCostAllDao {
             e.printStackTrace();
         }
     }
+	public class ZeroDenominator﻿Exception extends Exception{
+		public ZeroDenominator﻿Exception(String msg) {
+			super(msg);
+		}
+	}
+	
 	private String Cd; // 기업코드
 	private String Pd; // 공장코드
 	private String Cm; // 결산월
@@ -123,7 +131,151 @@ public class GoodsCostAllDao {
 
 	private String DProcess(String CalcMon, int Lv) {
 		// TODO Auto-generated method stub
-		return null;
+		this.Cm = CalcMon;
+		int CostingLv = Lv;
+		String WkOrd;
+		BigDecimal SumOfAmt;
+		BigDecimal SumOfAmtF;
+		String MatKeyCode;
+		
+		BigDecimal Lv2_ProdQty;
+		BigDecimal Lv2_WipQty;
+		BigDecimal Lv2_MatCostSum;
+		BigDecimal Lv2_ManufCostSum;
+		BigDecimal Lv2_WipMatCost;
+		BigDecimal Lv2_WipMnaufCost;
+		BigDecimal Lv2_FertMatCost;
+		BigDecimal Lv2_FertManufCost;
+		String Lv2ItemKeyCode;
+		
+		String SelcItemSql = "SELECT workordnum, SUM(amount) as SUMAMT, sum(amtOhC) as SUMAMTF "
+				+ "FROM InvenLogl_Copy "
+				+ "WHERE closingmon = ? AND CostingLv = ? AND "
+				+ "(mattype LIKE 'SFGD' OR mattype LIKE 'FFGD') "
+				+ "AND movetype LIKE 'GI%' "
+				+ "GROUP BY workordnum";
+		PreparedStatement SelcItemPstmt = null;
+		ResultSet SelcItemRs = null;
+		
+		PreparedStatement SelcProCostPstmt = null;
+		ResultSet SelcProCostRs = null;
+		
+		PreparedStatement ProCostUpdatePstmt = null;
+		
+		PreparedStatement SelcProCost2LvPstmt = null;
+		ResultSet SelcProCost2LvRs = null;
+		
+		PreparedStatement EditLv2ItemPstmt = null;
+		try {
+			SelcItemPstmt = conn.prepareStatement(SelcItemSql);
+			SelcItemPstmt.setString(1, Cm);
+			SelcItemPstmt.setInt(1, Lv-1);
+			SelcItemRs = SelcItemPstmt.executeQuery();
+			while(SelcItemRs.next()) {
+				WkOrd = null;
+				SumOfAmt = BigDecimal.ZERO;
+				SumOfAmtF = BigDecimal.ZERO;
+				MatKeyCode = null;
+				
+				WkOrd = SelcItemRs.getString("workordnum");
+				SumOfAmt = SelcItemRs.getBigDecimal("SUMAMT");
+				SumOfAmtF = SelcItemRs.getBigDecimal("SUMAMTF");
+				
+				String SelcProCostTable = "SELECT * FROM processcosttable_Copy WHERE ClosingMon = ? AND WorkOrd = ? ORDER BY WorkSeq ASC";
+				SelcProCostPstmt = conn.prepareStatement(SelcProCostTable);
+				SelcProCostPstmt.setString(1, Cm);
+				SelcProCostPstmt.setString(2, WkOrd);
+				SelcProCostRs = SelcProCostPstmt.executeQuery();
+				if(SelcProCostRs.next()) {
+					MatKeyCode = SelcProCostRs.getString("KeyValue");
+					String ProCostUpdate = "UPDATE processcosttable_Copy SET HalbMatCost = ?, MatCostSum = (RawMatCost + ? + OthMatCost) "
+							+ "HalbManufCost = ?, ManufCostSum = (ManufCost + ? ) "
+							+ "WHERE KeyValue = ?";
+					ProCostUpdatePstmt = conn.prepareStatement(ProCostUpdate);
+					ProCostUpdatePstmt.setBigDecimal(1, SumOfAmt);
+					ProCostUpdatePstmt.setBigDecimal(2, SumOfAmtF);
+					ProCostUpdatePstmt.setString(3, MatKeyCode);
+					ProCostUpdatePstmt.executeUpdate();
+				}
+				
+				String SelcProCost2Lv = "SELECT * FROM processcosttable_Copy WHERE CostingLv = ? AND WorkOrd = ?";
+				SelcProCost2LvPstmt = conn.prepareStatement(SelcProCost2Lv);
+				SelcProCost2LvPstmt.setInt(1, Lv);
+				SelcProCost2LvPstmt.setString(2, WkOrd);
+				SelcProCost2LvRs = SelcProCost2LvPstmt.executeQuery();
+				while(SelcProCost2LvRs.next()) {
+					Lv2_ProdQty = BigDecimal.ZERO;
+					Lv2_WipQty = BigDecimal.ZERO;
+					Lv2_MatCostSum = BigDecimal.ZERO;
+					Lv2_ManufCostSum = BigDecimal.ZERO;
+					Lv2_WipMatCost = BigDecimal.ZERO;
+					Lv2_WipMnaufCost = BigDecimal.ZERO;
+					Lv2_FertMatCost = BigDecimal.ZERO;
+					Lv2_FertManufCost = BigDecimal.ZERO;
+					Lv2ItemKeyCode = null;
+					
+					Lv2ItemKeyCode = SelcProCost2LvRs.getString("KeyValue");
+					Lv2_ProdQty = SelcProCost2LvRs.getBigDecimal("ProdQty");
+					Lv2_WipQty = SelcProCost2LvRs.getBigDecimal("WipQty");
+					Lv2_MatCostSum = SelcProCost2LvRs.getBigDecimal("MatCostSum");
+					Lv2_ManufCostSum = SelcProCost2LvRs.getBigDecimal("ManufCostSum");
+					
+					String EditLv2Item = null;
+					if(Lv2_WipQty.compareTo(BigDecimal.ZERO) == 0) {
+						EditLv2Item = "UPDATE processcosttable_Copy SET FertMatCost = ?, FertManufCost = ? WHERE KeyValue = ?";
+						EditLv2ItemPstmt = conn.prepareStatement(EditLv2Item);
+						EditLv2ItemPstmt.setBigDecimal(1, Lv2_MatCostSum);
+						EditLv2ItemPstmt.setBigDecimal(2, Lv2_ManufCostSum);
+						EditLv2ItemPstmt.setString(3 , Lv2ItemKeyCode);
+					}else if(Lv2_WipQty.compareTo(BigDecimal.ZERO) > 0){
+						if(Lv2_ProdQty.add(Lv2_WipQty).compareTo(BigDecimal.ZERO) == 0) {
+							throw new ZeroDenominator﻿Exception("분모가 0이 되면 안됩니다.");
+						}else {
+							Lv2_WipMatCost = Lv2_MatCostSum.multiply(Lv2_WipQty.divide((Lv2_ProdQty.add(Lv2_WipQty)), 10, RoundingMode.HALF_UP)).setScale(0, RoundingMode.HALF_UP);
+							Lv2_WipMnaufCost = Lv2_ManufCostSum.multiply(Lv2_WipQty.divide((Lv2_ProdQty.add(Lv2_WipQty)), 10, RoundingMode.HALF_UP)).setScale(0, RoundingMode.HALF_UP);
+						}
+						Lv2_FertMatCost = Lv2_MatCostSum.subtract(Lv2_WipMatCost);
+						Lv2_FertManufCost = Lv2_ManufCostSum.subtract(Lv2_WipMatCost);
+						
+						EditLv2Item = "UPDATE processcosttable_Copy SET FertMatCost = ?, FertManufCost = ?, WipMatCost = ?, WipMnaufCost = ? WHERE KeyValue = ?";
+						EditLv2ItemPstmt = conn.prepareStatement(EditLv2Item);
+						EditLv2ItemPstmt.setBigDecimal(1, Lv2_FertMatCost);
+						EditLv2ItemPstmt.setBigDecimal(2, Lv2_FertManufCost);
+						EditLv2ItemPstmt.setBigDecimal(3, Lv2_WipMatCost);
+						EditLv2ItemPstmt.setBigDecimal(4, Lv2_WipMnaufCost);
+						EditLv2ItemPstmt.setString(5, Lv2ItemKeyCode);
+					}
+					EditLv2ItemPstmt.executeUpdate();
+				}
+			}
+		} catch (SQLException e) {
+			// TODO: handle exception
+			e.printStackTrace();
+			System.err.println("❌ DProcess 첫 번쨰 SQL 오류: " + e.getMessage());
+			return "fail";
+		} catch (NullPointerException e) {
+		    e.printStackTrace();
+		    System.err.println("❌ NullPointer 오류: PreparedStatement 미생성 등 확인 필요");
+		    return "fail";
+		} catch (ZeroDenominator﻿Exception e) {
+		    e.printStackTrace();
+		    System.err.println("❌ 계산 불가능 오류: " + e.getMessage());
+		    return "fail";
+		}catch (Exception e) {
+		    e.printStackTrace();
+		    System.err.println("❌ 알 수 없는 오류: " + e.getMessage());
+		    return "fail";
+		} finally {
+			if(SelcItemRs != null) try { SelcItemRs.close(); } catch(SQLException e) {}
+			if(SelcItemPstmt != null) try { SelcItemPstmt.close(); } catch(SQLException e) {}
+			if(SelcProCostRs != null) try { SelcProCostRs.close(); } catch(SQLException e) {}
+			if(SelcProCostPstmt != null) try { SelcProCostPstmt.close(); } catch(SQLException e) {}
+			if(ProCostUpdatePstmt != null) try { ProCostUpdatePstmt.close(); } catch(SQLException e) {}
+			if(SelcProCost2LvRs != null) try { SelcProCost2LvRs.close(); } catch(SQLException e) {}
+			if(SelcProCost2LvPstmt != null) try { SelcProCost2LvPstmt.close(); } catch(SQLException e) {}
+			if(EditLv2ItemPstmt != null) try { EditLv2ItemPstmt.close(); } catch(SQLException e) {}
+		}
+		return "success";
 	}
 
 	private String CProcess(String CalcMon, int Lv) {
