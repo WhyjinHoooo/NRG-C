@@ -463,6 +463,9 @@ public class GoodsCostAllDao {
 			if(EditLineAmtPstmt != null) try { EditLineAmtPstmt.close(); } catch(SQLException e) {}
 			if(EditLineAmtOhcPstmt != null) try { EditLineAmtOhcPstmt.close(); } catch(SQLException e) {}
 		}
+		/* 
+		 * 제품생산원가테이블의 재료별 금액 배부예정 -> CProcess 3 ~ 5번째 SQL 참고 예정
+		 * */
 		return "success";
 	}
 
