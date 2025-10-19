@@ -75,21 +75,36 @@ public class ProGoodsCostAlloSet extends HttpServlet {
             
             switch(action) {
             case"/GoodsCostLoad.do":
-                    ResultData = dao.DataLoading(jsonObj);
+            	ResultData = dao.DataLoading(jsonObj);
+            	if(ResultData == null || ResultData.equals("fail")) {
+                    writer.print("{\"result\":\"fail\"}");
+                }else {
+                    writer.print("{\"result\":\"success\", \"List\":" + ResultData + "}");
+                }
             	break;
             case "/GoodsCostCalc.do":
-                    StringData = dao.GoodsCostCalc(jsonObj);
-                    JSONObject jsonResult = new JSONObject();
-                    jsonResult.put("value", StringData);
-                    ResultData = jsonResult.toString();
+            	StringData = dao.GoodsCostCalc(jsonObj);
+//            	JSONObject jsonResult = new JSONObject();
+//            	jsonResult.put("value", StringData);
+//            	ResultData = jsonResult.toString();
+            	JSONObject jsonResult = new JSONObject(StringData); 
+                
+                String innerResult = jsonResult.optString("result", "fail");
+                System.out.println(StringData);
+                
+                if (innerResult.equals("success")) {
+                    writer.print("{\"result\":\"success\", \"List\":" + StringData + "}");
+                } else {
+                    writer.print("{\"result\":\"fail\", \"message\":\"" + jsonResult.optString("message", "알 수 없는 오류") + "\"}");
+                }
             	break;
             }
-            
-            if(ResultData == null || ResultData.equals("fail")) {
-            	writer.print("{\"result\":\"fail\"}");
-            }else {
-            	writer.print("{\"result\":\"success\", \"List\":" + ResultData + "}");
-            }
+//            System.out.println(ResultData);
+//            if(ResultData == null || ResultData.equals("fail")) {
+//            	writer.print("{\"result\":\"fail\"}");
+//            }else {
+//            	writer.print("{\"result\":\"success\", \"List\":" + ResultData + "}");
+//            }
 		} catch (Exception e) {
 			e.printStackTrace();
 		    writer.print("{\"result\":\"fail\", \"message\":\"" + e.getMessage().replace("\"","\\\"") + "\"}");

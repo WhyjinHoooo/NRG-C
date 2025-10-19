@@ -113,7 +113,6 @@ $(document).ready(function(){
 				dataType: 'json',
 				async: false,
 				success : function(data){
-					console.log(data.result);
 					if(data.result === "success") {
 			            if(data.List.length > 0) {
 			            	console.log(data.List.length);
@@ -167,7 +166,7 @@ $(document).ready(function(){
 				dataType: 'json',
 				async: false,
 				success : function(data){
-					console.log(data.result);
+					console.log(data);
 					alert('분배가 정상적으로 진행됐습니다.');
 				},
 				error: function(jqXHR, textStatus, errorThrown){
