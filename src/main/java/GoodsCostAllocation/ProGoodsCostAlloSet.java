@@ -89,7 +89,7 @@ public class ProGoodsCostAlloSet extends HttpServlet {
 //            	ResultData = jsonResult.toString();
             	JSONObject jsonResult = new JSONObject(StringData); 
                 
-                String innerResult = jsonResult.optString("result", "fail");
+                String innerResult = jsonResult.optString("result", "fail").trim();
                 System.out.println(StringData);
                 
                 if (innerResult.equals("success")) {

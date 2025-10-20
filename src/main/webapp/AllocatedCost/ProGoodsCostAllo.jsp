@@ -167,7 +167,12 @@ $(document).ready(function(){
 				async: false,
 				success : function(data){
 					console.log(data);
-					alert('분배가 정상적으로 진행됐습니다.');
+					if (data.result === "success") {
+			            alert('분배가 정상적으로 진행됐습니다.');
+			        } else {
+			            alert('분배 실패: ' + (data.message || '원인 불명'));
+			        }
+					location.reload();
 				},
 				error: function(jqXHR, textStatus, errorThrown){
 					alert('분배 오류 발생: ' + textStatus + ', ' + errorThrown);
