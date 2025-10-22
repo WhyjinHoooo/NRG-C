@@ -133,7 +133,7 @@ public class GoodsCostAllDao {
 			
 			System.out.println("E공정 시작");
 			String Lv3Process = EProcess(Cm, 3);
-			if (!"success".equals(Lv2Process)) {
+			if (!"success".equals(Lv3Process)) {
 	            result = "{\"result\":\"fail\",\"step\":\"EProcess\",\"message\":\"E단계 실패\"}";
 	            return result;
 	        }
@@ -1695,7 +1695,7 @@ public class GoodsCostAllDao {
 				SumOfAmtOhc = BigDecimal.ZERO;
 				MatCode = null;
 				MvType = null;
-				ItemLv = 0;
+//				ItemLv = 0;
 				BsQty = BigDecimal.ZERO;
 				BSMatC = BigDecimal.ZERO;
 				BSExpC = BigDecimal.ZERO;
@@ -1733,8 +1733,17 @@ public class GoodsCostAllDao {
 				FindMatPstmt.setInt(2, CalcLevel);
 				FindMatRs = FindMatPstmt.executeQuery();
 				if(FindMatRs.next()) {
+					UnitMatPrice = BigDecimal.ZERO;
+					UnitManPrice = BigDecimal.ZERO;
+					ESMatC = BigDecimal.ZERO;
+					ESExpC = BigDecimal.ZERO;
+					GiMatC = BigDecimal.ZERO;
+					GiExpC = BigDecimal.ZERO;
+					SumOfAmt = BigDecimal.ZERO;
+					SumOfAmtOhc = BigDecimal.ZERO;
+					
 					MvType = FindMatRs.getString("movetype_group");
-					ItemLv = FindMatRs.getInt("CostingLv");
+//					ItemLv = FindMatRs.getInt("CostingLv");
 					BsQty = FindRs.getBigDecimal("BS_Qty");
 					BSMatC = FindRs.getBigDecimal("BS_MatC");
 					BSExpC = FindRs.getBigDecimal("BS_ExpC");
@@ -1754,9 +1763,13 @@ public class GoodsCostAllDao {
 					
 					ESMatC = ESQty.multiply(UnitMatPrice).setScale(0, RoundingMode.HALF_UP); // 기말재고 재료비
 					ESExpC = ESQty.multiply(UnitManPrice).setScale(0, RoundingMode.HALF_UP); // 기말재고 경비
-					
-					GiMatC = BSMatC.add(SumOfAmt).subtract(ESMatC); // 출고 재료비
-					GiExpC = BSExpC.add(SumOfAmtOhc).subtract(ESExpC); // 출고 경비
+					if(GiQty.compareTo(BigDecimal.ZERO) == 0) {
+						GiMatC = BigDecimal.ZERO;
+						GiExpC = BigDecimal.ZERO;
+					}else {
+						GiMatC = BSMatC.add(SumOfAmt).subtract(ESMatC); // 출고 재료비
+						GiExpC = BSExpC.add(SumOfAmtOhc).subtract(ESExpC); // 출고 경비
+					}
 					
 					String UpdateMatItem = "UPDATE productcost SET GR_MatC = ?, GR_ExpC = ?, Gi_MatC = ?, Gi_ExpC = ?, ES_MatC = ?, ES_ExpC = ? WHERE "
 							+ "closingmon = ? AND matcode = ?";
@@ -2099,7 +2112,8 @@ public class GoodsCostAllDao {
 		}catch (SQLException e) {
 			// TODO: handle exception
 			e.printStackTrace();
-			 return "error_A01";
+			System.err.println("❌ AProcess 첫 번째 SQL 오류: " + e.getMessage());
+			return "fail";
 		}catch (NullPointerException e) {
 		    e.printStackTrace();
 		    System.err.println("❌ NullPointer 오류: PreparedStatement 미생성 등 확인 필요");
@@ -2109,6 +2123,7 @@ public class GoodsCostAllDao {
 		    System.err.println("❌ 알 수 없는 오류: " + e.getMessage());
 		    return "fail";
 		}finally{
+			if(TransferPstmt != null) try { TransferPstmt.close(); } catch(SQLException e) {}
 			if(PastData != null) try { PastData.close(); } catch(SQLException e) {}
 			if(PastMonDataPstmt != null) try { PastMonDataPstmt.close(); } catch(SQLException e) {}
 			if(RenewRs != null) try { RenewRs.close(); } catch(SQLException e) {}
@@ -2126,15 +2141,21 @@ public class GoodsCostAllDao {
 		        + "END AS movetype_group, "
 		        + "matcode, matdesc, spec, mattype, SUM(quantity) AS total_qty "
 		        + "FROM invenlogl_copy "
-		        + "WHERE mattype != 'RAWM' "
+		        + "WHERE mattype != 'RAWM' AND closingmon = ? "
 		        + "AND (movetype LIKE 'GI%' OR movetype LIKE 'GR%') "
 		        + "GROUP BY matcode, mattype, movetype_group, matdesc, spec "
 		        + "ORDER BY matcode ASC";
 		
 		PreparedStatement Line_ProDataCalc_pstmt = null;
 		ResultSet Line_ProDataCalc_rs = null;
+		
+		PreparedStatement PDS = null;
+	    ResultSet PDS_Rs = null;
+	    PreparedStatement PDU = null;
+	    PreparedStatement PDI = null;
 		try {
 			Line_ProDataCalc_pstmt = conn.prepareStatement(Line_ProductDataCalc);
+			Line_ProDataCalc_pstmt.setString(1, Cm);
 			Line_ProDataCalc_rs = Line_ProDataCalc_pstmt.executeQuery();
 			
 			while(Line_ProDataCalc_rs.next()) {
@@ -2149,61 +2170,41 @@ public class GoodsCostAllDao {
 			     
 			     String KeyValue = Cm + matcode + mattype;
 			     
-			     PreparedStatement PDS = null;
-			     ResultSet PDS_Rs = null;
-			     PreparedStatement PDU = null;
-			     PreparedStatement PDI = null;
-			     try {
-			    	 String ProductDataSelect = "SELECT * FROM productcost WHERE KeyVal = ?";
-			    	 PDS = conn.prepareStatement(ProductDataSelect);
-			    	 PDS.setString(1, KeyValue);
-			    	 PDS_Rs = PDS.executeQuery();
+			     
+			     String ProductDataSelect = "SELECT * FROM productcost WHERE KeyVal = ?";
+			     PDS = conn.prepareStatement(ProductDataSelect);
+			     PDS.setString(1, KeyValue);
+			     PDS_Rs = PDS.executeQuery();
 
-			    	 if(PDS_Rs.next()) {
-			    		 BigDecimal SavedQty = movetypeGroup.equals("GR") ? PDS_Rs.getBigDecimal("GR_Qty") : PDS_Rs.getBigDecimal("Gi_Qty");
-			    		 String updateCol = movetypeGroup.equals("GR") ? "GR_Qty" : "Gi_Qty";
-			    		 String ProductDataUpdate = "UPDATE productcost SET " + updateCol + " = ? WHERE KeyVal = ?";
-			    		 PDU = conn.prepareStatement(ProductDataUpdate);
-			    		 PDU.setBigDecimal(1, totalQty.add(SavedQty));
-			    		 PDU.setString(2, KeyValue);
-			    		 PDU.executeUpdate(); // 🔹 executeUpdate 추가
-			    	 } else {
-			    		 String insertCol = movetypeGroup.equals("GR") ? "GR_Qty" : "Gi_Qty";
-			             String ProductDataInsert = "INSERT INTO productcost (closingmon, comcode, plant, matcode, matdesc, spec, matType, "
-			            		 + insertCol + ", KeyVal) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-			             PDI = conn.prepareStatement(ProductDataInsert);
-			             PDI.setString(1, Cm);
-			             PDI.setString(2, Cd);
-			             PDI.setString(3, Pd);
-			             PDI.setString(4, matcode);
-			             PDI.setString(5, matdesc);
-			             PDI.setString(6, spec);
-			             PDI.setString(7, mattype);
-			             PDI.setBigDecimal(8, totalQty);
-			             PDI.setString(9, KeyValue);
-			             PDI.executeUpdate();
-			    	 }
-			     } catch(SQLException e) {
-			    	 e.printStackTrace();
-			    	 System.err.println("Error for matcode: " + matcode + ", movetype_group: " + movetypeGroup);
-			     }catch (NullPointerException e) {
-					    e.printStackTrace();
-					    System.err.println("❌ NullPointer 오류: PreparedStatement 미생성 등 확인 필요");
-					    return "fail";
-			     } catch (Exception e) {
-					    e.printStackTrace();
-					    System.err.println("❌ 알 수 없는 오류: " + e.getMessage());
-					    return "fail";
-			     }finally {
-			    	 if(PDS_Rs != null) try { PDS_Rs.close(); } catch(SQLException e) {}
-			    	 if(PDS != null) try { PDS.close(); } catch(SQLException e) {}
-			    	 if(PDU != null) try { PDU.close(); } catch(SQLException e) {}
-			    	 if(PDI != null) try { PDI.close(); } catch(SQLException e) {}
-			     }
+			     if(PDS_Rs.next()) {
+//			    	 BigDecimal SavedQty = movetypeGroup.equals("GR") ? PDS_Rs.getBigDecimal("GR_Qty") : PDS_Rs.getBigDecimal("Gi_Qty");
+			    	 String updateCol = movetypeGroup.equals("GR") ? "GR_Qty" : "Gi_Qty";
+			    	 String ProductDataUpdate = "UPDATE productcost SET " + updateCol + " = (" + updateCol + " + ?) WHERE KeyVal = ?";
+			    	 PDU = conn.prepareStatement(ProductDataUpdate);
+			    	 PDU.setBigDecimal(1, totalQty);
+			    	 PDU.setString(2, KeyValue);
+			    	 PDU.executeUpdate(); // 🔹 executeUpdate 추가
+			    } else {
+			    	String insertCol = movetypeGroup.equals("GR") ? "GR_Qty" : "Gi_Qty";
+			    	String ProductDataInsert = "INSERT INTO productcost (closingmon, comcode, plant, matcode, matdesc, spec, matType, "
+			    			+ insertCol + ", KeyVal) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+			    	PDI = conn.prepareStatement(ProductDataInsert);
+			        PDI.setString(1, Cm);
+			        PDI.setString(2, Cd);
+			        PDI.setString(3, Pd);
+			        PDI.setString(4, matcode);
+			        PDI.setString(5, matdesc);
+			        PDI.setString(6, spec);
+			        PDI.setString(7, mattype);
+			        PDI.setBigDecimal(8, totalQty);
+			        PDI.setString(9, KeyValue);
+			        PDI.executeUpdate();
+			    }
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
-			return "error_A02";
+			System.err.println("❌ AProcess 두 번째 SQL 오류: " + e.getMessage());
+			return "fail";
 		} catch (NullPointerException e) {
 		    e.printStackTrace();
 		    System.err.println("❌ NullPointer 오류: PreparedStatement 미생성 등 확인 필요");
@@ -2215,11 +2216,22 @@ public class GoodsCostAllDao {
 		} finally {
 			if(Line_ProDataCalc_rs != null) try { Line_ProDataCalc_rs.close(); } catch(SQLException e) {}
 		    if(Line_ProDataCalc_pstmt != null) try { Line_ProDataCalc_pstmt.close(); } catch(SQLException e) {}
+		    if(PDS_Rs != null) try { PDS_Rs.close(); } catch(SQLException e) {}
+		    if(PDS != null) try { PDS.close(); } catch(SQLException e) {}
+		    if(PDU != null) try { PDU.close(); } catch(SQLException e) {}
+		    if(PDI != null) try { PDI.close(); } catch(SQLException e) {}
 		} // A03 프로세스 끝
 		
 		String DataMatchSql = "SELECT * FROM productcost WHERE closingmon = ? AND ES_Qty > 0";
 		PreparedStatement DataMatchPstmt = null;
 		ResultSet DataMatchRs = null;
+		PreparedStatement SelectSqlPstmt = null;
+		ResultSet SelectSqlRs = null;
+		PreparedStatement UpdateBsPstmt = null;
+		PreparedStatement InsertBsPstmt = null;
+		PreparedStatement RenewRecentDataQtyPstmt = null;
+		PreparedStatement RecentDataSearchPstmt = null;
+		ResultSet RecentDataSearchRs = null;
 		try {
 			DataMatchPstmt = conn.prepareStatement(DataMatchSql);
 			DataMatchPstmt.setString(1, CalcPastMon);
@@ -2233,61 +2245,65 @@ public class GoodsCostAllDao {
 				BigDecimal EsMatC = DataMatchRs.getBigDecimal("ES_MatC");
 				BigDecimal EsLabC = DataMatchRs.getBigDecimal("ES_LabC");
 				BigDecimal EsExpC = DataMatchRs.getBigDecimal("ES_ExpC");
-				
-				PreparedStatement SelectSqlPstmt = null;
-				ResultSet SelectSqlRs = null;
-				PreparedStatement UpdateBsPstmt = null;
-				PreparedStatement InsertBsPstmt = null;
-				try {
-					String SelectSql = "SELECT * FROM productcost WHERE KeyVal = ?";
-					SelectSqlPstmt = conn.prepareStatement(SelectSql);
-					SelectSqlPstmt.setString(1, KeyValue);
-					SelectSqlRs = SelectSqlPstmt.executeQuery();
-					if(SelectSqlRs.next()) {
-						BigDecimal Gr_Qty = SelectSqlRs.getBigDecimal("GR_Qty");
-						BigDecimal Gi_Qty = SelectSqlRs.getBigDecimal("Gi_Qty");
-						
-						String UpdataBs = "UPDATE productcost SET BS_Qty = ?, BS_MatC = ?, BS_LabC = ?, BS_ExpC = ?, ES_Qty = ? WHERE KeyVal = ?";
-						UpdateBsPstmt = conn.prepareStatement(UpdataBs);
-						UpdateBsPstmt.setBigDecimal(1, EsQty);
-						UpdateBsPstmt.setBigDecimal(2, EsMatC);
-						UpdateBsPstmt.setBigDecimal(3, EsLabC);
-						UpdateBsPstmt.setBigDecimal(4, EsExpC);
-						UpdateBsPstmt.setBigDecimal(5, EsQty.add(Gr_Qty).subtract(Gi_Qty));
-						UpdateBsPstmt.setString(6, KeyValue);
-						UpdateBsPstmt.executeUpdate();
-					}else {
-						String InsertBs = "INSERT INTO productcost (closingmon, comcode, plant, matcode, matdesc, spec, matType, BS_Qty, BS_MatC, BS_LabC, BS_ExpC, "
-								+ "ES_Qty, KeyVal) "
-								+ "SELECT ?, ?, ?, PC.matcode, PC.matdesc, PC.spec, PC.matType, PC.ES_Qty, PC.ES_MatC, PC.ES_LabC, PC.ES_ExpC, "
-								+ "PC.ES_Qty, CONCAT(?, PC.matcode, PC.matType) "
-								+ "FROM productcost AS PC "
-								+ "WHERE closingmon = ? AND matcode = ?";
-						InsertBsPstmt = conn.prepareStatement(InsertBs);
-						InsertBsPstmt.setString(1, Cm);
-						InsertBsPstmt.setString(2, Cd);
-						InsertBsPstmt.setString(3, Pd);
-						InsertBsPstmt.setString(4, Cm);
-						InsertBsPstmt.setString(5, CalcPastMon);
-						InsertBsPstmt.setString(6, MatCode);
-						InsertBsPstmt.executeUpdate();
-					}
-				}catch (SQLException e) {
-					e.printStackTrace();
-					System.err.println("Error processing matcode: " + MatCode);
-				}finally {
-					if(SelectSqlRs != null) try { SelectSqlRs.close(); } catch(SQLException e) {}
-		            if(SelectSqlPstmt != null) try { SelectSqlPstmt.close(); } catch(SQLException e) {}
-		            if(UpdateBsPstmt != null) try { UpdateBsPstmt.close(); } catch(SQLException e) {}
-		            if(InsertBsPstmt != null) try { InsertBsPstmt.close(); } catch(SQLException e) {}
+				String SelectSql = "SELECT * FROM productcost WHERE KeyVal = ?";
+				SelectSqlPstmt = conn.prepareStatement(SelectSql);
+				SelectSqlPstmt.setString(1, KeyValue);
+				SelectSqlRs = SelectSqlPstmt.executeQuery();
+				if(SelectSqlRs.next()) {
+					BigDecimal Gr_Qty = SelectSqlRs.getBigDecimal("GR_Qty");
+					BigDecimal Gi_Qty = SelectSqlRs.getBigDecimal("Gi_Qty");
+					
+					String UpdataBs = "UPDATE productcost SET BS_Qty = ?, BS_MatC = ?, BS_LabC = ?, BS_ExpC = ?, ES_Qty = ? WHERE KeyVal = ?";
+					UpdateBsPstmt = conn.prepareStatement(UpdataBs);
+					UpdateBsPstmt.setBigDecimal(1, EsQty);
+					UpdateBsPstmt.setBigDecimal(2, EsMatC);
+					UpdateBsPstmt.setBigDecimal(3, EsLabC);
+					UpdateBsPstmt.setBigDecimal(4, EsExpC);
+					UpdateBsPstmt.setBigDecimal(5, EsQty.add(Gr_Qty).subtract(Gi_Qty));
+					UpdateBsPstmt.setString(6, KeyValue);
+					UpdateBsPstmt.executeUpdate();
+				}else {
+					String InsertBs = "INSERT INTO productcost (closingmon, comcode, plant, matcode, matdesc, spec, matType, BS_Qty, BS_MatC, BS_LabC, BS_ExpC, "
+							+ "ES_Qty, KeyVal) "
+							+ "SELECT ?, ?, ?, PC.matcode, PC.matdesc, PC.spec, PC.matType, PC.ES_Qty, PC.ES_MatC, PC.ES_LabC, PC.ES_ExpC, "
+							+ "PC.ES_Qty, CONCAT(?, PC.matcode, PC.matType) "
+							+ "FROM productcost AS PC "
+							+ "WHERE closingmon = ? AND matcode = ?";
+					InsertBsPstmt = conn.prepareStatement(InsertBs);
+					InsertBsPstmt.setString(1, Cm);
+					InsertBsPstmt.setString(2, Cd);
+					InsertBsPstmt.setString(3, Pd);
+					InsertBsPstmt.setString(4, Cm);
+					InsertBsPstmt.setString(5, CalcPastMon);
+					InsertBsPstmt.setString(6, MatCode);
+					InsertBsPstmt.executeUpdate();
 				}
 			}
+			
+			String RenewRecentDataQty = "UPDATE productcost SET ES_Qty = (BS_Qty + GR_Qty - Gi_Qty) WHERE closingmon = ?";
+			RenewRecentDataQtyPstmt = conn.prepareStatement(RenewRecentDataQty);
+			RenewRecentDataQtyPstmt.setString(1, Cm);
+			RenewRecentDataQtyPstmt.executeUpdate();
+			
 		} catch (SQLException e) {
 			e.printStackTrace();
-			 return "error_A03";
+			System.err.println("❌ AProcess 세 번째 SQL 오류: " + e.getMessage());
+			return "fail";
+		} catch (NullPointerException e) {
+		    e.printStackTrace();
+		    System.err.println("❌ NullPointer 오류: PreparedStatement 미생성 등 확인 필요");
+		    return "fail";
+		} catch (Exception e) {
+		    e.printStackTrace();
+		    System.err.println("❌ 알 수 없는 오류: " + e.getMessage());
+		    return "fail";
 		}finally {
 			if(DataMatchRs != null) try { DataMatchRs.close(); } catch(SQLException e) {}
 		    if(DataMatchPstmt != null) try { DataMatchPstmt.close(); } catch(SQLException e) {}
+			if(SelectSqlRs != null) try { SelectSqlRs.close(); } catch(SQLException e) {}
+		    if(SelectSqlPstmt != null) try { SelectSqlPstmt.close(); } catch(SQLException e) {}
+			if(UpdateBsPstmt != null) try { UpdateBsPstmt.close(); } catch(SQLException e) {}
+		    if(InsertBsPstmt != null) try { InsertBsPstmt.close(); } catch(SQLException e) {}
 		}
 		return "success";
 	}
