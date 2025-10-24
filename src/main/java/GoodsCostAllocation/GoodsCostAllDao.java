@@ -124,19 +124,19 @@ public class GoodsCostAllDao {
 	            result = "{\"result\":\"fail\",\"step\":\"CProcess\",\"message\":\"C단계 실패\"}";
 	            return result;
 	        }
-			System.out.println("D공정 시작");
-			String Lv2Process = DProcess(Cm, 2);
-			if (!"success".equals(Lv2Process)) {
-	            result = "{\"result\":\"fail\",\"step\":\"DProcess\",\"message\":\"D단계 실패\"}";
-	            return result;
-	        }
-			
-			System.out.println("E공정 시작");
-			String Lv3Process = EProcess(Cm, 3);
-			if (!"success".equals(Lv3Process)) {
-	            result = "{\"result\":\"fail\",\"step\":\"EProcess\",\"message\":\"E단계 실패\"}";
-	            return result;
-	        }
+//			System.out.println("D공정 시작");
+//			String Lv2Process = DProcess(Cm, 2);
+//			if (!"success".equals(Lv2Process)) {
+//	            result = "{\"result\":\"fail\",\"step\":\"DProcess\",\"message\":\"D단계 실패\"}";
+//	            return result;
+//	        }
+//			
+//			System.out.println("E공정 시작");
+//			String Lv3Process = EProcess(Cm, 3);
+//			if (!"success".equals(Lv3Process)) {
+//	            result = "{\"result\":\"fail\",\"step\":\"EProcess\",\"message\":\"E단계 실패\"}";
+//	            return result;
+//	        }
 			
 			result = "{\"result\":\"success\",\"message\":\"모든 계산 완료\",\"CalcMonth\":\"" + Cm + "\"}";
 		}catch (Exception e) {
@@ -483,7 +483,24 @@ public class GoodsCostAllDao {
 			if(EditLineAmtOhcPstmt != null) try { EditLineAmtOhcPstmt.close(); } catch(SQLException e) {}
 		}
 
-		String FindItem = "SELECT * FROM productcost WHERE closingmon = ?";
+		String FindItem = 
+			    "SELECT " +
+			    "p.matcode AS matcode, " +
+			    "p.matType AS matType, " +
+			    "ANY_VALUE(p.BS_Qty) AS BS_Qty, " +
+			    "ANY_VALUE(p.BS_MatC) AS BS_MatC, " +
+			    "ANY_VALUE(p.BS_ExpC) AS BS_ExpC, " +
+			    "ANY_VALUE(p.GR_Qty) AS GR_Qty, " +
+			    "ANY_VALUE(p.Gi_Qty) AS Gi_Qty, " +
+			    "ANY_VALUE(p.ES_Qty) AS ES_Qty, " +
+			    "CONCAT(p.matcode, p.matType) AS ProMatCdType, " +
+			    "MAX(i.CostingLv) AS CostingLv " +
+			    "FROM productcost AS p " +
+			    "JOIN invenlogl_copy AS i " +
+			    "ON CONCAT(p.matcode, p.matType) = CONCAT(i.matcode, i.mattype) " +
+			    "WHERE p.closingmon = ? " +
+			    "AND i.closingmon = ? " +
+			    "GROUP BY p.matcode, p.matType";
 		
 		PreparedStatement FindPstmt = null;
 		ResultSet FindRs = null;
@@ -509,11 +526,23 @@ public class GoodsCostAllDao {
 		BigDecimal ESExpC = BigDecimal.ZERO;
 		BigDecimal UnitMatPrice = BigDecimal.ZERO;
 		BigDecimal UnitManPrice = BigDecimal.ZERO;
+		String ProMatCode = "";
+		int ProMatLevel = 0;
+		
 		try {
 			FindPstmt = conn.prepareStatement(FindItem);
 			FindPstmt.setString(1, Cm);
+			FindPstmt.setString(2, Cm);
 			FindRs = FindPstmt.executeQuery();
 			while(FindRs.next()) {
+				MatCode = FindRs.getString("matcode");
+				ProMatCode = FindRs.getString("ProMatCdType");
+				ProMatLevel = FindRs.getInt("CostingLv");
+				
+				if(ProMatLevel != Lv) {
+					System.out.println("검사 레벨 : " + Lv + "검사 재료 : " + MatCode + " : " + ProMatCode + " : " + ProMatLevel);
+					continue;
+				}
 				SumAmt = BigDecimal.ZERO;
 				SumOfAmtOhc = BigDecimal.ZERO;
 				MatCode = null;
@@ -613,7 +642,8 @@ public class GoodsCostAllDao {
 					UpdateMatPstmt.setString(7, Cm);
 					UpdateMatPstmt.setString(8, MatCode);
 					UpdateMatPstmt.executeUpdate();
-				}else {
+				}
+				else {
 					BsQty = BigDecimal.ZERO;
 					BSMatC = BigDecimal.ZERO;
 					BSExpC = BigDecimal.ZERO;
@@ -1163,7 +1193,24 @@ public class GoodsCostAllDao {
 			if(EditLineAmtOhcPstmt != null) try { EditLineAmtOhcPstmt.close(); } catch(SQLException e) {}
 		}
 
-		String FindItem = "SELECT * FROM productcost WHERE closingmon = ?";
+		String FindItem = 
+			    "SELECT " +
+			    "p.matcode AS matcode, " +
+			    "p.matType AS matType, " +
+			    "ANY_VALUE(p.BS_Qty) AS BS_Qty, " +
+			    "ANY_VALUE(p.BS_MatC) AS BS_MatC, " +
+			    "ANY_VALUE(p.BS_ExpC) AS BS_ExpC, " +
+			    "ANY_VALUE(p.GR_Qty) AS GR_Qty, " +
+			    "ANY_VALUE(p.Gi_Qty) AS Gi_Qty, " +
+			    "ANY_VALUE(p.ES_Qty) AS ES_Qty, " +
+			    "CONCAT(p.matcode, p.matType) AS ProMatCdType, " +
+			    "MAX(i.CostingLv) AS CostingLv " +
+			    "FROM productcost AS p " +
+			    "JOIN invenlogl_copy AS i " +
+			    "ON CONCAT(p.matcode, p.matType) = CONCAT(i.matcode, i.mattype) " +
+			    "WHERE p.closingmon = ? " +
+			    "AND i.closingmon = ? " +
+			    "GROUP BY p.matcode, p.matType";
 		
 		PreparedStatement FindPstmt = null;
 		ResultSet FindRs = null;
@@ -1189,11 +1236,23 @@ public class GoodsCostAllDao {
 		BigDecimal ESExpC = BigDecimal.ZERO;
 		BigDecimal UnitMatPrice = BigDecimal.ZERO;
 		BigDecimal UnitManPrice = BigDecimal.ZERO;
+		String ProMatCode = "";
+		int ProMatLevel = 0;
 		try {
 			FindPstmt = conn.prepareStatement(FindItem);
 			FindPstmt.setString(1, Cm);
+			FindPstmt.setString(2, Cm);
 			FindRs = FindPstmt.executeQuery();
 			while(FindRs.next()) {
+				MatCode = FindRs.getString("matcode");
+				ProMatCode = FindRs.getString("ProMatCdType");
+				ProMatLevel = FindRs.getInt("CostingLv");
+				
+				if(ProMatLevel != Lv) {
+					System.out.println("검사 레벨 : " + Lv + "검사 재료 : " + MatCode + " : " + ProMatCode + " : " + ProMatLevel);
+					continue;
+				}
+				
 				SumAmt = BigDecimal.ZERO;
 				SumOfAmtOhc = BigDecimal.ZERO;
 				MatCode = null;
@@ -1211,7 +1270,6 @@ public class GoodsCostAllDao {
 				UnitMatPrice = BigDecimal.ZERO;
 				UnitManPrice = BigDecimal.ZERO;
 				
-				MatCode = FindRs.getString("matcode");
 				
 				String FindMatData = "SELECT "
 						+ "CASE "
@@ -1222,6 +1280,7 @@ public class GoodsCostAllDao {
 						+ "matcode, "
 						+ "CostingLv, "
 						+ "matdesc, "
+						+ "CONCAT(matcode, mattype) as InvenMatCdType, "
 						+ "SUM(quantity) AS SumOQty, "
 						+ "SUM(amount) AS SumOfAmt, "
 						+ "SUM(amtOhc) AS SumOfAmtOhc "
@@ -1289,7 +1348,8 @@ public class GoodsCostAllDao {
 					UpdateMatPstmt.setString(7, Cm);
 					UpdateMatPstmt.setString(8, MatCode);
 					UpdateMatPstmt.executeUpdate();
-				}else {
+				}
+				else {
 					BsQty = BigDecimal.ZERO;
 					BSMatC = BigDecimal.ZERO;
 					BSExpC = BigDecimal.ZERO;
@@ -1745,6 +1805,24 @@ public class GoodsCostAllDao {
 		}
 		
 		String FindItem = "SELECT * FROM productcost WHERE closingmon = ?";
+//		String FindItem = 
+//			    "SELECT " +
+//			    "p.matcode AS matcode, " +
+//			    "p.matType AS matType, " +
+//			    "ANY_VALUE(p.BS_Qty) AS BS_Qty, " +
+//			    "ANY_VALUE(p.BS_MatC) AS BS_MatC, " +
+//			    "ANY_VALUE(p.BS_ExpC) AS BS_ExpC, " +
+//			    "ANY_VALUE(p.GR_Qty) AS GR_Qty, " +
+//			    "ANY_VALUE(p.Gi_Qty) AS Gi_Qty, " +
+//			    "ANY_VALUE(p.ES_Qty) AS ES_Qty, " +
+//			    "CONCAT(p.matcode, p.matType) AS ProMatCdType, " +
+//			    "MAX(i.CostingLv) AS CostingLv " +
+//			    "FROM productcost AS p " +
+//			    "JOIN invenlogl_copy AS i " +
+//			    "ON CONCAT(p.matcode, p.matType) = CONCAT(i.matcode, i.mattype) " +
+//			    "WHERE p.closingmon = ? " +
+//			    "AND i.closingmon = ? " +
+//			    "GROUP BY p.matcode, p.matType";
 		
 		PreparedStatement FindPstmt = null;
 		ResultSet FindRs = null;
@@ -1758,7 +1836,6 @@ public class GoodsCostAllDao {
 		BigDecimal SumOfAmtOhc = BigDecimal.ZERO;
 		String MatCode = null;
 		String MvType = null;
-		int ItemLv = 0;
 		BigDecimal BsQty = BigDecimal.ZERO;
 		BigDecimal BSMatC = BigDecimal.ZERO;
 		BigDecimal BSExpC = BigDecimal.ZERO;
@@ -1771,16 +1848,28 @@ public class GoodsCostAllDao {
 		BigDecimal ESExpC = BigDecimal.ZERO;
 		BigDecimal UnitMatPrice = BigDecimal.ZERO;
 		BigDecimal UnitManPrice = BigDecimal.ZERO;
+		String ProMatCode = "";
+		int ProMatLevel = 0;
+		
 		try {
 			FindPstmt = conn.prepareStatement(FindItem);
 			FindPstmt.setString(1, Cm);
+//			FindPstmt.setString(2, Cm);
 			FindRs = FindPstmt.executeQuery();
-			while(FindRs.next()) { // 제품제고수량 테이블에 데이터가 있는지 조회
+			while(FindRs.next()) {
+				MatCode = FindRs.getString("matcode");
+//				ProMatCode = FindRs.getString("ProMatCdType");
+//				ProMatLevel = FindRs.getInt("CostingLv");
+				
+//				if(ProMatLevel != CalcLevel) {
+//					System.out.println("검사 레벨 : " + Lv + "검사 재료 : " + MatCode + " : " + ProMatCode + " : " + ProMatLevel);
+//					continue;
+//				}
+				
 				SumOfAmt = BigDecimal.ZERO;
 				SumOfAmtOhc = BigDecimal.ZERO;
 				MatCode = null;
 				MvType = null;
-//				ItemLv = 0;
 				BsQty = BigDecimal.ZERO;
 				BSMatC = BigDecimal.ZERO;
 				BSExpC = BigDecimal.ZERO;
@@ -1793,8 +1882,6 @@ public class GoodsCostAllDao {
 				ESExpC = BigDecimal.ZERO;
 				UnitMatPrice = BigDecimal.ZERO;
 				UnitManPrice = BigDecimal.ZERO;
-				
-				MatCode = FindRs.getString("matcode");
 				
 				String FindMatData = "SELECT "
 						+ "CASE "
@@ -1828,7 +1915,6 @@ public class GoodsCostAllDao {
 					SumOfAmtOhc = BigDecimal.ZERO;
 					
 					MvType = FindMatRs.getString("movetype_group");
-//					ItemLv = FindMatRs.getInt("CostingLv");
 					BsQty = FindRs.getBigDecimal("BS_Qty");
 					BSMatC = FindRs.getBigDecimal("BS_MatC");
 					BSExpC = FindRs.getBigDecimal("BS_ExpC");
@@ -1872,44 +1958,44 @@ public class GoodsCostAllDao {
 					UpdateMatPstmt.setString(7, Cm);
 					UpdateMatPstmt.setString(8, MatCode);
 					UpdateMatPstmt.executeUpdate();
-				} else { // 입/출고가 없는 경우
-					UnitMatPrice = BigDecimal.ZERO;
-					UnitManPrice = BigDecimal.ZERO;
-					BsQty = BigDecimal.ZERO;
-					BSMatC = BigDecimal.ZERO;
-					BSExpC = BigDecimal.ZERO;
-					ESQty = BigDecimal.ZERO;
-					ESMatC = BigDecimal.ZERO;
-					ESExpC = BigDecimal.ZERO;
-					
-					BsQty = FindRs.getBigDecimal("BS_Qty");
-					BSMatC = FindRs.getBigDecimal("BS_MatC");
-					BSExpC = FindRs.getBigDecimal("BS_ExpC");
-					ESQty = FindRs.getBigDecimal("ES_Qty");
-					
-					if(BsQty.compareTo(BigDecimal.ZERO) == 0) {
-						continue;
-					}else {
-						UnitMatPrice = BSMatC.divide(BsQty, 10, RoundingMode.HALF_UP); // 기말재고단가 재료비
-						UnitManPrice = BSExpC.divide(BsQty, 10, RoundingMode.HALF_UP); // 기말재고단가 경비
-					}
-					
-					ESMatC = ESQty.multiply(UnitMatPrice).setScale(0, RoundingMode.HALF_UP); // 기말재고 재료비
-					ESExpC = ESQty.multiply(UnitManPrice).setScale(0, RoundingMode.HALF_UP); // 기말재고 경비
-					
-					String UpdateMatItem = "UPDATE productcost SET GR_MatC = ?, GR_ExpC = ?, Gi_MatC = ?, Gi_ExpC = ?, ES_MatC = ?, ES_ExpC = ? WHERE "
-							+ "closingmon = ? AND matcode = ?";
-					UpdateMatPstmt = conn.prepareStatement(UpdateMatItem);
-					UpdateMatPstmt.setBigDecimal(1, BigDecimal.ZERO);
-					UpdateMatPstmt.setBigDecimal(2, BigDecimal.ZERO);
-					UpdateMatPstmt.setBigDecimal(3, BigDecimal.ZERO);
-					UpdateMatPstmt.setBigDecimal(4, BigDecimal.ZERO);
-					UpdateMatPstmt.setBigDecimal(5, ESMatC);
-					UpdateMatPstmt.setBigDecimal(6, ESExpC);
-					UpdateMatPstmt.setString(7, Cm);
-					UpdateMatPstmt.setString(8, MatCode);
-					UpdateMatPstmt.executeUpdate();
-				}
+				} 
+//				else {
+//					UnitMatPrice = BigDecimal.ZERO;
+//					UnitManPrice = BigDecimal.ZERO;
+//					BsQty = BigDecimal.ZERO;
+//					BSMatC = BigDecimal.ZERO;
+//					BSExpC = BigDecimal.ZERO;
+//					ESQty = BigDecimal.ZERO;
+//					ESMatC = BigDecimal.ZERO;
+//					ESExpC = BigDecimal.ZERO;
+//					
+//					BsQty = FindRs.getBigDecimal("BS_Qty");
+//					BSMatC = FindRs.getBigDecimal("BS_MatC");
+//					BSExpC = FindRs.getBigDecimal("BS_ExpC");
+//					ESQty = FindRs.getBigDecimal("ES_Qty");
+//					
+//					if(BsQty.compareTo(BigDecimal.ZERO) == 0) {
+//						continue;
+//					}else {
+//						UnitMatPrice = BSMatC.divide(BsQty, 10, RoundingMode.HALF_UP); // 기말재고단가 재료비
+//						UnitManPrice = BSExpC.divide(BsQty, 10, RoundingMode.HALF_UP); // 기말재고단가 경비
+//					}
+//					
+//					ESMatC = ESQty.multiply(UnitMatPrice).setScale(0, RoundingMode.HALF_UP); // 기말재고 재료비
+//					ESExpC = ESQty.multiply(UnitManPrice).setScale(0, RoundingMode.HALF_UP); // 기말재고 경비
+//					
+//					String UpdateMatItem = "UPDATE productcost SET ES_MatC = ?, ES_ExpC = ? WHERE closingmon = ? AND matcode = ?";
+//					UpdateMatPstmt = conn.prepareStatement(UpdateMatItem);
+//					UpdateMatPstmt.setBigDecimal(1, BigDecimal.ZERO);
+//					UpdateMatPstmt.setBigDecimal(2, BigDecimal.ZERO);
+//					UpdateMatPstmt.setBigDecimal(3, BigDecimal.ZERO);
+//					UpdateMatPstmt.setBigDecimal(4, BigDecimal.ZERO);
+//					UpdateMatPstmt.setBigDecimal(5, ESMatC);
+//					UpdateMatPstmt.setBigDecimal(6, ESExpC);
+//					UpdateMatPstmt.setString(7, Cm);
+//					UpdateMatPstmt.setString(8, MatCode);
+//					UpdateMatPstmt.executeUpdate();
+//				}
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
