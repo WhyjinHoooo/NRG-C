@@ -585,7 +585,9 @@ public class GoodsCostAllDao {
 					GRQty = FindRs.getBigDecimal("GR_Qty");
 					GiQty = FindRs.getBigDecimal("Gi_Qty");
 					ESQty = FindRs.getBigDecimal("ES_Qty");
-					
+					if(BsQty.add(GRQty).compareTo(BigDecimal.ZERO) == 0) {
+						throw new ZeroDenominator﻿Exception("분모가 0이 되면 안됩니다.");
+					}
 					UnitMatPrice = (BSMatC.add(SumAmt)).divide(BsQty.add(GRQty), 10, RoundingMode.HALF_UP); // 기말재고단가 재료비
 					UnitManPrice = (BSExpC.add(SumOfAmtOhc)).divide(BsQty.add(GRQty), 10, RoundingMode.HALF_UP); // 기말재고단가 경비
 					
@@ -640,7 +642,11 @@ public class GoodsCostAllDao {
 		    e.printStackTrace();
 		    System.err.println("❌ NullPointer 오류: PreparedStatement 미생성 등 확인 필요");
 		    return "fail";
-		} catch (Exception e) {
+		} catch(ZeroDenominator﻿Exception e) {
+			e.printStackTrace();
+			System.err.println("❌ 계산 불가능 오류: " + e.getMessage());
+			return "fail";
+		}catch (Exception e) {
 		    e.printStackTrace();
 		    System.err.println("❌ 알 수 없는 오류: " + e.getMessage());
 		    return "fail";
@@ -1157,16 +1163,7 @@ public class GoodsCostAllDao {
 			if(EditLineAmtOhcPstmt != null) try { EditLineAmtOhcPstmt.close(); } catch(SQLException e) {}
 		}
 
-		String FindItem = "SELECT matcode, spec, matType, "
-				+ "CASE "
-				+ "WHEN BS_Qty > 0 THEN 'POSITIVE' "
-				+ "WHEN BS_Qty = 0 THEN 'ZERO' "
-				+ "ELSE 'NEGATIVE' "
-				+ "END AS BsQtyState, "
-				+ "BS_Qty, BS_MatC, BS_LabC, "
-				+ "GR_Qty, GR_MatC, GR_LabC, GR_ExpC, "
-				+ "Gi_Qty, Gi_MatC, Gi_LabC, Gi_ExpC, "
-				+ "ES_Qty, ES_MatC, ES_LabC, ES_ExpC, KeyVal FROM productcost WHERE closingmon = ?";
+		String FindItem = "SELECT * FROM productcost WHERE closingmon = ?";
 		
 		PreparedStatement FindPstmt = null;
 		ResultSet FindRs = null;
@@ -1197,8 +1194,6 @@ public class GoodsCostAllDao {
 			FindPstmt.setString(1, Cm);
 			FindRs = FindPstmt.executeQuery();
 			while(FindRs.next()) {
-				String BsQtyState = FindRs.getString("BsQtyState");
-				
 				SumAmt = BigDecimal.ZERO;
 				SumOfAmtOhc = BigDecimal.ZERO;
 				MatCode = null;
@@ -1780,7 +1775,7 @@ public class GoodsCostAllDao {
 			FindPstmt = conn.prepareStatement(FindItem);
 			FindPstmt.setString(1, Cm);
 			FindRs = FindPstmt.executeQuery();
-			while(FindRs.next()) {
+			while(FindRs.next()) { // 제품제고수량 테이블에 데이터가 있는지 조회
 				SumOfAmt = BigDecimal.ZERO;
 				SumOfAmtOhc = BigDecimal.ZERO;
 				MatCode = null;
@@ -1822,7 +1817,7 @@ public class GoodsCostAllDao {
 				FindMatPstmt.setString(1, MatCode);
 				FindMatPstmt.setInt(2, CalcLevel);
 				FindMatRs = FindMatPstmt.executeQuery();
-				if(FindMatRs.next()) {
+				if(FindMatRs.next()) { // 라인테이블에 입/출고가 있는지 조회
 					UnitMatPrice = BigDecimal.ZERO;
 					UnitManPrice = BigDecimal.ZERO;
 					ESMatC = BigDecimal.ZERO;
@@ -1847,6 +1842,10 @@ public class GoodsCostAllDao {
 					GRQty = FindRs.getBigDecimal("GR_Qty");
 					GiQty = FindRs.getBigDecimal("Gi_Qty");
 					ESQty = FindRs.getBigDecimal("ES_Qty");
+					
+					if(BsQty.add(GRQty).compareTo(BigDecimal.ZERO) == 0) {
+						throw new ZeroDenominator﻿Exception("분모가 0이 되면 안됩니다.");
+					}
 					
 					UnitMatPrice = (BSMatC.add(SumOfAmt)).divide(BsQty.add(GRQty), 10, RoundingMode.HALF_UP); // 기말재고단가 재료비
 					UnitManPrice = (BSExpC.add(SumOfAmtOhc)).divide(BsQty.add(GRQty), 10, RoundingMode.HALF_UP); // 기말재고단가 경비
@@ -1873,8 +1872,7 @@ public class GoodsCostAllDao {
 					UpdateMatPstmt.setString(7, Cm);
 					UpdateMatPstmt.setString(8, MatCode);
 					UpdateMatPstmt.executeUpdate();
-				}
-				else {
+				} else { // 입/출고가 없는 경우
 					UnitMatPrice = BigDecimal.ZERO;
 					UnitManPrice = BigDecimal.ZERO;
 					BsQty = BigDecimal.ZERO;
@@ -1921,6 +1919,10 @@ public class GoodsCostAllDao {
 		    e.printStackTrace();
 		    System.err.println("❌ NullPointer 오류: PreparedStatement 미생성 등 확인 필요");
 		    return "fail";
+		}catch(ZeroDenominator﻿Exception e) {
+			e.printStackTrace();
+			System.err.println("❌ 계산 불가능 오류: " + e.getMessage());
+			return "fail";
 		} catch (Exception e) {
 		    e.printStackTrace();
 		    System.err.println("❌ 알 수 없는 오류: " + e.getMessage());

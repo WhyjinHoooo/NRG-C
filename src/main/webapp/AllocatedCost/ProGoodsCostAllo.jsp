@@ -2,8 +2,8 @@
     pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <c:set var="contextPath" value="${pageContext.request.contextPath}"/>
-<link rel="stylesheet" href="${contextPath}/CSS/Common2.css?after">
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>    
+<script>const contextPath = "${pageContext.request.contextPath}";</script>
+<link rel="stylesheet" href="${contextPath}/CSS/Common2.css?after"> 
 <!DOCTYPE html>
 <html>
 <head>
@@ -11,7 +11,7 @@
 <title>공정제품원가배부</title>
 </head>
 <body>
-<script>
+<!-- <script>
 function InitialTable(){
 	$('.ACInputTable-Body').empty();
 	var HeaderLength = $('thead.ACInputTable-Header th').length;
@@ -184,19 +184,19 @@ $(document).ready(function(){
 		alert('asd1');
 	})
 })
-</script>
+</script> -->
 <jsp:include page="../Header.jsp"></jsp:include>
 <div class="ACostArea_Head">
 	<div class="ACostArea-Filter">
 		<div class="Title">조회 조건 입력</div>
 		<div class="InfoInput">
 			<label>Company : </label> 
-			<input type="text" class="ComCode SearOp" name="ComCode" onclick="InfoSearch('ComSearch')" readonly>
+			<input type="text" class="ComCode SearOp" name="ComCode" onclick="InfoSearch('ComSearch', event)" readonly>
 		</div>
 		
 		<div class="InfoInput">
 			<label>Plant :  </label>
-			<input type="text" class="PlantCode SearOp" name="PlantCode" onclick="InfoSearch('PlantSearch')" placeholder="SELECT" readonly>
+			<input type="text" class="PlantCode SearOp" name="PlantCode" onclick="InfoSearch('PlantSearch', event)" placeholder="SELECT" readonly>
 		</div>
 		
 		<div class="InfoInput">
@@ -211,7 +211,7 @@ $(document).ready(function(){
 		
 		<div class="InfoInput">
 			<label>등록자 :  </label>
-			<input type="text" class="RegisterId" onclick="InfoSearch('UserSearch')" placeholder="SELECT" readonly>
+			<input type="text" class="RegisterId" onclick="InfoSearch('UserSearch', event)" placeholder="SELECT" readonly>
 		</div>
 		<button class="SearBtn">검색</button>	
 	</div>
@@ -248,5 +248,7 @@ $(document).ready(function(){
 		</div>
 	</div>
 </div>
+<script src="${pageContext.request.contextPath}/JSset/GoodCost.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>   
 </body>
 </html>
